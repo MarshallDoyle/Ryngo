@@ -436,7 +436,8 @@ fn get_error_window() -> ConnectionUI {
     }
 
     let ui = ConnectionUI::new_with_no_close_delay();
-    ui.title("wezterm Configuration Error");
+    // RYNGO: updated dialog title
+    ui.title("Ryngo Configuration Error");
     err.replace(ui.clone());
     ui
 }

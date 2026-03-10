@@ -413,6 +413,8 @@ async fn async_run_terminal_gui(
 ) -> anyhow::Result<()> {
     let unix_socket_path =
         config::RUNTIME_DIR.join(format!("gui-sock-{}", unsafe { libc::getpid() }));
+    // RYNGO: set both RYNGO_ and WEZTERM_ env vars for backward compat
+    std::env::set_var("RYNGO_UNIX_SOCKET", unix_socket_path.clone());
     std::env::set_var("WEZTERM_UNIX_SOCKET", unix_socket_path.clone());
     wezterm_blob_leases::register_storage(Arc::new(
         wezterm_blob_leases::simple_tempdir::SimpleTempDir::new_in(&*config::CACHE_DIR)?,
@@ -1478,7 +1480,8 @@ fn run() -> anyhow::Result<()> {
     {
         unsafe {
             ::windows::Win32::UI::Shell::SetCurrentProcessExplicitAppUserModelID(
-                ::windows::core::PCWSTR(wide_string("org.wezfurlong.wezterm").as_ptr()),
+                // RYNGO: updated app user model ID
+                ::windows::core::PCWSTR(wide_string("dev.ryngo.terminal").as_ptr()),
             )
             .unwrap();
         }

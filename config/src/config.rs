@@ -588,6 +588,30 @@ pub struct Config {
     #[dynamic(default = "default_one_point_oh")]
     pub window_background_opacity: f32,
 
+    // RYNGO: Glass UI configuration — liquid glass effect for translucent UI
+    /// Master switch for Ryngo's glass/blur UI effect.
+    /// When enabled, applies platform-native blur (NSVisualEffectView on macOS,
+    /// Acrylic on Windows 11) with translucent backgrounds.
+    #[dynamic(default = "default_true")]
+    pub ryngo_blur_enabled: bool,
+
+    /// Blur radius for macOS background blur. Only used when ryngo_blur_enabled is true.
+    /// Ignored on Windows (uses system Acrylic instead).
+    #[dynamic(default = "default_ryngo_blur_radius")]
+    pub ryngo_blur_radius: i64,
+
+    /// Background opacity for the terminal area when glass UI is enabled.
+    #[dynamic(default = "default_ryngo_background_opacity")]
+    pub ryngo_background_opacity: f32,
+
+    /// Background opacity for the tab bar / titlebar when glass UI is enabled.
+    #[dynamic(default = "default_ryngo_tab_bar_opacity")]
+    pub ryngo_tab_bar_opacity: f32,
+
+    /// Background opacity for the status bar when glass UI is enabled.
+    #[dynamic(default = "default_ryngo_status_bar_opacity")]
+    pub ryngo_status_bar_opacity: f32,
+
     /// inactive_pane_hue, inactive_pane_saturation and
     /// inactive_pane_brightness allow for transforming the color
     /// of inactive panes.
@@ -1405,6 +1429,23 @@ impl Config {
             cfg.color_scheme = Some("Ryngo".to_string());
         }
 
+        // RYNGO: Apply glass UI defaults when enabled
+        // Only override WezTerm opacity/blur if the user hasn't explicitly set them
+        if cfg.ryngo_blur_enabled {
+            // Set window background opacity from ryngo config if user hasn't overridden it
+            if cfg.window_background_opacity == 1.0 {
+                cfg.window_background_opacity = cfg.ryngo_background_opacity;
+            }
+            // Set macOS blur radius from ryngo config if user hasn't overridden it
+            if cfg.macos_window_background_blur == 0 {
+                cfg.macos_window_background_blur = cfg.ryngo_blur_radius;
+            }
+            // Set Windows system backdrop to Acrylic if user hasn't overridden it
+            if matches!(cfg.win32_system_backdrop, SystemBackdrop::Auto) {
+                cfg.win32_system_backdrop = SystemBackdrop::Acrylic;
+            }
+        }
+
         if let Some(scheme) = cfg.color_scheme.as_ref() {
             match cfg.resolve_color_scheme() {
                 None => {
@@ -1762,28 +1803,46 @@ fn default_font_size() -> f64 {
     12.0
 }
 
+// RYNGO: Glass UI default values
+fn default_ryngo_blur_radius() -> i64 {
+    20
+}
+
+fn default_ryngo_background_opacity() -> f32 {
+    0.85
+}
+
+fn default_ryngo_tab_bar_opacity() -> f32 {
+    0.9
+}
+
+fn default_ryngo_status_bar_opacity() -> f32 {
+    0.95
+}
+
+// RYNGO: updated directory names from "wezterm" to "ryngo"
 pub(crate) fn compute_cache_dir() -> anyhow::Result<PathBuf> {
     if let Some(runtime) = dirs_next::cache_dir() {
-        return Ok(runtime.join("wezterm"));
+        return Ok(runtime.join("ryngo"));
     }
 
-    Ok(crate::HOME_DIR.join(".local/share/wezterm"))
+    Ok(crate::HOME_DIR.join(".local/share/ryngo"))
 }
 
 pub(crate) fn compute_data_dir() -> anyhow::Result<PathBuf> {
     if let Some(runtime) = dirs_next::data_dir() {
-        return Ok(runtime.join("wezterm"));
+        return Ok(runtime.join("ryngo"));
     }
 
-    Ok(crate::HOME_DIR.join(".local/share/wezterm"))
+    Ok(crate::HOME_DIR.join(".local/share/ryngo"))
 }
 
 pub(crate) fn compute_runtime_dir() -> anyhow::Result<PathBuf> {
     if let Some(runtime) = dirs_next::runtime_dir() {
-        return Ok(runtime.join("wezterm"));
+        return Ok(runtime.join("ryngo"));
     }
 
-    Ok(crate::HOME_DIR.join(".local/share/wezterm"))
+    Ok(crate::HOME_DIR.join(".local/share/ryngo"))
 }
 
 pub fn pki_dir() -> anyhow::Result<PathBuf> {

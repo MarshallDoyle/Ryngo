@@ -476,7 +476,11 @@ impl LocalDomain {
         if let Some(dir) = command_dir {
             cmd.cwd(dir);
         }
-        if let Ok(sock) = std::env::var("WEZTERM_UNIX_SOCKET") {
+        // RYNGO: propagate both RYNGO_ and WEZTERM_ socket env vars
+        if let Ok(sock) = std::env::var("RYNGO_UNIX_SOCKET")
+            .or_else(|_| std::env::var("WEZTERM_UNIX_SOCKET"))
+        {
+            cmd.env("RYNGO_UNIX_SOCKET", &sock);
             cmd.env("WEZTERM_UNIX_SOCKET", sock);
         }
         cmd.env("WEZTERM_PANE", pane_id.to_string());

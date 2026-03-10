@@ -5284,6 +5284,7 @@ dependencies = [
  "clap_complete_fig",
  "codec",
  "config",
+ "dirs-next",
  "embed-resource",
  "env-bootstrap",
  "filedescriptor",

@@ -599,7 +599,26 @@ impl Window {
                 window.windowNumber(),
                 config.macos_window_background_blur,
             );
-            window.setContentView_(*view);
+
+            // RYNGO: Add NSVisualEffectView for native macOS vibrancy/frosted glass
+            // This provides a proper frosted glass backdrop that adapts to light/dark mode
+            if config.macos_window_background_blur > 0 {
+                let visual_effect_view: id = msg_send![class!(NSVisualEffectView), alloc];
+                let visual_effect_view: id = msg_send![visual_effect_view, initWithFrame: rect];
+                // Material 3 = NSVisualEffectMaterialHUDWindow (frosted glass)
+                let _: () = msg_send![visual_effect_view, setMaterial: 3i64];
+                // BlendingMode 0 = BehindWindow
+                let _: () = msg_send![visual_effect_view, setBlendingMode: 0i64];
+                // State 1 = FollowsWindowActiveState
+                let _: () = msg_send![visual_effect_view, setState: 1i64];
+                let _: () = msg_send![visual_effect_view, setAutoresizingMask:
+                    (NSViewWidthSizable | NSViewHeightSizable)];
+                // Set the visual effect view as contentView, then add WindowView as subview
+                window.setContentView_(visual_effect_view);
+                let _: () = msg_send![visual_effect_view, addSubview: *view];
+            } else {
+                window.setContentView_(*view);
+            }
             window.setDelegate_(*view);
 
             view.setWantsLayer(YES);

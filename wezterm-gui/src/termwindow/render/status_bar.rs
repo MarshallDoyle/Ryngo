@@ -243,11 +243,16 @@ impl crate::TermWindow {
         let gl_state = self.render_state.as_ref().unwrap();
         let white_space = gl_state.util_sprites.white_space.texture_coords();
         let filled_box = gl_state.util_sprites.filled_box.texture_coords();
+        // RYNGO: Use ryngo_status_bar_opacity for translucent glass status bar
         let default_bg = palette
             .resolve_bg(ColorAttribute::Default)
             .to_linear()
             .mul_alpha(if window_is_transparent {
-                0.
+                if self.config.ryngo_blur_enabled {
+                    self.config.ryngo_status_bar_opacity
+                } else {
+                    0.
+                }
             } else {
                 self.config.text_background_opacity
             });

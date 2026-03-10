@@ -235,6 +235,8 @@ pub fn make_lua_context(config_file: &Path) -> anyhow::Result<Lua> {
             array.insert(1, format!("{}/?/init.lua", path.display()));
         }
 
+        // RYNGO: look for .ryngo first, fall back to .wezterm
+        prefix_path(&mut path_array, &crate::HOME_DIR.join(".ryngo"));
         prefix_path(&mut path_array, &crate::HOME_DIR.join(".wezterm"));
         for dir in crate::CONFIG_DIRS.iter() {
             prefix_path(&mut path_array, dir);

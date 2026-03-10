@@ -18,6 +18,7 @@ use wezterm_gui_subcommands::*;
 
 mod asciicast;
 mod cli;
+mod screenshot;
 
 //    let message = "; ❤ 😍🤢\n\x1b[91;mw00t\n\x1b[37;104;m bleet\x1b[0;m.";
 
@@ -134,6 +135,14 @@ enum SubCommand {
 
     #[command(name = "replay", about = "Replay an asciicast terminal session")]
     Replay(asciicast::PlayCommand),
+
+    // RYNGO: Screenshot and screen capture for AI agents
+    #[command(
+        name = "screenshot",
+        about = "Capture screenshot of screen, window, or region. \
+                 Designed for AI agents to capture without user interaction."
+    )]
+    Screenshot(screenshot::ScreenshotCommand),
 
     /// Generate shell completion information
     #[command(name = "shell-completion")]
@@ -755,6 +764,7 @@ fn run() -> anyhow::Result<()> {
         SubCommand::Cli(cli) => cli::run_cli(&opts, cli),
         SubCommand::Record(cmd) => cmd.run(init_config(&opts)?),
         SubCommand::Replay(cmd) => cmd.run(),
+        SubCommand::Screenshot(cmd) => cmd.run(),
         SubCommand::ShellCompletion { shell } => {
             use clap::CommandFactory;
             let mut cmd = Opt::command();

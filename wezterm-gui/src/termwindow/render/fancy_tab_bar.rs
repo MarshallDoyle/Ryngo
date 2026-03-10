@@ -71,15 +71,21 @@ impl crate::TermWindow {
         let mut left_status = vec![];
         let mut left_eles = vec![];
         let mut right_eles = vec![];
+        // RYNGO: Apply tab bar opacity for glass effect when blur is enabled
+        let titlebar_bg = if self.focused.is_some() {
+            self.config.window_frame.active_titlebar_bg
+        } else {
+            self.config.window_frame.inactive_titlebar_bg
+        }
+        .to_linear();
+        let titlebar_bg = if self.config.ryngo_blur_enabled {
+            titlebar_bg.mul_alpha(self.config.ryngo_tab_bar_opacity)
+        } else {
+            titlebar_bg
+        };
         let bar_colors = ElementColors {
             border: BorderColor::default(),
-            bg: if self.focused.is_some() {
-                self.config.window_frame.active_titlebar_bg
-            } else {
-                self.config.window_frame.inactive_titlebar_bg
-            }
-            .to_linear()
-            .into(),
+            bg: titlebar_bg.into(),
             text: if self.focused.is_some() {
                 self.config.window_frame.active_titlebar_fg
             } else {

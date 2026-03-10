@@ -373,7 +373,8 @@ impl RecordCommand {
             ),
             None => {
                 tempfile::Builder::new()
-                    .prefix("wezterm-recording-")
+                    // RYNGO: updated recording file prefix
+                    .prefix("ryngo-recording-")
                     // We use a .txt suffix for convenice when uploading to GH
                     .suffix(".cast.txt")
                     .tempfile()?

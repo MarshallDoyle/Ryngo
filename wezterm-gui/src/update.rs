@@ -41,7 +41,8 @@ fn get_github_release_info(uri: &str) -> anyhow::Result<Release> {
         .version(HttpVersion::Http10)
         .header(
             "User-Agent",
-            &format!("wezterm/wezterm-{}", wezterm_version()),
+            // RYNGO: updated user-agent
+            &format!("ryngo/ryngo-{}", wezterm_version()),
         )
         .send(&mut latest)
         .map_err(|e| anyhow!("failed to query github releases: {}", e))?;
@@ -56,12 +57,14 @@ fn get_github_release_info(uri: &str) -> anyhow::Result<Release> {
 }
 
 pub fn get_latest_release_info() -> anyhow::Result<Release> {
-    get_github_release_info("https://api.github.com/repos/wezterm/wezterm/releases/latest")
+    // RYNGO: check Ryngo releases instead of WezTerm
+    get_github_release_info("https://api.github.com/repos/MarshallDoyle/Ryngo/releases/latest")
 }
 
 #[allow(unused)]
 pub fn get_nightly_release_info() -> anyhow::Result<Release> {
-    get_github_release_info("https://api.github.com/repos/wezterm/wezterm/releases/tags/nightly")
+    // RYNGO: check Ryngo releases instead of WezTerm
+    get_github_release_info("https://api.github.com/repos/MarshallDoyle/Ryngo/releases/tags/nightly")
 }
 
 lazy_static::lazy_static! {
@@ -92,7 +95,8 @@ pub fn load_last_release_info_and_set_banner() {
 
 fn set_banner_from_release_info(latest: &Release) {
     let mux = crate::Mux::get();
-    let url = format!("https://wezterm.org/changelog.html#{}", latest.tag_name);
+    // RYNGO: updated changelog URL
+    let url = format!("https://github.com/MarshallDoyle/Ryngo/releases/tag/{}", latest.tag_name);
 
     let icon = ITermFileData {
         name: None,
@@ -191,7 +195,8 @@ fn update_checker() {
                         current
                     );
 
-                    let url = format!("https://wezterm.org/changelog.html#{}", latest.tag_name);
+                    // RYNGO: updated changelog URL
+    let url = format!("https://github.com/MarshallDoyle/Ryngo/releases/tag/{}", latest.tag_name);
 
                     if force_ui || socks.is_empty() || socks[0] == my_sock {
                         persistent_toast_notification_with_click_to_open_url(
