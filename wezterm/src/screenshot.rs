@@ -223,44 +223,53 @@ $graphics.CopyFromScreen($screen.X, $screen.Y, 0, 0, $screen.Size)
     }
 }
 
-/// Get the window ID of the frontmost window on macOS using CGWindow API.
+/// Get the window ID of the Ryngo (or frontmost) window on macOS.
+/// Uses the CGWindowListCopyWindowInfo API via Swift to enumerate windows.
 #[cfg(target_os = "macos")]
 fn get_frontmost_window_id_macos() -> Result<u32> {
-    let output = Command::new("osascript")
-        .args([
-            "-e",
-            r#"tell application "System Events" to set frontApp to name of first application process whose frontmost is true"#,
-        ])
-        .output()
-        .context("Failed to get frontmost application")?;
+    // Use swift to call CoreGraphics API directly — no Python dependency needed.
+    let swift_code = r#"
+import CoreGraphics
+let options: CGWindowListOption = [.optionOnScreenOnly, .excludeDesktopElements]
+guard let windowList = CGWindowListCopyWindowInfo(options, kCGNullWindowID) as? [[String: Any]] else {
+    exit(1)
+}
+// Try to find a ryngo-gui window first
+for w in windowList {
+    if let owner = w[kCGWindowOwnerName as String] as? String,
+       owner.lowercased().contains("ryngo") {
+        if let num = w[kCGWindowNumber as String] as? Int {
+            print(num)
+            exit(0)
+        }
+    }
+}
+// Fall back to the frontmost normal window (layer 0 with a name)
+for w in windowList {
+    let layer = w[kCGWindowLayer as String] as? Int ?? 999
+    let name = w[kCGWindowName as String] as? String ?? ""
+    if layer == 0 && !name.isEmpty {
+        if let num = w[kCGWindowNumber as String] as? Int {
+            print(num)
+            exit(0)
+        }
+    }
+}
+exit(1)
+"#;
 
-    let app_name = String::from_utf8_lossy(&output.stdout).trim().to_string();
-
-    // Use CGWindowListCopyWindowInfo via Python to get window ID
-    // This is more reliable than AppleScript for getting the actual CGWindowID
-    let output = Command::new("python3")
-        .args([
-            "-c",
-            &format!(
-                r#"
-import Quartz
-windows = Quartz.CGWindowListCopyWindowInfo(
-    Quartz.kCGWindowListOptionOnScreenOnly | Quartz.kCGWindowListExcludeDesktopElements,
-    Quartz.kCGNullWindowID
-)
-for w in windows:
-    if w.get('kCGWindowOwnerName', '') == '{}':
-        print(w['kCGWindowNumber'])
-        break
-"#,
-                app_name
-            ),
-        ])
+    let output = Command::new("swift")
+        .args(["-e", swift_code])
         .output()
-        .context("Failed to get window ID via CGWindowListCopyWindowInfo")?;
+        .context("Failed to enumerate windows via swift/CoreGraphics")?;
 
     let id_str = String::from_utf8_lossy(&output.stdout).trim().to_string();
+    if id_str.is_empty() || !output.status.success() {
+        anyhow::bail!(
+            "No suitable window found. Try --region or omit --window for full screen capture."
+        );
+    }
     id_str
         .parse::<u32>()
-        .context(format!("Failed to parse window ID '{}' for app '{}'", id_str, app_name))
+        .context(format!("Failed to parse window ID '{}'", id_str))
 }

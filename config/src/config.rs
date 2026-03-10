@@ -1805,19 +1805,19 @@ fn default_font_size() -> f64 {
 
 // RYNGO: Glass UI default values
 fn default_ryngo_blur_radius() -> i64 {
-    20
+    30
 }
 
 fn default_ryngo_background_opacity() -> f32 {
-    0.85
+    0.75
 }
 
 fn default_ryngo_tab_bar_opacity() -> f32 {
-    0.9
+    0.8
 }
 
 fn default_ryngo_status_bar_opacity() -> f32 {
-    0.95
+    0.85
 }
 
 // RYNGO: updated directory names from "wezterm" to "ryngo"

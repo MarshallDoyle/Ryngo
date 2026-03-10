@@ -600,8 +600,10 @@ impl Window {
                 config.macos_window_background_blur,
             );
 
-            // RYNGO: Add NSVisualEffectView for native macOS vibrancy/frosted glass
-            // This provides a proper frosted glass backdrop that adapts to light/dark mode
+            // RYNGO: Add NSVisualEffectView for native macOS vibrancy/frosted glass.
+            // The visual effect view sits behind the WindowView and provides the
+            // frosted glass backdrop. The CAMetalLayer (wgpu) renders on top with
+            // alpha-blended backgrounds, allowing the vibrancy to show through.
             if config.macos_window_background_blur > 0 {
                 let visual_effect_view: id = msg_send![class!(NSVisualEffectView), alloc];
                 let visual_effect_view: id = msg_send![visual_effect_view, initWithFrame: rect];
@@ -613,9 +615,17 @@ impl Window {
                 let _: () = msg_send![visual_effect_view, setState: 1i64];
                 let _: () = msg_send![visual_effect_view, setAutoresizingMask:
                     (NSViewWidthSizable | NSViewHeightSizable)];
-                // Set the visual effect view as contentView, then add WindowView as subview
+                let _: () = msg_send![visual_effect_view, setWantsLayer: YES];
+
+                // Set the visual effect view as contentView, then add WindowView
+                // as subview. The WindowView's CAMetalLayer has isOpaque=NO
+                // (set in make_backing_layer), so alpha-blended content shows
+                // the vibrancy effect behind it.
                 window.setContentView_(visual_effect_view);
                 let _: () = msg_send![visual_effect_view, addSubview: *view];
+
+                // Ensure the window is non-opaque for compositing
+                window.setOpaque_(NO);
             } else {
                 window.setContentView_(*view);
             }
