@@ -1,0 +1,19 @@
+[package]
+name = "ryngo-ai"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+anyhow.workspace = true
+log.workspace = true
+reqwest = { workspace = true, features = ["stream"] }
+tokio = { workspace = true, features = ["rt-multi-thread", "fs", "io-util", "sync", "macros"] }
+futures-util.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+llama-cpp-2 = "0.1"
+cpal.workspace = true
+dirs-next.workspace = true
+regex = "1"
+whisper-rs.workspace = true

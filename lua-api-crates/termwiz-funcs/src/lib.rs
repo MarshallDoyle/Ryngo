@@ -12,7 +12,7 @@ use termwiz::surface::Line;
 use wezterm_dynamic::{FromDynamic, ToDynamic};
 
 pub fn register(lua: &Lua) -> anyhow::Result<()> {
-    let wezterm_mod = get_or_create_module(lua, "wezterm")?;
+    let wezterm_mod = get_or_create_module(lua, "ryngo")?;
     wezterm_mod.set("nerdfonts", NerdFonts {})?;
     wezterm_mod.set("format", lua.create_function(format)?)?;
     wezterm_mod.set(

@@ -772,6 +772,64 @@ impl ColorSchemeFile {
     }
 }
 
+// RYNGO: Helper to construct an RgbaColor from a hex string like "#202124".
+// Panics on invalid input — only use for compile-time-known constants.
+fn rgba(hex: &str) -> RgbaColor {
+    RgbaColor::try_from(hex.to_string()).expect("invalid hex color in ryngo_palette")
+}
+
+/// RYNGO: Built-in color scheme using Google's dark brand palette.
+/// Background: Google dark (#202124), text: light gray (#E8EAED),
+/// ANSI colors map to Google Blue, Red, Green, Yellow, Purple, Teal.
+pub fn ryngo_palette() -> Palette {
+    Palette {
+        background: Some(rgba("#202124")),
+        foreground: Some(rgba("#E8EAED")),
+        cursor_bg: Some(rgba("#4285F4")),
+        cursor_fg: Some(rgba("#202124")),
+        cursor_border: Some(rgba("#4285F4")),
+        selection_bg: Some(rgba("#4285F4")),
+        selection_fg: Some(rgba("#FFFFFF")),
+        ansi: Some([
+            rgba("#303134"), // 0 black
+            rgba("#EA4335"), // 1 red (Google Red)
+            rgba("#34A853"), // 2 green (Google Green)
+            rgba("#FBBC05"), // 3 yellow (Google Yellow)
+            rgba("#4285F4"), // 4 blue (Google Blue)
+            rgba("#A142F4"), // 5 magenta (Google Purple)
+            rgba("#24C1E0"), // 6 cyan (Google Teal)
+            rgba("#E8EAED"), // 7 white
+        ]),
+        brights: Some([
+            rgba("#5F6368"), // 8 bright black
+            rgba("#F28B82"), // 9 bright red
+            rgba("#81C995"), // 10 bright green
+            rgba("#FDD663"), // 11 bright yellow
+            rgba("#8AB4F8"), // 12 bright blue
+            rgba("#C58AF9"), // 13 bright magenta
+            rgba("#78D9EC"), // 14 bright cyan
+            rgba("#FFFFFF"), // 15 bright white
+        ]),
+        tab_bar: Some(TabBarColors {
+            background: Some(rgba("#171717")),
+            active_tab: Some(TabBarColor {
+                bg_color: rgba("#303134"),
+                fg_color: rgba("#FFFFFF"),
+                ..TabBarColor::default()
+            }),
+            inactive_tab: Some(TabBarColor {
+                bg_color: rgba("#202124"),
+                fg_color: rgba("#9AA0A6"),
+                ..TabBarColor::default()
+            }),
+            ..Default::default()
+        }),
+        split: Some(rgba("#4285F4")),
+        scrollbar_thumb: Some(rgba("#5F6368")),
+        ..Default::default()
+    }
+}
+
 #[cfg(test)]
 #[test]
 fn test_indexed_colors() {

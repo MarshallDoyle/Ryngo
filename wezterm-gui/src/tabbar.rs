@@ -147,10 +147,28 @@ fn compute_tab_title(
             let mut len = 0;
 
             if let Some(pane) = &tab.active_pane {
-                let mut title = if tab.tab_title.is_empty() {
-                    pane.title.clone()
-                } else {
+                // RYNGO: Show "LLM Mode" when LLM mode is active, otherwise default to "Ryngo"
+                let llm_active = crate::ryngo_state::RYNGO_STATE
+                    .lock()
+                    .map(|s| s.llm_mode_active)
+                    .unwrap_or(false);
+
+                let mut title = if llm_active {
+                    "LLM Mode".to_string()
+                } else if !tab.tab_title.is_empty() {
                     tab.tab_title.clone()
+                } else if pane.title.is_empty()
+                    || pane.title == "zsh"
+                    || pane.title == "bash"
+                    || pane.title == "fish"
+                    || pane.title == "sh"
+                    || pane.title == "pwsh"
+                    || pane.title == "powershell"
+                    || pane.title == "cmd"
+                {
+                    "Ryngo".to_string()
+                } else {
+                    pane.title.clone()
                 };
 
                 let classic_spacing = if config.use_fancy_tab_bar { "" } else { " " };

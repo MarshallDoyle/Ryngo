@@ -45,6 +45,7 @@ mod overlay;
 mod quad;
 mod renderstate;
 mod resize_increment_calculator;
+pub mod ryngo_state;
 mod scripting;
 mod scrollbar;
 mod selection;
@@ -67,11 +68,11 @@ pub use termwindow::{set_window_class, set_window_position, TermWindow, ICON_DAT
 
 #[derive(Debug, Parser)]
 #[command(
-    about = "Wez's Terminal Emulator\nhttp://github.com/wezterm/wezterm",
+    about = "Ryngo Terminal\nhttps://github.com/MarshallDoyle/Marshall",
     version = config::wezterm_version()
 )]
 struct Opt {
-    /// Skip loading wezterm.lua
+    /// Skip loading ryngo.lua
     #[arg(long, short = 'n')]
     skip_config: bool,
 
@@ -776,6 +777,311 @@ fn run_terminal_gui(opts: StartCommand, default_domain_name: Option<String>) -> 
     }
 
     let gui = crate::frontend::try_new()?;
+
+    // RYNGO: Check for Gemma 3n model, download if needed, load into llama.cpp,
+    // and run a health check (background thread). Updates RYNGO_STATE so the bottom
+    // status bar can show download progress and model lifecycle states.
+    std::thread::Builder::new()
+        .name("ryngo-ai-model-check".to_string())
+        .spawn(|| {
+            // Helper: load the model file into llama.cpp and run a health check.
+            // Called after we've confirmed the GGUF file exists on disk.
+            fn load_and_health_check(
+                model_path: &std::path::Path,
+                rt: &tokio::runtime::Runtime,
+            ) {
+                // Signal that we're loading the model into GPU memory
+                if let Ok(mut s) = crate::ryngo_state::RYNGO_STATE.lock() {
+                    s.model_loading = true;
+                }
+
+                log::info!(
+                    "Loading Gemma 3n into llama.cpp from {}...",
+                    model_path.display()
+                );
+                let llm = match ryngo_ai::Llm::load(
+                    model_path,
+                    ryngo_ai::LlmConfig::default(),
+                ) {
+                    Ok(llm) => llm,
+                    Err(e) => {
+                        log::error!("Failed to load Gemma 3n into llama.cpp: {:#}", e);
+                        if let Ok(mut s) = crate::ryngo_state::RYNGO_STATE.lock() {
+                            s.model_loading = false;
+                        }
+                        return;
+                    }
+                };
+                log::info!("Gemma 3n loaded into llama.cpp, running health check...");
+
+                // Health check: ask the model to say something short
+                let healthy = match llm.chat("Say OK") {
+                    Ok(response) => {
+                        let trimmed = response.trim();
+                        log::info!("Gemma 3n health check response: {:?}", trimmed);
+                        !trimmed.is_empty()
+                    }
+                    Err(e) => {
+                        log::error!("Gemma 3n health check failed: {:#}", e);
+                        // Still store the model — it might work for other prompts
+                        false
+                    }
+                };
+
+                // Store the loaded model in the global handle
+                rt.block_on(crate::ryngo_state::LLM_HANDLE.set(llm));
+
+                // Update state: loading done, record health status
+                if let Ok(mut s) = crate::ryngo_state::RYNGO_STATE.lock() {
+                    s.model_loading = false;
+                    s.model_healthy = healthy;
+                    s.model_loaded = true;
+                    s.context_total = 4096;
+                }
+
+                if healthy {
+                    log::info!("Gemma 3n is healthy and ready for inference");
+                } else {
+                    log::warn!(
+                        "Gemma 3n loaded but health check did not pass — \
+                         model may still work for other prompts"
+                    );
+                }
+            }
+
+            log::info!("Checking for Gemma 3n model...");
+
+            // We need a tokio runtime for the async download and LlmHandle::set()
+            let rt = match tokio::runtime::Runtime::new() {
+                Ok(rt) => rt,
+                Err(e) => {
+                    log::error!("Failed to create tokio runtime: {:#}", e);
+                    return;
+                }
+            };
+
+            match ryngo_ai::is_model_downloaded(ryngo_ai::GemmaVariant::E4B) {
+                Ok(true) => {
+                    match ryngo_ai::model_path(ryngo_ai::GemmaVariant::E4B) {
+                        Ok(path) => {
+                            log::info!("Gemma 3n already installed at {}", path.display());
+                            load_and_health_check(&path, &rt);
+                        }
+                        Err(e) => log::error!("Failed to resolve model path: {:#}", e),
+                    }
+                }
+                Ok(false) => {
+                    log::info!("Gemma 3n not found, starting download...");
+                    if let Ok(mut s) = crate::ryngo_state::RYNGO_STATE.lock() {
+                        s.model_downloading = true;
+                        s.download_pct = 0;
+                        s.download_bytes = 0;
+                        s.download_total_bytes = None;
+                        s.download_started = Some(std::time::Instant::now());
+                    }
+                    let result = rt.block_on(ryngo_ai::ensure_model(
+                        ryngo_ai::GemmaVariant::E4B,
+                        Some(Box::new(|downloaded, total| {
+                            if let Some(total) = total {
+                                let pct = (downloaded as f64 / total as f64 * 100.0) as u8;
+                                let downloaded_mb = downloaded as f64 / (1024.0 * 1024.0);
+                                let total_mb = total as f64 / (1024.0 * 1024.0);
+                                log::info!(
+                                    "Downloading Gemma 3n: {:.0} MB / {:.0} MB ({:.1}%)",
+                                    downloaded_mb, total_mb, pct as f64,
+                                );
+                                if let Ok(mut s) = crate::ryngo_state::RYNGO_STATE.lock() {
+                                    s.download_pct = pct;
+                                    s.download_bytes = downloaded;
+                                    s.download_total_bytes = Some(total);
+                                }
+                            } else {
+                                let downloaded_mb = downloaded as f64 / (1024.0 * 1024.0);
+                                log::info!("Downloading Gemma 3n: {:.0} MB", downloaded_mb);
+                                if let Ok(mut s) = crate::ryngo_state::RYNGO_STATE.lock() {
+                                    s.download_bytes = downloaded;
+                                }
+                            }
+                        })),
+                    ));
+                    match result {
+                        Ok(path) => {
+                            log::info!("Gemma 3n downloaded to {}", path.display());
+                            if let Ok(mut s) = crate::ryngo_state::RYNGO_STATE.lock() {
+                                s.model_downloading = false;
+                            }
+                            load_and_health_check(&path, &rt);
+                        }
+                        Err(e) => {
+                            log::error!("Failed to download Gemma 3n: {:#}", e);
+                            if let Ok(mut s) = crate::ryngo_state::RYNGO_STATE.lock() {
+                                s.model_downloading = false;
+                            }
+                        }
+                    }
+                }
+                Err(e) => log::error!("Failed to check model status: {:#}", e),
+            }
+
+            // RYNGO: After Gemma 3n setup, download Whisper model and initialize STT engine.
+            // This runs on the same background thread so we don't block the GUI.
+            log::info!("Checking for Whisper STT model...");
+            let whisper_result = rt.block_on(ryngo_ai::ensure_whisper_model(
+                ryngo_ai::WhisperVariant::SmallEn,
+                Some(Box::new(|downloaded, total| {
+                    if let Some(total) = total {
+                        let pct = (downloaded as f64 / total as f64 * 100.0) as u8;
+                        let downloaded_mb = downloaded as f64 / (1024.0 * 1024.0);
+                        let total_mb = total as f64 / (1024.0 * 1024.0);
+                        log::info!(
+                            "Downloading Whisper: {:.0} MB / {:.0} MB ({}%)",
+                            downloaded_mb,
+                            total_mb,
+                            pct,
+                        );
+                    } else {
+                        let downloaded_mb = downloaded as f64 / (1024.0 * 1024.0);
+                        log::info!("Downloading Whisper: {:.0} MB", downloaded_mb);
+                    }
+                })),
+            ));
+
+            match whisper_result {
+                Ok(whisper_path) => {
+                    log::info!("Whisper model ready at {}", whisper_path.display());
+                    match ryngo_ai::SttEngine::new(&whisper_path) {
+                        Ok(engine) => {
+                            crate::ryngo_state::STT_HANDLE.set(engine);
+                            log::info!("STT engine initialized and ready for push-to-talk");
+                        }
+                        Err(e) => {
+                            log::error!("Failed to initialize STT engine: {:#}", e);
+                        }
+                    }
+                }
+                Err(e) => {
+                    log::error!("Failed to download Whisper model: {:#}", e);
+                }
+            }
+        })
+        .ok();
+
+    // RYNGO: Start the auto-approval thread for Claude Code / Codex permission prompts.
+    // This thread listens for approval requests from the agent detector and responds
+    // automatically: AllowAlways for safe ops, AllowOnce for sensitive, Deny for destructive.
+    {
+        let (tx, rx) = std::sync::mpsc::channel::<ryngo_agent::ApprovalRequest>();
+        ryngo_agent::GLOBAL_DETECTOR.set_approval_channel(tx);
+
+        std::thread::Builder::new()
+            .name("ryngo-auto-approve".to_string())
+            .spawn(move || {
+                use ryngo_agent::auto_approve;
+
+                log::info!("RYNGO: Auto-approval thread started");
+
+                while let Ok(req) = rx.recv() {
+                    log::info!(
+                        "RYNGO: Processing approval request for pane {} ({} bytes)",
+                        req.pane_id,
+                        req.prompt_text.len(),
+                    );
+
+                    // Try LLM classification first, fall back to heuristics
+                    let decision = {
+                        // Check if Gemma 3n is loaded (non-async check via state)
+                        let model_healthy = crate::ryngo_state::RYNGO_STATE
+                            .lock()
+                            .map(|s| s.model_healthy)
+                            .unwrap_or(false);
+
+                        if model_healthy {
+                            // Use Gemma 3n for nuanced classification
+                            let prompt = auto_approve::build_llm_classification_prompt(&req.prompt_text);
+                            match std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                                // Create a small tokio runtime for this blocking call
+                                let rt = tokio::runtime::Runtime::new().ok();
+                                rt.and_then(|rt| {
+                                    rt.block_on(async {
+                                        crate::ryngo_state::LLM_HANDLE
+                                            .generate(prompt)
+                                            .await
+                                            .ok()
+                                            .flatten()
+                                    })
+                                })
+                            })) {
+                                Ok(Some(response)) => {
+                                    let decision = auto_approve::parse_llm_response(&response);
+                                    log::info!(
+                                        "RYNGO: Gemma classified as {:?} (raw: '{}')",
+                                        decision,
+                                        response.trim()
+                                    );
+                                    decision
+                                }
+                                _ => {
+                                    log::warn!("RYNGO: LLM classification failed, using heuristics");
+                                    auto_approve::heuristic_classify(&req.prompt_text)
+                                }
+                            }
+                        } else {
+                            // No model — use fast heuristic classification
+                            auto_approve::heuristic_classify(&req.prompt_text)
+                        }
+                    };
+
+                    log::info!(
+                        "RYNGO: Auto-approve decision for pane {}: {} ({})",
+                        req.pane_id,
+                        decision.label(),
+                        if crate::ryngo_state::RYNGO_STATE
+                            .lock()
+                            .map(|s| s.model_healthy)
+                            .unwrap_or(false)
+                        {
+                            "LLM"
+                        } else {
+                            "heuristic"
+                        }
+                    );
+
+                    // Send the keystrokes to the pane
+                    let keystrokes = auto_approve::decision_to_keystrokes(decision, &req.prompt_text);
+
+                    // Small delay to let the permission prompt fully render
+                    std::thread::sleep(std::time::Duration::from_millis(300));
+
+                    // Write the response to the pane via the mux
+                    promise::spawn::spawn_into_main_thread(async move {
+                        let mux = mux::Mux::get();
+                        if let Some(pane) = mux.get_pane(req.pane_id) {
+                            if let Err(e) = pane.writer().write_all(keystrokes) {
+                                log::error!(
+                                    "RYNGO: Failed to send auto-approve keystroke to pane {}: {}",
+                                    req.pane_id,
+                                    e
+                                );
+                            } else {
+                                log::info!(
+                                    "RYNGO: Sent '{}' to pane {} ({})",
+                                    String::from_utf8_lossy(keystrokes),
+                                    req.pane_id,
+                                    decision.label()
+                                );
+                            }
+                        } else {
+                            log::warn!("RYNGO: Pane {} no longer exists", req.pane_id);
+                        }
+                    })
+                    .detach();
+                }
+
+                log::info!("RYNGO: Auto-approval thread exiting");
+            })
+            .ok();
+    }
+
     let activity = Activity::new();
 
     promise::spawn::spawn(async move {

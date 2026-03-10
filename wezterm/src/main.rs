@@ -23,11 +23,11 @@ mod cli;
 
 #[derive(Debug, Parser)]
 #[command(
-    about = "Wez's Terminal Emulator\nhttp://github.com/wezterm/wezterm",
+    about = "Ryngo Terminal\nhttps://github.com/MarshallDoyle/Marshall",
     version = wezterm_version()
 )]
 pub struct Opt {
-    /// Skip loading wezterm.lua
+    /// Skip loading ryngo.lua
     #[arg(long, short = 'n')]
     skip_config: bool,
 
@@ -107,7 +107,7 @@ enum SubCommand {
     #[command(name = "serial", about = "Open a serial port")]
     Serial(SerialCommand),
 
-    #[command(name = "connect", about = "Connect to wezterm multiplexer")]
+    #[command(name = "connect", about = "Connect to ryngo multiplexer")]
     Connect(ConnectCommand),
 
     #[command(name = "ls-fonts", about = "Display information about fonts")]
@@ -771,10 +771,11 @@ fn delegate_to_gui(saver: UmaskSaver) -> anyhow::Result<()> {
     // Restore the original umask
     drop(saver);
 
+    // RYNGO: spawn ryngo-gui instead of wezterm-gui
     let exe_name = if cfg!(windows) {
-        "wezterm-gui.exe"
+        "ryngo-gui.exe"
     } else {
-        "wezterm-gui"
+        "ryngo-gui"
     };
 
     let exe = std::env::current_exe()?

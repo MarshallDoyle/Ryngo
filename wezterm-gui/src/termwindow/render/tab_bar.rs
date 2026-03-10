@@ -23,8 +23,11 @@ impl crate::TermWindow {
 
         let palette = self.palette().clone();
         let tab_bar_height = self.tab_bar_pixel_height()?;
+        // RYNGO: When tab bar is at bottom, position it above the status bar
+        let ryngo_status_height = self.ryngo_status_bar_pixel_height();
         let tab_bar_y = if self.config.tab_bar_at_bottom {
-            ((self.dimensions.pixel_height as f32) - (tab_bar_height + border.bottom.get() as f32))
+            ((self.dimensions.pixel_height as f32)
+                - (tab_bar_height + ryngo_status_height + border.bottom.get() as f32))
                 .max(0.)
         } else {
             border.top.get() as f32

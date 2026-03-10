@@ -269,6 +269,10 @@ impl crate::TermWindow {
             self.paint_tab_bar(&mut layers).context("paint_tab_bar")?;
         }
 
+        // RYNGO: Always paint the bottom status bar
+        self.paint_ryngo_status_bar(&mut layers)
+            .context("paint_ryngo_status_bar")?;
+
         self.paint_window_borders(&mut layers)
             .context("paint_window_borders")?;
         drop(layers);

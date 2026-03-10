@@ -1,5 +1,5 @@
 [package]
-name = "wezterm-gui"
+name = "ryngo-gui"
 version = "0.1.0"
 authors = ["Wez Furlong <wez@wezfurlong.org>"]
 edition = "2018"
@@ -74,12 +74,15 @@ rangeset.workspace = true
 ratelim.workspace = true
 rayon.workspace = true
 regex.workspace = true
+ryngo-agent.workspace = true
+ryngo-ai.workspace = true
 serde = {workspace=true, features = ["rc", "derive"]}
 serde_json.workspace = true
 shlex.workspace = true
 smol.workspace = true
 tabout.workspace = true
 tempfile.workspace = true
+tokio.workspace = true
 terminfo.workspace = true
 termwiz-funcs.workspace = true
 termwiz.workspace = true

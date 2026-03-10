@@ -646,6 +646,12 @@ pub enum KeyAssignment {
     PromptInputLine(PromptInputLine),
     InputSelector(InputSelector),
     Confirmation(Confirmation),
+
+    // RYNGO: Toggle LLM chat mode on/off
+    ToggleLlmMode,
+    // RYNGO: Push-to-talk speech recognition
+    PushToTalkStart,
+    PushToTalkStop,
 }
 impl_lua_conversion_dynamic!(KeyAssignment);
 

@@ -4,7 +4,8 @@ use config::{GuiPosition, SshParameters};
 use std::ffi::OsString;
 use std::path::PathBuf;
 
-pub const DEFAULT_WINDOW_CLASS: &str = "org.wezfurlong.wezterm";
+// RYNGO: updated window class identifier
+pub const DEFAULT_WINDOW_CLASS: &str = "dev.ryngo.terminal";
 
 /// Helper for parsing config overrides
 pub fn name_equals_value(arg: &str) -> Result<(String, String), String> {

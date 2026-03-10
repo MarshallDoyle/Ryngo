@@ -1006,8 +1006,13 @@ impl Config {
         // multiple.  In addition, it spawns a lot of subprocesses,
         // so we do this bit "by-hand"
 
-        let mut paths = vec![PathPossibility::optional(HOME_DIR.join(".wezterm.lua"))];
+        // RYNGO: look for .ryngo.lua and ryngo.lua, with .wezterm.lua as fallback
+        let mut paths = vec![
+            PathPossibility::optional(HOME_DIR.join(".ryngo.lua")),
+            PathPossibility::optional(HOME_DIR.join(".wezterm.lua")),
+        ];
         for dir in CONFIG_DIRS.iter() {
+            paths.push(PathPossibility::optional(dir.join("ryngo.lua")));
             paths.push(PathPossibility::optional(dir.join("wezterm.lua")))
         }
 
@@ -1022,12 +1027,15 @@ impl Config {
             // dir as the executable that will take precedence.
             if let Ok(exe_name) = std::env::current_exe() {
                 if let Some(exe_dir) = exe_name.parent() {
-                    paths.insert(0, PathPossibility::optional(exe_dir.join("wezterm.lua")));
+                    paths.insert(0, PathPossibility::optional(exe_dir.join("ryngo.lua")));
                 }
             }
         }
-        if let Some(path) = std::env::var_os("WEZTERM_CONFIG_FILE") {
-            log::trace!("Note: WEZTERM_CONFIG_FILE is set in the environment");
+        // RYNGO: check RYNGO_CONFIG_FILE first, fall back to WEZTERM_CONFIG_FILE
+        if let Some(path) = std::env::var_os("RYNGO_CONFIG_FILE")
+            .or_else(|| std::env::var_os("WEZTERM_CONFIG_FILE"))
+        {
+            log::trace!("Note: RYNGO_CONFIG_FILE/WEZTERM_CONFIG_FILE is set in the environment");
             paths.insert(0, PathPossibility::required(path.into()));
         }
 
@@ -1058,6 +1066,9 @@ impl Config {
         // We didn't find (or were asked to skip) a wezterm.lua file, so
         // update the environment to make it simpler to understand this
         // state.
+        // RYNGO: clear both old and new env vars
+        std::env::remove_var("RYNGO_CONFIG_FILE");
+        std::env::remove_var("RYNGO_CONFIG_DIR");
         std::env::remove_var("WEZTERM_CONFIG_FILE");
         std::env::remove_var("WEZTERM_CONFIG_DIR");
 
@@ -1130,8 +1141,11 @@ impl Config {
                 // problems earlier than we use them.
                 let _ = cfg.key_bindings();
 
+                // RYNGO: set both old and new env vars for backward compat
+                std::env::set_var("RYNGO_CONFIG_FILE", p);
                 std::env::set_var("WEZTERM_CONFIG_FILE", p);
                 if let Some(dir) = p.parent() {
+                    std::env::set_var("RYNGO_CONFIG_DIR", dir);
                     std::env::set_var("WEZTERM_CONFIG_DIR", dir);
                 }
                 Ok(cfg)
@@ -1381,6 +1395,16 @@ impl Config {
         cfg.load_color_schemes(&cfg.compute_color_scheme_dirs())
             .ok();
 
+        // RYNGO: Register built-in Ryngo color scheme (Google dark palette)
+        if !cfg.color_schemes.contains_key("Ryngo") {
+            cfg.color_schemes
+                .insert("Ryngo".to_string(), crate::color::ryngo_palette());
+        }
+        // Set Ryngo as default scheme if user hasn't chosen one
+        if cfg.color_scheme.is_none() {
+            cfg.color_scheme = Some("Ryngo".to_string());
+        }
+
         if let Some(scheme) = cfg.color_scheme.as_ref() {
             match cfg.resolve_color_scheme() {
                 None => {
@@ -1599,7 +1623,8 @@ impl Config {
         cmd.env("COLORTERM", "truecolor");
         // TERM_PROGRAM and TERM_PROGRAM_VERSION are an emerging
         // de-facto standard for identifying the terminal.
-        cmd.env("TERM_PROGRAM", "WezTerm");
+        // RYNGO: identify as Ryngo to child processes
+        cmd.env("TERM_PROGRAM", "Ryngo");
         cmd.env("TERM_PROGRAM_VERSION", crate::wezterm_version());
     }
 }

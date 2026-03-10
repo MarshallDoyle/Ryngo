@@ -5,8 +5,11 @@ use std::path::{Path, PathBuf};
 pub fn set_wezterm_executable() {
     if let Ok(exe) = std::env::current_exe() {
         if let Some(dir) = exe.parent() {
+            // RYNGO: set both old and new env vars for backward compat
+            std::env::set_var("RYNGO_EXECUTABLE_DIR", dir);
             std::env::set_var("WEZTERM_EXECUTABLE_DIR", dir);
         }
+        std::env::set_var("RYNGO_EXECUTABLE", &exe);
         std::env::set_var("WEZTERM_EXECUTABLE", exe);
     }
 }
@@ -86,6 +89,8 @@ pub fn fixup_appimage() {
         /// However, if we are using the system wezterm to spawn a portable
         /// AppImage then we want these to not take effect.
         fn clean_wezterm_config_env() {
+            std::env::remove_var("RYNGO_CONFIG_FILE");
+            std::env::remove_var("RYNGO_CONFIG_DIR");
             std::env::remove_var("WEZTERM_CONFIG_FILE");
             std::env::remove_var("WEZTERM_CONFIG_DIR");
         }

@@ -201,10 +201,13 @@ impl super::TermWindow {
                 config.window_padding.bottom.evaluate_as_pixels(v_context) as usize;
             let padding_right = effective_right_padding(&config, h_context);
 
+            // RYNGO: Include status bar height in pixel_height calculation
+            let ryngo_status_height = self.ryngo_status_bar_pixel_height() as usize;
             let pixel_height = (rows * self.render_metrics.cell_size.height as usize)
                 + (padding_top + padding_bottom)
                 + (border.top + border.bottom).get() as usize
-                + tab_bar_height as usize;
+                + tab_bar_height as usize
+                + ryngo_status_height;
 
             let pixel_width = (cols * self.render_metrics.cell_size.width as usize)
                 + (padding_left + padding_right)
@@ -224,7 +227,7 @@ impl super::TermWindow {
                 padding_right: padding_right,
                 padding_bottom: padding_bottom,
                 border: border,
-                tab_bar_height: tab_bar_height as usize,
+                tab_bar_height: tab_bar_height as usize + ryngo_status_height,
             };
 
             (size, dims, ri_calc)
@@ -251,13 +254,16 @@ impl super::TermWindow {
                 (padding_left + padding_right) as usize
                     + (border.left + border.right).get() as usize,
             );
+            // RYNGO: Include status bar height when computing available height
+            let ryngo_status_height = self.ryngo_status_bar_pixel_height() as usize;
             let avail_height = dimensions
                 .pixel_height
                 .saturating_sub(
                     (padding_top + padding_bottom) as usize
                         + (border.top + border.bottom).get() as usize,
                 )
-                .saturating_sub(tab_bar_height as usize);
+                .saturating_sub(tab_bar_height as usize)
+                .saturating_sub(ryngo_status_height);
 
             let rows = avail_height / self.render_metrics.cell_size.height as usize;
             let cols = avail_width / self.render_metrics.cell_size.width as usize;
@@ -282,7 +288,7 @@ impl super::TermWindow {
                 padding_right: padding_right,
                 padding_bottom: padding_bottom,
                 border: border,
-                tab_bar_height: tab_bar_height as usize,
+                tab_bar_height: tab_bar_height as usize + ryngo_status_height,
             };
 
             (size, *dimensions, ri_calc)
@@ -509,6 +515,8 @@ impl super::TermWindow {
         let padding_top = config.window_padding.top.evaluate_as_pixels(v_context) as usize;
         let padding_bottom = config.window_padding.bottom.evaluate_as_pixels(v_context) as usize;
 
+        // RYNGO: Include status bar height in config_was_reloaded dimensions
+        let ryngo_status_height = self.ryngo_status_bar_pixel_height() as usize;
         let dimensions = Dimensions {
             pixel_width: ((terminal_size.cols as usize * render_metrics.cell_size.width as usize)
                 + padding_left
@@ -516,7 +524,8 @@ impl super::TermWindow {
             pixel_height: ((terminal_size.rows as usize * render_metrics.cell_size.height as usize)
                 + padding_top
                 + padding_bottom) as usize
-                + tab_bar_height,
+                + tab_bar_height
+                + ryngo_status_height,
             dpi: self.dimensions.dpi,
         };
 

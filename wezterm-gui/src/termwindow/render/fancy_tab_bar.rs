@@ -445,11 +445,13 @@ impl crate::TermWindow {
             &tabs,
         )?;
 
+        // RYNGO: When tab bar is at bottom, position above the status bar
+        let ryngo_status_height = self.ryngo_status_bar_pixel_height();
         computed.translate(euclid::vec2(
             0.,
             if self.config.tab_bar_at_bottom {
                 self.dimensions.pixel_height as f32
-                    - (computed.bounds.height() + border.bottom.get() as f32)
+                    - (computed.bounds.height() + ryngo_status_height + border.bottom.get() as f32)
             } else {
                 border.top.get() as f32
             },

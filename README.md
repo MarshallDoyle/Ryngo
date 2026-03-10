@@ -1,40 +1,60 @@
-# Wez's Terminal
+# Ryngo
 
-<img height="128" alt="WezTerm Icon" src="https://raw.githubusercontent.com/wezterm/wezterm/main/assets/icon/wezterm-icon.svg" align="left"> *A GPU-accelerated cross-platform terminal emulator and multiplexer written by <a href="https://github.com/wez">@wez</a> and implemented in <a href="https://www.rust-lang.org/">Rust</a>*
+A GPU-accelerated terminal emulator for the modern workflow. Built on [WezTerm](https://github.com/wezterm/wezterm), implemented in [Rust](https://www.rust-lang.org/).
 
-User facing docs and guide at: https://wezterm.org/
+Local AI models for voice, vision, and natural language — a better way to interact with agents like Claude Code and Codex.
 
-![Screenshot](docs/screenshots/two.png)
+## Features
 
-*Screenshot of wezterm on macOS, running vim*
+- GPU-accelerated rendering via wgpu
+- Cross-platform: macOS (Apple Silicon) and Windows
+- Embedded local AI models (no cloud, no accounts):
+  - **Speech-to-Text**: whisper.cpp via whisper-rs
+  - **LLM + Vision**: Gemma 3n via llama.cpp
+  - **Text-to-Speech**: Orpheus 3B via llama.cpp
+- Agent-aware: detects and tracks Claude Code / Codex sessions
+- Full terminal emulation (tabs, splits, multiplexing)
+- Lua-based configuration (`ryngo.lua`)
 
-## Installation
+## Building
 
-https://wezterm.org/installation
+### Prerequisites
 
-## Getting help
+```bash
+# macOS
+brew install cmake pkg-config
 
-This is a spare time project, so please bear with me.  There are a couple of channels for support:
+# Windows: Visual Studio 2022 Build Tools, CMake, Rust
+```
 
-* You can use the [GitHub issue tracker](https://github.com/wezterm/wezterm/issues) to see if someone else has a similar issue, or to file a new one.
-* Start or join a thread in our [GitHub Discussions](https://github.com/wezterm/wezterm/discussions); if you have general
-  questions or want to chat with other wezterm users, you're welcome here!
-* There is a [Matrix room via Element.io](https://app.element.io/#/room/#wezterm:matrix.org)
-  for (potentially!) real time discussions.
+### Build
 
-The GitHub Discussions and Element/Gitter rooms are better suited for questions
-than bug reports, but don't be afraid to use whichever you are most comfortable
-using and we'll work it out.
+```bash
+cargo build --release -p ryngo -p ryngo-gui -p ryngo-mux-server
+```
 
-## Supporting the Project
+### Run
 
-If you use and like WezTerm, please consider sponsoring it: your support helps
-to cover the fees required to maintain the project and to validate the time
-spent working on it!
+```bash
+./target/release/ryngo-gui
+```
 
-[Read more about sponsoring](https://wezterm.org/sponsor.html).
+## Configuration
 
-* [![Sponsor WezTerm](https://img.shields.io/github/sponsors/wez?label=Sponsor%20WezTerm&logo=github&style=for-the-badge)](https://github.com/sponsors/wez)
-* [Patreon](https://patreon.com/WezFurlong)
-* [Ko-Fi](https://ko-fi.com/wezfurlong)
-* [Liberapay](https://liberapay.com/wez)
+Ryngo uses Lua configuration files. Create `~/.config/ryngo/ryngo.lua`:
+
+```lua
+local ryngo = require 'ryngo'
+local config = ryngo.config_builder()
+
+config.font_size = 14.0
+config.color_scheme = 'Catppuccin Mocha'
+
+return config
+```
+
+Existing WezTerm configurations are supported via backward compatibility (`local wezterm = require 'wezterm'` still works).
+
+## License
+
+MIT

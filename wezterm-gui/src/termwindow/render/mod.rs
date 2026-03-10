@@ -42,6 +42,7 @@ pub mod paint;
 pub mod pane;
 pub mod screen_line;
 pub mod split;
+pub mod status_bar;
 pub mod tab_bar;
 pub mod window_buttons;
 
@@ -371,6 +372,7 @@ impl crate::TermWindow {
             } else {
                 padding_right.evaluate_as_pixels(h_context)
             };
+        // RYNGO: Include status bar height in vertical gap calculation
         let vertical_gap = self.dimensions.pixel_height as f32
             - self.terminal_size.pixel_height as f32
             - padding_top
@@ -379,7 +381,8 @@ impl crate::TermWindow {
                 self.tab_bar_pixel_height().unwrap_or(0.)
             } else {
                 0.
-            };
+            }
+            - self.ryngo_status_bar_pixel_height();
         let left_gap = match self.config.window_content_alignment.horizontal {
             HorizontalWindowContentAlignment::Left => 0.,
             HorizontalWindowContentAlignment::Center => (horizontal_gap / 2.).round(),

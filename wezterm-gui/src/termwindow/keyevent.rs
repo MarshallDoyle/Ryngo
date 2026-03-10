@@ -1,6 +1,7 @@
 use crate::termwindow::InputMap;
 use ::window::{
-    DeadKeyStatus, KeyCode, KeyEvent, KeyboardLedStatus, Modifiers, RawKeyEvent, WindowOps,
+    DeadKeyStatus, KeyCode, KeyEvent, KeyboardLedStatus, Modifiers, PhysKeyCode, RawKeyEvent,
+    WindowOps,
 };
 use anyhow::Context;
 use config::keyassignment::{KeyAssignment, KeyTableEntry};
@@ -463,6 +464,30 @@ impl super::TermWindow {
             None => return,
         };
 
+        // RYNGO: Push-to-talk — detect Shift+Space key-down AND key-up.
+        // Normal keybindings only fire on key-down. For push-to-talk we need
+        // key-up to stop recording and trigger transcription.
+        // Check both the composed key and the physical key code for Space.
+        let is_space = matches!(key.key, KeyCode::Char(' '))
+            || key.phys_code == Some(PhysKeyCode::Space);
+        let shift_only = key.modifiers.contains(Modifiers::SHIFT)
+            && !key
+                .modifiers
+                .intersects(Modifiers::CTRL | Modifiers::ALT | Modifiers::SUPER);
+        if is_space && shift_only {
+            log::info!(
+                "RYNGO PTT: key_is_down={} key={:?} phys={:?}",
+                key.key_is_down, key.key, key.phys_code,
+            );
+            if key.key_is_down {
+                self.perform_key_assignment(&pane, &config::keyassignment::KeyAssignment::PushToTalkStart).ok();
+            } else {
+                self.perform_key_assignment(&pane, &config::keyassignment::KeyAssignment::PushToTalkStop).ok();
+            }
+            key.set_handled();
+            return;
+        }
+
         // First, try to match raw physical key
         let phys_key = match &key.key {
             phys @ KeyCode::Physical(_) => Some(phys.clone()),
@@ -601,6 +626,14 @@ impl super::TermWindow {
             Some(pane) => pane,
             None => return,
         };
+
+        // RYNGO: Command mode interception for ':' commands.
+        // When active, all input is buffered until Enter (execute) or Escape (cancel).
+        if window_key.key_is_down {
+            if self.handle_ryngo_command_mode(&pane, &window_key, context) {
+                return;
+            }
+        }
 
         // The leader key is a kind of modal modifier key.
         // It is allowed to be active for up to the leader timeout duration,
@@ -865,5 +898,203 @@ impl super::TermWindow {
             WK::KeyPadPageDown => KC::KeyPadPageDown,
         };
         Key::Code(code)
+    }
+
+    // RYNGO: Command mode handler for ':' terminal commands.
+    // Returns true if the key event was consumed by command mode.
+    fn handle_ryngo_command_mode(
+        &mut self,
+        pane: &Arc<dyn mux::pane::Pane>,
+        key: &KeyEvent,
+        context: &dyn WindowOps,
+    ) -> bool {
+        use ::window::KeyCode as WK;
+
+        let win_key = self.win_key_code_to_termwiz_key_code(&key.key);
+
+        if self.ryngo_command_active {
+            // We're already in command mode — handle input
+            match &key.key {
+                WK::Char('\r') | WK::Char('\n') => {
+                    // Enter: execute the command
+                    let cmd = self.ryngo_command_buffer.clone();
+                    self.ryngo_command_active = false;
+                    self.ryngo_command_buffer.clear();
+                    self.execute_ryngo_command(pane, &cmd);
+                    context.invalidate();
+                    return true;
+                }
+                WK::Char('\u{1b}') => {
+                    // Escape: cancel command mode
+                    self.ryngo_command_active = false;
+                    self.ryngo_command_buffer.clear();
+                    // Write a newline to clean up the display
+                    pane.writer().write_all(b"\r\n").ok();
+                    context.invalidate();
+                    return true;
+                }
+                WK::Char('\u{08}') => {
+                    // Backspace
+                    if self.ryngo_command_buffer.len() > 1 {
+                        self.ryngo_command_buffer.pop();
+                        // Erase the character visually: backspace, space, backspace
+                        pane.writer().write_all(b"\x08 \x08").ok();
+                    } else {
+                        // Buffer only has ':', cancel command mode
+                        self.ryngo_command_active = false;
+                        self.ryngo_command_buffer.clear();
+                        pane.writer().write_all(b"\x08 \x08").ok();
+                    }
+                    context.invalidate();
+                    return true;
+                }
+                _ => {}
+            }
+
+            // Handle composed text (regular characters)
+            if let Key::Composed(ref s) = win_key {
+                self.ryngo_command_buffer.push_str(s);
+                // Echo the character so user sees what they type
+                pane.writer().write_all(s.as_bytes()).ok();
+                context.invalidate();
+                return true;
+            }
+
+            // Handle Ctrl+U (kill line)
+            if matches!(&key.key, WK::Char('u'))
+                && key.modifiers.contains(Modifiers::CTRL)
+            {
+                // Erase the visible command
+                let len = self.ryngo_command_buffer.len();
+                for _ in 0..len {
+                    pane.writer().write_all(b"\x08 \x08").ok();
+                }
+                self.ryngo_command_active = false;
+                self.ryngo_command_buffer.clear();
+                context.invalidate();
+                return true;
+            }
+
+            // Swallow other keys while in command mode (arrows, etc.)
+            return true;
+        }
+
+        // Not in command mode — check if this keypress starts one.
+        // ':' at the start of input activates command mode.
+        if let Key::Composed(ref s) = win_key {
+            if s == ":" && key.modifiers.is_empty() {
+                self.ryngo_command_active = true;
+                self.ryngo_command_buffer = ":".to_string();
+                // Echo the ':' so user sees it
+                pane.writer().write_all(b":").ok();
+                context.invalidate();
+                return true;
+            }
+        }
+
+        false
+    }
+
+    // RYNGO: Execute a parsed ':' command.
+    fn execute_ryngo_command(
+        &mut self,
+        pane: &Arc<dyn mux::pane::Pane>,
+        input: &str,
+    ) {
+        use ryngo_agent::commands::{parse_command, format_agents_list, Command};
+        use config::keyassignment::SpawnCommand;
+        use crate::spawn::SpawnWhere;
+        use std::path::PathBuf;
+
+        // Clear the command line display
+        pane.writer().write_all(b"\r\n").ok();
+
+        match parse_command(input) {
+            Some(Command::SpawnClaudeCode { working_dir }) => {
+                log::info!("RYNGO: :spawn cc working_dir={:?}", working_dir);
+                let spawn = SpawnCommand {
+                    args: Some(vec!["claude".to_string()]),
+                    cwd: working_dir.map(PathBuf::from),
+                    ..Default::default()
+                };
+                self.spawn_command(&spawn, SpawnWhere::NewTab);
+            }
+            Some(Command::SpawnCodex { working_dir }) => {
+                log::info!("RYNGO: :spawn codex working_dir={:?}", working_dir);
+                let spawn = SpawnCommand {
+                    args: Some(vec!["codex".to_string()]),
+                    cwd: working_dir.map(PathBuf::from),
+                    ..Default::default()
+                };
+                self.spawn_command(&spawn, SpawnWhere::NewTab);
+            }
+            Some(Command::ListAgents) => {
+                let output = format_agents_list();
+                pane.writer().write_all(output.as_bytes()).ok();
+            }
+            Some(Command::Kill { pane_id }) => {
+                let mux = mux::Mux::get();
+                if mux.get_pane(pane_id).is_some() {
+                    mux.remove_pane(pane_id);
+                    let msg = format!("Killed pane {}\r\n", pane_id);
+                    pane.writer().write_all(msg.as_bytes()).ok();
+                } else {
+                    let msg = format!("No pane with ID {}\r\n", pane_id);
+                    pane.writer().write_all(msg.as_bytes()).ok();
+                }
+            }
+            Some(Command::Models) => {
+                let status = if let Ok(state) = crate::ryngo_state::RYNGO_STATE.lock() {
+                    let mut s = String::new();
+                    s.push_str("Ryngo AI Models:\r\n");
+                    s.push_str("-----------------\r\n");
+                    if state.model_healthy {
+                        s.push_str("  Gemma 3n (E4B): loaded, healthy\r\n");
+                        if state.context_total > 0 {
+                            let pct = (state.context_used as f64 / state.context_total as f64 * 100.0) as u32;
+                            s.push_str(&format!("    Context: {}/{} ({}%)\r\n",
+                                state.context_used, state.context_total, pct));
+                        }
+                    } else if state.model_loading {
+                        s.push_str("  Gemma 3n (E4B): loading into GPU...\r\n");
+                    } else if state.model_downloading {
+                        s.push_str(&format!("  Gemma 3n (E4B): downloading {}%\r\n",
+                            state.download_pct));
+                    } else {
+                        s.push_str("  Gemma 3n: not loaded\r\n");
+                    }
+                    s
+                } else {
+                    "Unable to read model state\r\n".to_string()
+                };
+                pane.writer().write_all(status.as_bytes()).ok();
+            }
+            Some(Command::Voice { enabled }) => {
+                let msg = if enabled {
+                    "Voice features enabled\r\n"
+                } else {
+                    "Voice features disabled\r\n"
+                };
+                pane.writer().write_all(msg.as_bytes()).ok();
+            }
+            Some(Command::TtsVoice { ref voice }) => {
+                let msg = format!("TTS voice set to: {}\r\n", voice);
+                pane.writer().write_all(msg.as_bytes()).ok();
+            }
+            None => {
+                let msg = format!(
+                    "Unknown command: {}\r\n\
+                     Available commands:\r\n\
+                     \x20 :spawn cc [path]   - Launch Claude Code in new tab\r\n\
+                     \x20 :spawn codex [path] - Launch Codex in new tab\r\n\
+                     \x20 :agents            - List detected AI agents\r\n\
+                     \x20 :kill <pane_id>     - Kill an agent pane\r\n\
+                     \x20 :models            - Show loaded AI models\r\n\
+                     \x20 :voice <on|off>    - Toggle voice features\r\n",
+                    input
+                );
+                pane.writer().write_all(msg.as_bytes()).ok();
+            }
+        }
     }
 }

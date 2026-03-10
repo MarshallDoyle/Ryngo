@@ -16,6 +16,8 @@ members = [
   "wezterm-ssh",
   "wezterm-surface",
   "wezterm-uds",
+  "ryngo-ai",
+  "ryngo-agent",
 ]
 resolver = "2"
 exclude = [
@@ -65,6 +67,7 @@ clap_complete_fig = "4.0"
 clipboard-win = "2.2"
 cocoa = "=0.25.0"
 codec = { path = "codec" }
+cpal = "0.15"
 color-funcs = { path = "lua-api-crates/color-funcs" }
 colorgrad = "0.6"
 config = { path = "config" }
@@ -182,6 +185,8 @@ rayon = "1.10"
 rcgen = "0.12"
 regex = "1"
 reqwest = "0.12"
+ryngo-agent = { path = "ryngo-agent" }
+ryngo-ai = { path = "ryngo-ai" }
 resize = "0.5"
 rstest = "0.21"
 rusqlite = "0.32"
@@ -234,6 +239,7 @@ uuid = "1.13"
 varbincode = "0.1"
 vtparse = { version="0.7", path="vtparse", default-features=false }
 walkdir = "2"
+whisper-rs = "0.14"
 wayland-backend = "0.3.5"
 wayland-client = "0.31"
 wayland-egl = "0.32"

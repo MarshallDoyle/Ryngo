@@ -329,6 +329,9 @@ fn read_from_pane_pty(
             Ok(size) => {
                 histogram!("read_from_pane_pty.bytes.rate").record(size as f64);
                 log::trace!("read_pty pane {pane_id} read {size} bytes");
+                // RYNGO: Feed raw PTY bytes to the agent detector for
+                // Claude Code / Codex pattern matching.
+                ryngo_agent::GLOBAL_DETECTOR.on_output(pane_id, &buf[..size]);
                 if let Err(err) = tx.write_all(&buf[..size]) {
                     error!(
                         "read_pty failed to write to parser: pane {} {:?}",
@@ -339,6 +342,9 @@ fn read_from_pane_pty(
             }
         }
     }
+
+    // RYNGO: Mark the agent as exited when the PTY read loop ends.
+    ryngo_agent::GLOBAL_DETECTOR.mark_exited(pane_id);
 
     match exit_behavior.unwrap_or_else(|| configuration().exit_behavior) {
         ExitBehavior::Hold | ExitBehavior::CloseOnCleanExit => {
@@ -811,6 +817,8 @@ impl Mux {
 
     fn remove_pane_internal(&self, pane_id: PaneId) {
         log::debug!("removing pane {}", pane_id);
+        // RYNGO: Clean up agent detection state for this pane.
+        ryngo_agent::GLOBAL_DETECTOR.remove_pane(pane_id);
         let mut changed = false;
         if let Some(pane) = self.panes.write().remove(&pane_id).clone() {
             log::debug!("killing pane {}", pane_id);

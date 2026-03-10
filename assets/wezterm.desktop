@@ -1,11 +1,11 @@
 [Desktop Entry]
-Name=WezTerm
-Comment=Wez's Terminal Emulator
+Name=Ryngo
+Comment=Ryngo Terminal
 Keywords=shell;prompt;command;commandline;cmd;
-Icon=org.wezfurlong.wezterm
-StartupWMClass=org.wezfurlong.wezterm
-TryExec=wezterm
-Exec=wezterm start --cwd .
+Icon=dev.ryngo.terminal
+StartupWMClass=dev.ryngo.terminal
+TryExec=ryngo
+Exec=ryngo start --cwd .
 Type=Application
 Categories=System;TerminalEmulator;Utility;
 Terminal=false

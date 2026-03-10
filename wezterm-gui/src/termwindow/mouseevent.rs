@@ -300,10 +300,12 @@ impl super::TermWindow {
         } else {
             0.
         };
+        // RYNGO: Include status bar height in bottom_bar_height
+        let ryngo_status_height = self.ryngo_status_bar_pixel_height();
         let (top_bar_height, bottom_bar_height) = if self.config.tab_bar_at_bottom {
-            (0.0, tab_bar_height)
+            (0.0, tab_bar_height + ryngo_status_height)
         } else {
-            (tab_bar_height, 0.0)
+            (tab_bar_height, ryngo_status_height)
         };
 
         let border = self.get_os_border();

@@ -480,6 +480,12 @@ impl LocalDomain {
             cmd.env("WEZTERM_UNIX_SOCKET", sock);
         }
         cmd.env("WEZTERM_PANE", pane_id.to_string());
+        // RYNGO: Signal to shell integration scripts that this is a Ryngo terminal
+        cmd.env("RYNGO_TERMINAL", "1");
+        // RYNGO: Remove Claude Code env vars so agents can launch inside Ryngo
+        // even when Ryngo itself was started from within a Claude Code session.
+        cmd.env_remove("CLAUDECODE");
+        cmd.env_remove("CLAUDE_CODE_ENTRYPOINT");
         if let Some(agent) = Mux::get().agent.as_ref() {
             cmd.env("SSH_AUTH_SOCK", agent.path());
         }

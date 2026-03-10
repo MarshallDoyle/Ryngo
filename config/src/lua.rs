@@ -40,6 +40,13 @@ pub fn get_or_create_module<'lua>(lua: &'lua Lua, name: &str) -> anyhow::Result<
         Value::Nil => {
             let module = lua.create_table()?;
             loaded.set(name, module.clone())?;
+            // RYNGO: register "wezterm" as alias for "ryngo" for backward compat
+            if name == "ryngo" {
+                let wezterm_entry: Value = loaded.get("wezterm")?;
+                if matches!(wezterm_entry, Value::Nil) {
+                    loaded.set("wezterm", module.clone())?;
+                }
+            }
             Ok(module)
         }
         Value::Table(table) => Ok(table),
@@ -52,21 +59,22 @@ pub fn get_or_create_module<'lua>(lua: &'lua Lua, name: &str) -> anyhow::Result<
     }
 }
 
+// RYNGO: uses "ryngo" as primary module; alias to "wezterm" is handled by get_or_create_module
 pub fn get_or_create_sub_module<'lua>(
     lua: &'lua Lua,
     name: &str,
 ) -> anyhow::Result<mlua::Table<'lua>> {
-    let wezterm_mod = get_or_create_module(lua, "wezterm")?;
-    let sub = wezterm_mod.get(name)?;
+    let ryngo_mod = get_or_create_module(lua, "ryngo")?;
+    let sub = ryngo_mod.get(name)?;
     match sub {
         Value::Nil => {
             let sub = lua.create_table()?;
-            wezterm_mod.set(name, sub.clone())?;
+            ryngo_mod.set(name, sub.clone())?;
             Ok(sub)
         }
         Value::Table(sub) => Ok(sub),
         wat => anyhow::bail!(
-            "cannot register module wezterm.{name} as it is already set to a value of type {}",
+            "cannot register module ryngo.{name} as it is already set to a value of type {}",
             wat.type_name()
         ),
     }

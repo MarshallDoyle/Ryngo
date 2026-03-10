@@ -14,9 +14,9 @@ check:
 	cargo check -p wezterm-ssh
 
 build:
-	cargo build $(BUILD_OPTS) -p wezterm
-	cargo build $(BUILD_OPTS) -p wezterm-gui
-	cargo build $(BUILD_OPTS) -p wezterm-mux-server
+	cargo build $(BUILD_OPTS) -p ryngo
+	cargo build $(BUILD_OPTS) -p ryngo-gui
+	cargo build $(BUILD_OPTS) -p ryngo-mux-server
 	cargo build $(BUILD_OPTS) -p strip-ansi-escapes
 
 fmt:

@@ -463,6 +463,12 @@ pub struct TermWindow {
     gl: Option<Rc<glium::backend::Context>>,
     webgpu: Option<Rc<WebGpuState>>,
     config_subscription: Option<config::ConfigSubscription>,
+
+    // RYNGO: Command mode state for ':' commands (e.g. :spawn cc, :agents, :kill).
+    // When the user types ':' at the terminal, we intercept input and buffer it
+    // until Enter (execute) or Escape (cancel).
+    ryngo_command_active: bool,
+    ryngo_command_buffer: String,
 }
 
 impl TermWindow {
@@ -650,12 +656,15 @@ impl TermWindow {
         let padding_top = config.window_padding.top.evaluate_as_pixels(v_context) as usize;
         let padding_bottom = config.window_padding.bottom.evaluate_as_pixels(v_context) as usize;
 
+        // RYNGO: Include bottom status bar height in initial window dimensions
+        let ryngo_status_height = render_metrics.cell_size.height as usize;
         let mut dimensions = Dimensions {
             pixel_width: (terminal_size.pixel_width + padding_left + padding_right) as usize,
             pixel_height: ((terminal_size.rows * render_metrics.cell_size.height as usize)
                 + padding_top
                 + padding_bottom) as usize
-                + tab_bar_height,
+                + tab_bar_height
+                + ryngo_status_height,
             dpi,
         };
 
@@ -685,6 +694,9 @@ impl TermWindow {
             last_frame_duration: Duration::ZERO,
             fps: 0.,
             config_subscription: None,
+            // RYNGO: Command mode starts inactive
+            ryngo_command_active: false,
+            ryngo_command_buffer: String::new(),
             os_parameters: None,
             gl: None,
             webgpu: None,
@@ -1971,8 +1983,11 @@ impl TermWindow {
 
         let border = self.get_os_border();
         let tab_bar_height = self.tab_bar_pixel_height().unwrap_or(0.);
+        // RYNGO: When tab bar is at bottom, position it above the status bar
+        let ryngo_status_height = self.ryngo_status_bar_pixel_height();
         let tab_bar_y = if self.config.tab_bar_at_bottom {
-            ((self.dimensions.pixel_height as f32) - (tab_bar_height + border.bottom.get() as f32))
+            ((self.dimensions.pixel_height as f32)
+                - (tab_bar_height + ryngo_status_height + border.bottom.get() as f32))
                 .max(0.)
         } else {
             border.top.get() as f32
@@ -2050,23 +2065,27 @@ impl TermWindow {
             }
         };
 
+        // RYNGO: Window title — just "Ryngo" when a plain shell is running,
+        // "Ryngo — <program>" when something specific is running (e.g. vim, ssh)
         let title = match title {
             Some(title) => title,
             None => {
-                if let (Some(pos), Some(tab)) = (active_pane, active_tab) {
-                    if num_tabs == 1 {
-                        format!("{}{}", if pos.is_zoomed { "[Z] " } else { "" }, pos.title)
+                if let (Some(pos), Some(_tab)) = (active_pane, active_tab) {
+                    let is_shell = matches!(
+                        pos.title.as_str(),
+                        "zsh" | "bash" | "fish" | "sh" | "pwsh" | "powershell" | "cmd" | ""
+                    );
+                    if is_shell {
+                        "Ryngo".to_string()
                     } else {
                         format!(
-                            "{}[{}/{}] {}",
+                            "Ryngo \u{2014} {}{}",
                             if pos.is_zoomed { "[Z] " } else { "" },
-                            tab.tab_index + 1,
-                            num_tabs,
                             pos.title
                         )
                     }
                 } else {
-                    "".to_string()
+                    "Ryngo".to_string()
                 }
             }
         };
@@ -3162,6 +3181,104 @@ impl TermWindow {
             PromptInputLine(args) => self.show_prompt_input_line(args),
             InputSelector(args) => self.show_input_selector(args),
             Confirmation(args) => self.show_confirmation(args),
+            // RYNGO: Push-to-talk — start recording from microphone
+            PushToTalkStart => {
+                if let Ok(mut state) = crate::ryngo_state::RYNGO_STATE.lock() {
+                    state.mic_active = true;
+                }
+                if !crate::ryngo_state::STT_HANDLE.start_recording() {
+                    log::warn!("STT engine not loaded yet — cannot record");
+                    if let Ok(mut state) = crate::ryngo_state::RYNGO_STATE.lock() {
+                        state.mic_active = false;
+                    }
+                }
+                if let Some(w) = self.window.as_ref() {
+                    w.invalidate();
+                }
+            }
+            // RYNGO: Push-to-talk — stop recording and transcribe
+            PushToTalkStop => {
+                if let Ok(mut state) = crate::ryngo_state::RYNGO_STATE.lock() {
+                    state.mic_active = false;
+                }
+                if let Some(w) = self.window.as_ref() {
+                    w.invalidate();
+                }
+                // Transcribe on background thread, then inject text back on main thread
+                let pane_id = pane.pane_id();
+                std::thread::Builder::new()
+                    .name("ryngo-stt-transcribe".to_string())
+                    .spawn(move || {
+                        match crate::ryngo_state::STT_HANDLE.stop_and_transcribe() {
+                            Ok(text) if !text.trim().is_empty() => {
+                                let trimmed = text.trim().to_string();
+                                // Inject text on the main thread where Mux is available
+                                promise::spawn::spawn_into_main_thread(async move {
+                                    let mux = Mux::get();
+                                    if let Some(pane) = mux.get_pane(pane_id) {
+                                        let mut writer = pane.writer();
+                                        if let Err(e) =
+                                            writer.write_all(trimmed.as_bytes())
+                                        {
+                                            log::error!(
+                                                "STT: failed to inject text into pane: {:#}",
+                                                e
+                                            );
+                                        } else {
+                                            log::info!(
+                                                "STT: injected {:?} into pane",
+                                                trimmed
+                                            );
+                                        }
+                                    }
+                                })
+                                .detach();
+                            }
+                            Ok(_) => {
+                                log::info!("STT: no speech detected");
+                            }
+                            Err(e) => {
+                                log::error!("STT transcription failed: {:#}", e);
+                            }
+                        }
+                    })
+                    .ok();
+            }
+            // RYNGO: Toggle LLM chat overlay on/off
+            ToggleLlmMode => {
+                let was_active = crate::ryngo_state::RYNGO_STATE
+                    .lock()
+                    .map(|s| s.llm_mode_active)
+                    .unwrap_or(false);
+                let mux = Mux::get();
+                let tab = mux.get_active_tab_for_window(self.mux_window_id);
+
+                if was_active {
+                    // Turning OFF: reset flag, cancel overlay
+                    if let Ok(mut state) = crate::ryngo_state::RYNGO_STATE.lock() {
+                        state.llm_mode_active = false;
+                    }
+                    if let Some(tab) = tab {
+                        self.cancel_overlay_for_tab(tab.tab_id(), None);
+                    }
+                } else {
+                    // Turning ON: set flag, spawn overlay
+                    if let Ok(mut state) = crate::ryngo_state::RYNGO_STATE.lock() {
+                        state.llm_mode_active = true;
+                    }
+                    if let Some(tab) = tab {
+                        let (overlay, future) =
+                            start_overlay(self, &tab, move |tab_id, term| {
+                                crate::overlay::llm_chat::run_llm_chat(term, tab_id)
+                            });
+                        self.assign_overlay(tab.tab_id(), overlay);
+                        promise::spawn::spawn(future).detach();
+                    }
+                }
+                if let Some(w) = self.window.as_ref() {
+                    w.invalidate();
+                }
+            }
         };
         Ok(PerformAssignmentResult::Handled)
     }
