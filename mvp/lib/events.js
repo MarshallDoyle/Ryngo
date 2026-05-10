@@ -495,11 +495,16 @@ async function createSchema() {
 }
 
 function poolOptions() {
-  const out = { connectionString: process.env.DATABASE_URL };
   if (process.env.CLOUD_SQL_CONNECTION_NAME) {
-    out.host = `/cloudsql/${process.env.CLOUD_SQL_CONNECTION_NAME}`;
+    const url = new URL(process.env.DATABASE_URL);
+    return {
+      user: decodeURIComponent(url.username),
+      password: decodeURIComponent(url.password),
+      database: url.pathname.replace(/^\//, ""),
+      host: `/cloudsql/${process.env.CLOUD_SQL_CONNECTION_NAME}`,
+    };
   }
-  return out;
+  return { connectionString: process.env.DATABASE_URL };
 }
 
 async function safeQuery(sql, params) {
