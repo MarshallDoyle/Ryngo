@@ -25,6 +25,7 @@ import { recordAnalysisRun, recordMcpToolCall, recordRejectedSubmission } from "
 import { preflightReason } from "./github.js";
 import * as intentsLib from "./intents.js";
 import * as annotationsLib from "./annotations.js";
+import * as ryngoMdStoreLib from "./ryngo-md-store.js";
 
 const WIDGET_URI = "ui://widget/ryngo-viewer.html";
 
@@ -209,6 +210,16 @@ const BASE_TOOLS = [
     name: "list_annotations",
     description:
       "Read the freeform `.ryngo/annotations.md` file for a repo plus per-node counts.",
+    inputSchema: {
+      type: "object",
+      properties: { repo: { type: "string" } },
+      required: ["repo"],
+    },
+  },
+  {
+    name: "read_ryngo_md",
+    description:
+      "Read the per-repo `Ryngo.md` manifest. Returns the raw markdown plus the parsed `comments` and `suppressions` keyed by node id. The MCP server already filters suppressed warnings out of every IR-returning tool; agents can call this to learn the user's intent or read freeform notes a teammate left on a node.",
     inputSchema: {
       type: "object",
       properties: { repo: { type: "string" } },
@@ -478,6 +489,30 @@ export async function dispatch(name, args, { enableWidgets = false } = {}) {
         repo: args.repo,
         countsByNode: counts,
         markdown: text,
+      });
+    }
+    case "read_ryngo_md": {
+      const { state, raw, migratedFromLegacy } = await ryngoMdStoreLib.read(
+        args.repo,
+      );
+      const comments = {};
+      for (const [nodeId, list] of state.comments) {
+        comments[nodeId] = list.map((c) => ({ ...c }));
+      }
+      const suppressions = {};
+      for (const [nodeId, list] of state.suppressions) {
+        suppressions[nodeId] = list.map((s) => ({ ...s }));
+      }
+      return jsonResult({
+        repo: args.repo,
+        raw,
+        comments,
+        suppressions,
+        unknownSections: state.unknownSections.map((s) => ({
+          name: s.name,
+          body: s.body,
+        })),
+        migratedFromLegacy: !!migratedFromLegacy,
       });
     }
     default:

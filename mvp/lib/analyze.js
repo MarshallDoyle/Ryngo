@@ -26,6 +26,7 @@ import { resolveSymbols } from "./resolver.js";
 import { runAdapters } from "./adapters/index.js";
 import { annotateEffects } from "./effects.js";
 import { buildCompileReport } from "./quality.js";
+import { parse as parseRyngoMd } from "./ryngo-md.js";
 
 // No total-file cap. Compilation is deterministic regex / tree-walk —
 // fast even at 100k files. Per-file caps below stay (a single 50 MB
@@ -320,9 +321,43 @@ async function buildIR(rootDir, repoName) {
     ...resolved.diagnostics.slice(0, 20),
     ...adapterResult.diagnostics.slice(0, 20),
   ];
+
+  // Phase 11.3 — read Ryngo.md from the user's clone root and attach
+  // the parsed manifest. Downstream consumers (warnings filter,
+  // server endpoints, MCP tools) read `ir.ryngoManifest` so they
+  // don't have to re-clone or re-parse.
+  const ryngoMdRaw = await fs
+    .readFile(path.join(rootDir, "Ryngo.md"), "utf8")
+    .catch(() => null);
+  if (ryngoMdRaw) {
+    ir.ryngoMd = ryngoMdRaw;
+    ir.ryngoManifest = parseRyngoMd(ryngoMdRaw);
+    // Warnings filter: drop suppressed kinds from def.warnings before
+    // the IR leaves the analyzer. Cheap second pass; only runs when
+    // a manifest exists.
+    applySuppressionsToWarnings(ir);
+  }
+
   ir.quality = buildCompileReport(ir);
 
   return ir;
+}
+
+/**
+ * Walk every function/class node and remove `data.warnings` entries
+ * whose `kind` is suppressed for that node id. Mutates the IR. Cheap.
+ */
+function applySuppressionsToWarnings(ir) {
+  const sup = ir.ryngoManifest?.suppressions;
+  if (!sup || sup.size === 0) return;
+  for (const node of ir.nodes) {
+    if (!node.data?.warnings?.length) continue;
+    const list = sup.get(node.id);
+    if (!list) continue;
+    const kinds = new Set(list.map((s) => s.kind));
+    node.data.warnings = node.data.warnings.filter((w) => !kinds.has(w.kind));
+    if (node.data.warnings.length === 0) delete node.data.warnings;
+  }
 }
 
 function nodeOrder(kind) {

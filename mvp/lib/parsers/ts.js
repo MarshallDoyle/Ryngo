@@ -242,11 +242,12 @@ function extractDefs(src) {
     const line = lineOf(src, realStart);
     const bodyStart = cm.index + cm[0].length;
     const body = sliceClassBody(src, bodyStart);
+    const bodyBaseLine = lineOf(src, bodyStart) - 1;
     defs.push({
       name,
       kind,
       line,
-      members: extractClassMembers(body),
+      members: extractClassMembers(body, bodyBaseLine),
       baseClasses,
     });
     seen.add(name);
@@ -296,7 +297,7 @@ const METHOD_RE =
 const FIELD_RE =
   /(?:^|\n)[ \t]+(?:public\s+|private\s+|protected\s+|static\s+|readonly\s+)*?(\w+)\s*(\??)\s*:\s*([^=;\n]+?)(?:=\s*([^;\n]+))?\s*[;\n]/g;
 
-function extractClassMembers(body) {
+function extractClassMembers(body, baseLine = 0) {
   const methods = [];
   const fields = [];
   const seenMethods = new Set();
@@ -308,11 +309,12 @@ function extractClassMembers(body) {
     if (RESERVED_FOR_FIELDS.has(name)) continue;
     if (seenMethods.has(name)) continue;
     seenMethods.add(name);
+    const realStart = body[mm.index] === "\n" ? mm.index + 1 : mm.index;
     methods.push({
       name,
       params: parseParamList(mm[2]),
       returnType: parseReturnType(mm[3]),
-      line: lineOf(body, mm.index),
+      line: baseLine + lineOf(body, realStart),
     });
   }
 
@@ -322,12 +324,13 @@ function extractClassMembers(body) {
     const name = fm[1];
     if (RESERVED_FOR_FIELDS.has(name)) continue;
     if (seenMethods.has(name)) continue;
+    const realStart = body[fm.index] === "\n" ? fm.index + 1 : fm.index;
     fields.push({
       name,
       typeDisplay: fm[3]?.trim() || null,
       optional: fm[2] === "?",
       default: fm[4]?.trim() || null,
-      line: lineOf(body, fm.index),
+      line: baseLine + lineOf(body, realStart),
     });
   }
 

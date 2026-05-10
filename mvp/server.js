@@ -18,6 +18,7 @@ import { diffIRs } from "./lib/diff.js";
 import * as annotations from "./lib/annotations.js";
 import * as regions from "./lib/regions.js";
 import * as intents from "./lib/intents.js";
+import * as ryngoMdStore from "./lib/ryngo-md-store.js";
 import {
   saveIntentSnapshot,
   loadIntentSnapshot,
@@ -608,8 +609,14 @@ if (isProd) {
 
   // Landing at root. Static for the HTML + landing.css, then a final
   // wildcard sends anything else to the landing's index (no 404 page).
+  //
+  // The wildcard MUST NOT swallow /api/* or /mcp* — those routes are
+  // registered later in the file (history kept the API after the SPA
+  // mount). The negative-lookahead regex below preserves the original
+  // "no 404 page" behavior for human-visible URLs while letting the
+  // API surface return real 404s when a route is missing.
   app.use(express.static(landingDir));
-  app.get("*", (_req, res) => {
+  app.get(/^\/(?!api\/|mcp(\/|$)).*/, (_req, res) => {
     res.sendFile(path.join(landingDir, "index.html"));
   });
 }
@@ -685,7 +692,14 @@ app.post("/api/annotations", async (req, res) => {
         .status(400)
         .json({ error: "Body must include `nodeId` and `text`." });
     }
-    const entry = await annotations.append(repo, { nodeId, text, author });
+    // Phase 11.5 — comments now write to Ryngo.md (which migrates the
+    // legacy annotations.md on first touch). The legacy `annotations.append`
+    // is kept around for read-only fallback elsewhere in the codebase.
+    const { state } = await ryngoMdStore.appendComment(repo, {
+      nodeId,
+      text,
+      author: author || "you",
+    });
     void recordUsageEvent("annotation_create", {
       source: "web",
       githubUrl: repoUrlFromStorageKey(repo),
@@ -694,13 +708,135 @@ app.post("/api/annotations", async (req, res) => {
       props: { node_id: nodeId, text_length: String(text).length },
     });
     console.log(`[ryngo annot] ${repo}  ${nodeId}`);
-    res.json({ ok: true, entry });
+    res.json({
+      ok: true,
+      entry: { nodeId, text, author: author || "you" },
+      commentsByNode: ryngoMdStore.commentsByNodeFromState
+        ? ryngoMdStore.commentsByNodeFromState(state)
+        : undefined,
+    });
   } catch (err) {
     res
       .status(err.status || 500)
       .json({ error: err.message || String(err) });
   }
 });
+
+// Phase 11.3 — Ryngo.md endpoints. /api/ryngo-md is the manifest
+// (read + bulk write); /api/ryngo-md/suppress is the per-warning
+// dismiss flow used by the FunctionNode ⚠ badge.
+app.get("/api/ryngo-md", async (req, res) => {
+  try {
+    const repo = takeRepo(req);
+    const { state, raw, migratedFromLegacy } = await ryngoMdStore.read(repo);
+    res.json({
+      repo,
+      raw,
+      comments: serializeComments(state),
+      suppressions: serializeSuppressions(state),
+      unknownSections: state.unknownSections.map((s) => ({
+        name: s.name,
+        body: s.body,
+      })),
+      migratedFromLegacy: !!migratedFromLegacy,
+    });
+  } catch (err) {
+    res.status(err.status || 500).json({ error: err.message || String(err) });
+  }
+});
+
+app.put("/api/ryngo-md", async (req, res) => {
+  try {
+    const repo = takeRepo(req);
+    const raw = typeof req.body?.raw === "string" ? req.body.raw : "";
+    if (!raw) {
+      return res
+        .status(400)
+        .json({ error: "Body must include `raw` (markdown string)." });
+    }
+    const { state, raw: written } = await ryngoMdStore.replaceRaw(repo, raw);
+    res.json({
+      ok: true,
+      repo,
+      raw: written,
+      comments: serializeComments(state),
+      suppressions: serializeSuppressions(state),
+    });
+  } catch (err) {
+    res.status(err.status || 500).json({ error: err.message || String(err) });
+  }
+});
+
+app.post("/api/ryngo-md/suppress", async (req, res) => {
+  try {
+    const repo = takeRepo(req);
+    const { nodeId, kind, reason, author } = req.body || {};
+    if (!nodeId || !kind) {
+      return res
+        .status(400)
+        .json({ error: "Body must include `nodeId` and `kind`." });
+    }
+    const { state } = await ryngoMdStore.appendSuppression(repo, {
+      nodeId,
+      kind,
+      reason,
+      author: author || "you",
+    });
+    void recordUsageEvent("warning_suppress", {
+      source: "web",
+      githubUrl: repoUrlFromStorageKey(repo),
+      status: "ok",
+      req,
+      props: { node_id: nodeId, kind },
+    });
+    console.log(`[ryngo suppress] ${repo}  ${nodeId} · ${kind}`);
+    res.json({
+      ok: true,
+      suppressions: serializeSuppressions(state),
+    });
+  } catch (err) {
+    res.status(err.status || 500).json({ error: err.message || String(err) });
+  }
+});
+
+app.delete("/api/ryngo-md/suppress", async (req, res) => {
+  try {
+    const repo = takeRepo(req);
+    const { nodeId, kind } = req.body || {};
+    if (!nodeId || !kind) {
+      return res
+        .status(400)
+        .json({ error: "Body must include `nodeId` and `kind`." });
+    }
+    const { state, changed } = await ryngoMdStore.dropSuppression(
+      repo,
+      nodeId,
+      kind,
+    );
+    res.json({
+      ok: true,
+      changed,
+      suppressions: serializeSuppressions(state),
+    });
+  } catch (err) {
+    res.status(err.status || 500).json({ error: err.message || String(err) });
+  }
+});
+
+function serializeComments(state) {
+  const out = {};
+  for (const [nodeId, list] of state.comments) {
+    out[nodeId] = list.map((c) => ({ ...c }));
+  }
+  return out;
+}
+function serializeSuppressions(state) {
+  const out = {};
+  for (const [nodeId, list] of state.suppressions) {
+    out[nodeId] = list.map((s) => ({ ...s }));
+  }
+  return out;
+}
 
 app.post("/api/regions", async (req, res) => {
   try {

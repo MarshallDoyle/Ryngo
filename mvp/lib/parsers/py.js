@@ -158,7 +158,7 @@ function extractDefs(src) {
             name,
             kind: "class",
             line: i + 1,
-            members: extractClassMembers(body),
+            members: extractClassMembers(body, endLine + 2),
             baseClasses,
           });
           seen.add(name);
@@ -230,7 +230,7 @@ function readClassBody(lines, startIdx) {
   return bodyLines.join("\n");
 }
 
-function extractClassMembers(body) {
+function extractClassMembers(body, firstLine = 1) {
   const methods = [];
   const fields = [];
   const seenMethods = new Set();
@@ -256,7 +256,7 @@ function extractClassMembers(body) {
           name: sm[1],
           params: parseParamList(sm[2]),
           returnType: sm[3] ? { display: sm[3].trim() } : null,
-          line: i + 1,
+          line: firstLine + i,
         });
       }
       i = endLine;
@@ -272,7 +272,7 @@ function extractClassMembers(body) {
         name: fieldMatch[1],
         typeDisplay: fieldMatch[2].trim() || null,
         default: fieldMatch[3]?.trim() || null,
-        line: i + 1,
+        line: firstLine + i,
       });
     }
   }

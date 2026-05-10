@@ -14,6 +14,7 @@ import Dashboard from "./components/Dashboard.jsx";
 import HelpOverlay from "./components/HelpOverlay.jsx";
 import { diffNarrative } from "../lib/narrative.js";
 import { nodeTypes, fnNodeHeight, classNodeHeight } from "./components/nodes/index.js";
+import { emitSourceLine } from "./components/nodes/source-nav.js";
 import { classifyFiles, LAYER_ORDER, LAYER_LABEL } from "../lib/layers.js";
 
 // ============================================================================
@@ -27,13 +28,13 @@ import { classifyFiles, LAYER_ORDER, LAYER_LABEL } from "../lib/layers.js";
 const FILE_HEADER = 36;
 const FILE_PAD_X = 14;
 const FILE_PAD_BOTTOM = 18;
-const DEF_W = 250;
+const DEF_W = 280;
 // DEF_H is a baseline — function/class/cell nodes pick variable heights via
 // fnNodeHeight() / classNodeHeight() / CELL_H based on their data.
 const DEF_H_MIN = 56;
 const DEF_GAP = 10;
-// Cells default to collapsed (header only); expanded reveals 3 source lines.
-const CELL_H = 24;
+// Cells default open and show a short source preview.
+const CELL_H = 78;
 const FILE_MIN_W = DEF_W + FILE_PAD_X * 2;
 const FILE_MIN_H = FILE_HEADER + 14;
 const PKG_W = 180;
@@ -722,14 +723,13 @@ function applyDiffEdge(style, diff) {
 // Layout — focus view: hub-and-spoke around a single node.
 // ============================================================================
 
-const FOCUS_HUB_W = 280;
+const FOCUS_HUB_W = 320;
 const FOCUS_HUB_H = 64;
-const FOCUS_SAT_W = 220;
+const FOCUS_SAT_W = 280;
 const FOCUS_SAT_H = 40;
-// Collapsed-by-default satellites are only ~26 px tall (header strip).
-// The grid uses this for rowH so 22 small chips don't reserve 1500 px of
-// vertical space — they pack into a tight, viewport-aspect grid instead.
-const FOCUS_SAT_H_COLLAPSED = 28;
+// Satellites are expanded by default now, so the grid reserves enough
+// vertical room for signatures, line anchors, and member rows.
+const FOCUS_SAT_H_OPEN = 170;
 
 function layoutFocus(rawNodes, rawEdges, focusId, theme = "dark", aspectRatio = 16 / 10) {
   const STYLE = theme === "light" ? STYLE_LIGHT : STYLE_DARK;
@@ -790,7 +790,7 @@ function layoutFocus(rawNodes, rawEdges, focusId, theme = "dark", aspectRatio = 
     // landscape canvases, and grows for ultrawide.
     const ideal = Math.round(
       Math.sqrt(
-        (n * focusCanvasAspect * (FOCUS_SAT_H_COLLAPSED + 18)) /
+        (n * focusCanvasAspect * (FOCUS_SAT_H_OPEN + 18)) /
           (FOCUS_SAT_W + 28),
       ),
     );
@@ -806,7 +806,7 @@ function layoutFocus(rawNodes, rawEdges, focusId, theme = "dark", aspectRatio = 
     const cols = colsFor(arr.length);
     const rowsPerCol = Math.ceil(arr.length / cols);
     const colW = FOCUS_SAT_W + HGAP;
-    const rowH = FOCUS_SAT_H_COLLAPSED + VGAP;
+    const rowH = FOCUS_SAT_H_OPEN + VGAP;
     const totalH = rowsPerCol * rowH - VGAP;
     const totalW = cols * colW - HGAP;
     const placed = [];
@@ -817,7 +817,7 @@ function layoutFocus(rawNodes, rawEdges, focusId, theme = "dark", aspectRatio = 
       // Direction +1 (callees): leftmost column is closest to hub.
       const colSlot = direction === -1 ? cols - 1 - col : col;
       const x = direction * (colSlot * colW + FOCUS_SAT_W / 2);
-      const y = row * rowH - totalH / 2 + FOCUS_SAT_H_COLLAPSED / 2;
+      const y = row * rowH - totalH / 2 + FOCUS_SAT_H_OPEN / 2;
       placed.push({ node: arr[i], x, y });
     }
     return { placed, width: totalW, height: totalH };
@@ -1481,6 +1481,14 @@ export default function App() {
           if (!res.ok) throw new Error(json.error || `HTTP ${res.status}`);
         }
         if (!json.ir) throw new Error("Server returned no `ir` payload.");
+        // Phase 11.5 — expose the active repo to FunctionNode's dismiss
+        // callback. Window-global is the cheapest plumbing across React
+        // Flow's custom-node boundary; the alternative is threading a
+        // callback prop through layoutRepo → layoutLayers → nodeTypes,
+        // which costs ~80 lines for a one-liner.
+        if (typeof window !== "undefined") {
+          window.__ryngoRepo = json.ir.repo;
+        }
         setIr(json.ir);
         try {
           const vmRes = await fetch("/api/projection/view-model", {
@@ -1587,11 +1595,9 @@ export default function App() {
     });
   }, []);
 
-  // Single-click runs immediately — no debounce. React Flow's hit testing
-  // is keyed on DOM elements, so the camera animation from the first click
-  // doesn't break the second click of a double-click. The earlier 220ms
-  // click timer was the cause of the perceived "broken" double-click, not
-  // the cure.
+  // Single-click now treats source-backed nodes as navigable code anchors:
+  // repo view opens the split focus view, focus view swaps the source pane
+  // to the clicked neighbor. Selection still drives the inspector.
   const handleNodeClick = useCallback(
     (view, _evt, node) => {
       const id = node.id.endsWith("#header") ? node.parentNode : node.id;
@@ -1602,6 +1608,17 @@ export default function App() {
         id,
         data: { ...irNode.data, label: irNode.label, kind: irNode.kind },
       });
+      const canShowSource = ["file", "function", "class", "cell"].includes(irNode.kind);
+      if (canShowSource) {
+        setFocusStack((stack) => {
+          if (view === "focus") {
+            if (stack[stack.length - 1] === id) return stack;
+            return [...stack.slice(0, -1), id];
+          }
+          if (stack[stack.length - 1] === id) return stack;
+          return [id];
+        });
+      }
       const inst = view === "repo" ? repoFlow.current : focusFlow.current;
       inst?.fitView({
         nodes: [{ id }],
@@ -2115,7 +2132,7 @@ export default function App() {
           {focusedId != null && focusLayout && (
             <span className="muted" style={{ marginLeft: "auto" }}>
               {focusLayout.counts.incoming} in · {focusLayout.counts.outgoing} out
-              · double-click to drill · esc to back
+              · click opens source · esc to back
             </span>
           )}
         </div>
@@ -2221,7 +2238,7 @@ export default function App() {
                 <span className="ln ln-call" /> calls
               </div>
               <div className="legend-row legend-hint">
-                click = inspect · double-click = Inspect node
+                click = open source · hover details = highlight line
               </div>
               <div className="legend-row legend-hint">
                 packages shown only inside drilled views
@@ -2481,6 +2498,47 @@ function FocusView({
   const [sourceErr, setSourceErr] = useState(null);
   const [sourceLoading, setSourceLoading] = useState(false);
 
+  const refQueryFor = useCallback(
+    (sourceNode = node) => {
+      // Diff-mode: a removed node's file may not exist on head — fetch from
+      // base instead. unchanged/added go through the head ref.
+      let sourceRef = "";
+      if (ir.diff) {
+        sourceRef =
+          sourceNode._diff === "removed" ? ir.diff.base.ref : ir.diff.head.ref;
+      } else if (ir.ref) {
+        sourceRef = ir.ref;
+      }
+      return sourceRef ? `&ref=${encodeURIComponent(sourceRef)}` : "";
+    },
+    [ir.diff, ir.ref, node],
+  );
+
+  const fetchSourceFor = useCallback(
+    async (filePath, focusLine = 1, sourceNode = node) => {
+      if (!filePath) return;
+      setSourceErr(null);
+      setSourceLoading(true);
+      try {
+        const r = await fetch(
+          `/api/source?repo=${encodeURIComponent(ir.repo)}&path=${encodeURIComponent(filePath)}${refQueryFor(sourceNode)}`,
+        );
+        const j = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(j.error || `HTTP ${r.status}`);
+        setSource({
+          text: j.source,
+          focusLine: focusLine || 1,
+          file: filePath,
+        });
+      } catch (e) {
+        setSourceErr(e.message);
+      } finally {
+        setSourceLoading(false);
+      }
+    },
+    [ir.repo, node, refQueryFor],
+  );
+
   // Fetch source. Cells already have it inline; everything else needs the
   // raw file from /api/source.
   useEffect(() => {
@@ -2489,7 +2547,7 @@ function FocusView({
     setSourceErr(null);
 
     if (node.kind === "cell") {
-      setSource({ text: node.data.source, focusLine: 1, file: node.data.file });
+      setSource({ text: node.data.source, focusLine: node.data?.line || 1, file: node.data.file });
       return;
     }
     if (node.kind === "package") {
@@ -2540,6 +2598,23 @@ function FocusView({
       cancelled = true;
     };
   }, [ir.repo, node.id, node.kind, node.data]);
+
+  useEffect(() => {
+    const onSourceLine = (event) => {
+      const detail = event.detail || {};
+      if (!detail.file) return;
+      const line = detail.line || 1;
+      setSource((prev) => {
+        if (prev?.file === detail.file) return { ...prev, focusLine: line };
+        return prev;
+      });
+      if (source?.file !== detail.file) {
+        fetchSourceFor(detail.file, line, node);
+      }
+    };
+    window.addEventListener("ryngo:source-line", onSourceLine);
+    return () => window.removeEventListener("ryngo:source-line", onSourceLine);
+  }, [fetchSourceFor, node, source?.file]);
 
   return (
     <div className="focus">
@@ -2610,7 +2685,7 @@ function FocusView({
                 left = callers · right = callees
               </div>
               <div className="legend-row legend-hint">
-                click = inspect · double-click = drill
+                click = open source · hover details = highlight line
               </div>
             </Panel>
             {selected && selected.data?.kind !== "file-header" && (
@@ -2827,6 +2902,7 @@ function NodeMeta({ data, ir, selectedId }) {
     );
   }
   // function / class / cell
+  const returnType = data?.returnType?.display || data?.returnType || null;
   const callers = ir.edges
     .filter((e) => e.kind === "calls" && e.target === selectedId)
     .map((e) => idToLabel(ir, e.source));
@@ -2837,9 +2913,44 @@ function NodeMeta({ data, ir, selectedId }) {
     <dl>
       <Row label="kind">{data.kind}</Row>
       {data.file && (
-        <Row label="file" mono>
+        <Row
+          label="source"
+          mono
+          title={`${data.file}${data.line ? `:${data.line}` : ""}`}
+          onMouseEnter={() => emitSourceLine(data)}
+        >
           {data.file}
           {data.line ? `:${data.line}` : ""}
+        </Row>
+      )}
+      {data.params && (
+        <Row label={`params (${data.params.length})`} mono onMouseEnter={() => emitSourceLine(data)}>
+          {data.params.length
+            ? data.params
+                .map((p) => `${p.rest ? "…" : ""}${p.name}${p.optional ? "?" : ""}${p.typeDisplay ? `: ${p.typeDisplay}` : ""}`)
+                .join(", ")
+            : "—"}
+        </Row>
+      )}
+      {returnType && (
+        <Row label="returns" mono onMouseEnter={() => emitSourceLine(data)}>
+          {returnType}
+        </Row>
+      )}
+      {data.members?.methods?.length > 0 && (
+        <Row label={`methods (${data.members.methods.length})`}>
+          <ul className="ref-list">
+            {data.members.methods.slice(0, 10).map((m, i) => (
+              <li
+                key={i}
+                onMouseEnter={() => emitSourceLine(data, { line: m.line, label: m.name, kind: "method" })}
+                title={m.line ? `${data.file}:${m.line}` : m.name}
+              >
+                <span className="mono">{m.line ? `L${m.line} ` : ""}{m.name}()</span>
+              </li>
+            ))}
+            {data.members.methods.length > 10 && <li>…+{data.members.methods.length - 10}</li>}
+          </ul>
         </Row>
       )}
       <Row label="lang" mono>{data.lang || "—"}</Row>
@@ -2897,9 +3008,9 @@ function iconForKind(kind) {
   }
 }
 
-function Row({ label, children, mono }) {
+function Row({ label, children, mono, onMouseEnter, title }) {
   return (
-    <div>
+    <div onMouseEnter={onMouseEnter} title={title}>
       <dt>{label}</dt>
       <dd className={mono ? "mono" : ""}>{children}</dd>
     </div>

@@ -22,7 +22,7 @@
   /* Surfaces that previously hardcoded #111827 — now theme-aware. */
   --input-bg: #ffffff;
   --input-border: #b9b394;
-  --code-bg: #f0ecd6;
+  --code-bg: #fffdf7;
   /* Legend swatch fills — paired with the --fn etc. tokens but as
      concrete backgrounds the legend can paint without per-mode JSX. */
   --sw-file-bg: #f4f1e3;
@@ -1285,8 +1285,8 @@ pre.code {
   font-family:
     ui-monospace, "JetBrains Mono", "SFMono-Regular", Menlo, Consolas,
     monospace;
-  font-size: 12.5px;
-  line-height: 1.6;
+  font-size: 13px;
+  line-height: 1.65;
   color: var(--text);
   background: var(--code-bg);
   padding: 10px 0;
@@ -1295,21 +1295,25 @@ pre.code {
 .code-line {
   display: flex;
   white-space: pre;
-  padding: 0 12px;
+  padding: 0 14px;
+  min-height: 21px;
 }
 .code-line:hover {
-  background: color-mix(in oklab, var(--text) 4%, transparent);
+  background: color-mix(in oklab, var(--accent) 9%, transparent);
 }
 .code-focus {
-  background: color-mix(in oklab, var(--accent) 12%, transparent) !important;
-  box-shadow: inset 3px 0 0 var(--accent);
+  background: color-mix(in oklab, var(--accent) 18%, var(--code-bg)) !important;
+  box-shadow:
+    inset 4px 0 0 var(--accent),
+    inset 0 1px 0 color-mix(in oklab, var(--accent) 28%, transparent),
+    inset 0 -1px 0 color-mix(in oklab, var(--accent) 28%, transparent);
 }
 .code-gutter {
   display: inline-block;
   width: 40px;
   text-align: right;
   color: var(--muted);
-  opacity: 0.65;
+  opacity: 0.9;
   user-select: none;
   margin-right: 14px;
   flex-shrink: 0;
@@ -1324,7 +1328,7 @@ pre.code {
 .hl-plain { color: var(--text); }
 .hl-keyword { color: var(--cls); font-weight: 500; }
 .hl-string { color: var(--call); }
-.hl-comment { color: var(--muted); font-style: italic; opacity: 0.85; }
+.hl-comment { color: var(--muted); font-style: italic; opacity: 0.95; }
 .hl-number { color: var(--warn); }
 .hl-type { color: var(--fn); }
 .hl-decorator { color: var(--pkg); font-weight: 500; }
@@ -1391,23 +1395,23 @@ pre.code::-webkit-scrollbar-thumb:hover {
   border-radius: 5px;
   position: relative;
   overflow: hidden;
-  font-size: 11px;
+  font-size: 11.5px;
   color: var(--text);
 }
 .rfn-fn-selected {
-  box-shadow: 0 0 0 2px var(--accent);
+  box-shadow: 0 0 0 3px var(--accent);
 }
 .rfn-fn-header {
   display: flex;
   align-items: center;
   gap: 5px;
-  padding: 2px 8px 1px;
-  height: 18px;
+  padding: 3px 9px;
+  height: 28px;
   background: var(--sw-fn-border);
   color: var(--sw-fn-bg);
   border-radius: 4px 4px 0 0;
   font-weight: 600;
-  font-size: 11px;
+  font-size: 12px;
 }
 .rfn-fn-icon {
   font-style: italic;
@@ -1420,17 +1424,49 @@ pre.code::-webkit-scrollbar-thumb:hover {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.rfn-node-line {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  height: 16px;
+  padding: 0 5px;
+  border: 1px solid color-mix(in oklab, currentColor 28%, transparent);
+  border-radius: 3px;
+  font-size: 9.5px;
+  line-height: 1;
+  opacity: 0.92;
+}
+.rfn-node-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 18px;
+  padding: 2px 9px 0;
+  border-bottom: 1px solid color-mix(in oklab, var(--line) 65%, transparent);
+  color: var(--muted);
+  font-size: 9.5px;
+  overflow: hidden;
+}
+.rfn-node-meta-row span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rfn-node-meta-row span:first-child {
+  flex: 1;
+}
 .rfn-fn-sig {
-  padding: 1px 8px;
-  height: 14px;
-  font-size: 10px;
+  padding: 2px 9px;
+  height: 18px;
+  font-size: 10.5px;
   color: var(--muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .rfn-fn-ports {
-  padding: 2px 0;
+  padding: 3px 0;
 }
 .rfn-fn-ports-in .rfn-port-row {
   margin-left: 8px;
@@ -1442,9 +1478,9 @@ pre.code::-webkit-scrollbar-thumb:hover {
   transform: translateY(-50%);
 }
 .rfn-fn-ellipsis {
-  font-size: 9px;
+  font-size: 10px;
   color: var(--muted);
-  padding: 0 12px;
+  padding: 1px 14px;
 }
 
 /* -- Class -------------------------------------------------------------- */
@@ -1457,22 +1493,22 @@ pre.code::-webkit-scrollbar-thumb:hover {
   border-radius: 5px;
   position: relative;
   overflow: hidden;
-  font-size: 11px;
+  font-size: 11.5px;
   color: var(--text);
 }
 .rfn-cls-selected {
-  box-shadow: 0 0 0 2px var(--accent);
+  box-shadow: 0 0 0 3px var(--accent);
 }
 .rfn-cls-header {
   display: flex;
   align-items: center;
   gap: 5px;
-  padding: 2px 8px 1px;
-  height: 18px;
+  padding: 3px 9px;
+  height: 28px;
   background: var(--sw-cls-border);
   color: var(--sw-cls-bg);
   font-weight: 700;
-  font-size: 11px;
+  font-size: 12px;
 }
 .rfn-cls-icon {
   font-weight: 800;
@@ -1494,11 +1530,11 @@ pre.code::-webkit-scrollbar-thumb:hover {
 }
 .rfn-cls-body {
   position: relative;
-  padding: 4px 0 4px 8px;
+  padding: 4px 8px 6px;
 }
 .rfn-cls-field {
-  font-size: 10px;
-  line-height: 14px;
+  font-size: 10.5px;
+  line-height: 18px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1507,18 +1543,26 @@ pre.code::-webkit-scrollbar-thumb:hover {
 .rfn-cls-field-name {
   font-weight: 600;
 }
+.rfn-member-line {
+  display: inline-block;
+  min-width: 29px;
+  margin-right: 5px;
+  color: var(--muted);
+  font-size: 9px;
+  font-weight: 600;
+}
 .rfn-cls-field-sep {
   color: var(--muted);
   margin: 0 3px;
 }
 .rfn-cls-field-type {
-  font-size: 10px;
+  font-size: 10.5px;
 }
 .rfn-cls-method {
   font-weight: 500;
 }
 .rfn-cls-ellipsis {
-  font-size: 9px;
+  font-size: 10px;
   color: var(--muted);
   margin-top: 2px;
 }
@@ -1537,23 +1581,23 @@ pre.code::-webkit-scrollbar-thumb:hover {
   border-radius: 5px;
   overflow: hidden;
   position: relative;
-  font-size: 11px;
+  font-size: 11.5px;
 }
 .rfn-cell-header {
   display: flex;
   align-items: center;
   gap: 5px;
-  padding: 2px 8px;
-  height: 18px;
+  padding: 3px 9px;
+  height: 28px;
   background: var(--sw-cell-border);
   color: var(--sw-cell-bg);
   font-weight: 600;
 }
 .rfn-cell-preview {
   margin: 0;
-  padding: 4px 8px;
-  font-size: 9px;
-  line-height: 12px;
+  padding: 6px 9px;
+  font-size: 10.5px;
+  line-height: 14px;
   color: var(--text);
   background: transparent;
   white-space: pre;
@@ -1588,18 +1632,18 @@ pre.code::-webkit-scrollbar-thumb:hover {
 .rfn-port-row {
   display: flex;
   align-items: center;
-  gap: 6px;
-  height: 14px;
-  font-size: 10px;
+  gap: 7px;
+  height: 18px;
+  font-size: 10.5px;
   white-space: nowrap;
   overflow: hidden;
 }
 .rfn-port-right {
   justify-content: flex-end;
-  padding-right: 8px;
+  padding-right: 10px;
 }
 .rfn-port-label {
-  font-size: 10px;
+  font-size: 10.5px;
   color: var(--text);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1608,17 +1652,26 @@ pre.code::-webkit-scrollbar-thumb:hover {
 .rfn-port-base {
   font-style: italic;
   color: var(--muted);
-  font-size: 9px;
+  font-size: 10px;
 }
 
 /* React Flow handle override — make our handles small bullets, color
    driven inline by the component. */
 .rfn-handle.react-flow__handle {
-  width: 8px;
-  height: 8px;
-  border: 1.5px solid var(--sw-fn-border);
+  width: 11px;
+  height: 11px;
+  border: 2px solid var(--sw-fn-border);
   border-radius: 50%;
   background: var(--sw-fn-bg);
+  box-shadow:
+    0 0 0 2px var(--bg),
+    0 0 0 4px color-mix(in oklab, var(--sw-fn-border) 18%, transparent);
+}
+.rfn-handle.react-flow__handle:hover {
+  transform: scale(1.2);
+  box-shadow:
+    0 0 0 2px var(--bg),
+    0 0 0 5px color-mix(in oklab, var(--accent) 32%, transparent);
 }
 .rfn-handle-cell.react-flow__handle {
   border-color: var(--sw-cell-border);
@@ -2108,7 +2161,7 @@ pre.code::-webkit-scrollbar-thumb:hover {
 .rfn-cls-collapsed,
 .rfn-cell-collapsed {
   height: auto;
-  min-height: 22px;
+  min-height: 30px;
 }
 .rfn-fn-collapsed .rfn-fn-sig,
 .rfn-fn-collapsed .rfn-fn-ports,
@@ -2393,4 +2446,97 @@ html[data-embed] .app {
 .rfn-fn-warn-medium {
   outline: 2px solid color-mix(in oklab, var(--warn) 55%, transparent);
   outline-offset: -1px;
+}
+
+/* ============================================================================
+   Phase 11.5 — warnings panel + per-warning dismiss row
+   ============================================================================ */
+
+.rfn-warn[role="button"] {
+  cursor: pointer;
+  user-select: none;
+}
+.rfn-warn[role="button"]:hover {
+  filter: brightness(0.95);
+}
+
+.rfn-warn-panel {
+  position: absolute;
+  top: 100%;
+  right: -1px;
+  z-index: 60;
+  width: max(220px, calc(100% + 2px));
+  margin-top: 4px;
+  padding: 8px 10px 10px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  box-shadow:
+    0 1px 0 rgba(40, 35, 10, 0.06),
+    0 14px 30px -14px rgba(40, 35, 10, 0.32);
+  font-size: 11.5px;
+  cursor: default;
+}
+[data-theme="dark"] .rfn-warn-panel {
+  box-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.4),
+    0 16px 36px -14px rgba(0, 0, 0, 0.6);
+}
+.rfn-warn-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--line);
+}
+.rfn-warn-row:last-of-type {
+  border-bottom: 0;
+}
+.rfn-warn-row-kind {
+  font-weight: 600;
+  font-size: 10.5px;
+  padding: 1px 6px;
+  border-radius: 9px;
+  background: color-mix(in oklab, var(--muted) 18%, transparent);
+}
+.rfn-warn-row-high .rfn-warn-row-kind {
+  background: color-mix(in oklab, var(--error) 25%, transparent);
+  color: var(--error);
+}
+.rfn-warn-row-medium .rfn-warn-row-kind {
+  background: color-mix(in oklab, var(--warn) 22%, transparent);
+  color: var(--warn);
+}
+.rfn-warn-row-msg {
+  color: var(--text);
+  line-height: 1.4;
+}
+.rfn-warn-row-dismiss {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--muted);
+  font-size: 10px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.rfn-warn-row-dismiss:hover {
+  color: var(--error);
+  border-color: var(--error);
+}
+.rfn-warn-panel-foot {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+  font-size: 10px;
+  color: var(--muted);
+}
+.rfn-warn-panel-foot code {
+  background: var(--code-bg);
+  padding: 0 4px;
+  border-radius: 3px;
 }
