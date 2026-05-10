@@ -1,0 +1,44 @@
+# dependency dirs
+node_modules/
+.pnpm-store/
+
+# build output
+dist/
+build/
+out/
+.next/
+.turbo/
+.cache/
+
+# local state — annotations, regions, intents, snapshots
+mvp/.ryngo/
+
+# corpus runner output (can rebuild any time; logs are noisy in PRs)
+mvp/test/results/
+
+# editor / OS
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# env files
+.env
+.env.*
+!.env.example
+
+# logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# coverage
+coverage/
+
+# the .claude internal dir (per-user agent cache)
+.claude/
+
+# anthropic plan / agent files that aren't repo-relevant
+.aider*
+.cursor/
