@@ -1,0 +1,63 @@
+name: corpus
+
+# Phase 6.4 — PR-blocking corpus check.
+#
+# Runs the 51-repo corpus harness against the proposed change. Hard
+# `min` violations (a real regression in extraction recall) make the
+# runner exit non-zero, which fails this job and blocks merge. Soft
+# `max` violations (e.g. an adapter over-emitting) are surfaced in
+# the run summary but don't fail the gate.
+#
+# Authors who intentionally drop a classification (e.g. tightening a
+# detect rule that was producing false positives — Phase 6.1 was the
+# canonical example) update the relevant `expects` block in
+# `mvp/test/corpus.js` in the same PR; the runner re-baselines and
+# the gate goes green.
+
+on:
+  pull_request:
+    paths:
+      - "mvp/lib/**"
+      - "mvp/test/**"
+      - "mvp/scripts/corpus-run.js"
+      - ".github/workflows/corpus.yml"
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+jobs:
+  corpus:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: mvp
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: mvp/package-lock.json
+
+      - name: Install
+        run: npm ci
+
+      - name: Run corpus
+        env:
+          CORPUS_CONCURRENCY: "4"
+          CORPUS_TIMEOUT_MS: "180000"
+        run: npm run corpus
+
+      - name: Upload run artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: corpus-results-${{ github.run_id }}
+          path: |
+            mvp/test/results/latest.md
+            mvp/test/results/2026-*.json
+            mvp/test/results/history.json
+          if-no-files-found: warn
+          retention-days: 30
