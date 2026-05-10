@@ -341,7 +341,11 @@ async function runOne(entry) {
         files: ir.stats?.files,
         analyzedFiles: ir.stats?.analyzedFiles,
         definitions: ir.stats?.definitions,
-        edges: ir.stats?.edges,
+        nodes: (ir.nodes || []).length,
+        edges: (ir.edges || []).length,
+        routes: ir.stats?.routes,
+        dbModels: ir.stats?.dbModels,
+        packages: ir.stats?.packages,
       },
       measurement,
       ratios,
@@ -579,6 +583,36 @@ export async function writeLandingSummary(report) {
       ratios: r.ratios,
     }));
 
+  // Corpus-wide totals for the live stats banner's baseline block.
+  // These are the numbers `lib/stats-baseline.js` reads when there's no
+  // live events-DB data to add — so the banner never shows zeros even
+  // on a fresh deploy. Summed across every successfully-parsed repo in
+  // the corpus.
+  const corpusTotals = okRows.reduce(
+    (acc, r) => ({
+      files: acc.files + (r.stats?.files || 0),
+      analyzedFiles: acc.analyzedFiles + (r.stats?.analyzedFiles || 0),
+      nodes: acc.nodes + (r.stats?.nodes || 0),
+      edges: acc.edges + (r.stats?.edges || 0),
+      definitions: acc.definitions + (r.stats?.definitions || 0),
+      routes: acc.routes + (r.stats?.routes || 0),
+      dbModels: acc.dbModels + (r.stats?.dbModels || 0),
+      packages: acc.packages + (r.stats?.packages || 0),
+      rawTokens: acc.rawTokens + (r.measurement?.rawFiles?.tokens || 0),
+    }),
+    {
+      files: 0,
+      analyzedFiles: 0,
+      nodes: 0,
+      edges: 0,
+      definitions: 0,
+      routes: 0,
+      dbModels: 0,
+      packages: 0,
+      rawTokens: 0,
+    },
+  );
+
   const summary = {
     iso: report.iso,
     repos: report.summary.ok,
@@ -588,6 +622,7 @@ export async function writeLandingSummary(report) {
       meanRatios: all.meanRatios,
       sampleSize: all.repos,
     },
+    corpusTotals,
     byLanguage: Object.fromEntries(
       Object.entries(report.rollUps.byLanguage)
         .filter(([k]) => k !== "all")

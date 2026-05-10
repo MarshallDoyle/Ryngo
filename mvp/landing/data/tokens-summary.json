@@ -1,5 +1,5 @@
 {
-  "iso": "2026-05-10T20:38:11.950Z",
+  "iso": "2026-05-10T21:22:28.136Z",
   "repos": 54,
   "methodology": {
     "charsPerToken": 4,
@@ -23,6 +23,17 @@
       "englishSignature": 0.0003693928687362833
     },
     "sampleSize": 53
+  },
+  "corpusTotals": {
+    "files": 145968,
+    "analyzedFiles": 71752,
+    "nodes": 293225,
+    "edges": 183594,
+    "definitions": 137649,
+    "routes": 1431,
+    "dbModels": 639,
+    "packages": 3574,
+    "rawTokens": 66856092
   },
   "byLanguage": {
     "TypeScript/JavaScript": {

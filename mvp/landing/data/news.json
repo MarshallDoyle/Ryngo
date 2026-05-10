@@ -1,0 +1,42 @@
+{
+  "updatedAt": "2026-05-10",
+  "source": "mvp/CHANGELOG.md",
+  "items": [
+    {
+      "date": "2026-05-10",
+      "agent": "claude",
+      "title": "Landing overhaul",
+      "blurb": "9-change consolidated plan at `mvp/docs/LANDING_OVERHAUL.md`. Synthesizes LiteLLM (`litellmresearch.md`) + Unsloth (`unslothresearch.md`) audits with the user's decisions: Free-only pricing (no Enterprise tile yet), live stats banner powered by Codex's events warehouse (`/api/..."
+    },
+    {
+      "date": "2026-05-10",
+      "agent": "claude",
+      "title": "Landing",
+      "blurb": "\"Three ways to plug Ryngo.md into your agent\" section spec'd as a drop-in (`mvp/docs/LANDING_RYNGO_MD.md`) with full HTML + CSS Codex can paste into `landing/index.html` and `landing.css`. Three cards: MCP (live agent tools), copy/paste (one-off chat-UI flow), commit-to-repo (..."
+    },
+    {
+      "date": "2026-05-10",
+      "agent": "claude",
+      "title": "Token-efficiency benchmark",
+      "blurb": "`mvp/scripts/eval-tokens.js` runs the corpus harness against every entry in `test/corpus.js`, computes raw analyzable-source bytes per repo, then measures each Tier-4 LLM projection (`topology`, `compactJson`, `buildViewModel`, `slice`, `englishSignature`) and rolls up per-lan..."
+    },
+    {
+      "date": "2026-05-10",
+      "agent": "claude",
+      "title": "Phase 11",
+      "blurb": "`Ryngo.md`, the per-repo manifest. New `mvp/lib/ryngo-md.js` parses/serializes a single root-level markdown file holding `## Comments` (per-node user notes) + `## Suppressions` (warning kinds the user has acknowledged); unknown sections (`## Connections` / `## Expose` / `## Fl..."
+    },
+    {
+      "date": "2026-05-10",
+      "agent": "claude",
+      "title": "Compiler warnings on every function",
+      "blurb": "`mvp/lib/warnings.js` runs heuristic O(n²)/O(n³) nested-loop detection, I/O-in-loop (network or DB inside `for`/`while`), recursion without memoization, long functions, too many params, and deep nesting. Each function carries `data.warnings`; FunctionNode renders a red/amber ⚠..."
+    },
+    {
+      "date": "2026-05-10",
+      "agent": "claude",
+      "title": "Removed the MAX_FILES = 1500 hard cap. Compilation is deterministic regex / tree-walk; even 50k-file monore...",
+      "blurb": ""
+    }
+  ]
+}

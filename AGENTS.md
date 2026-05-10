@@ -78,9 +78,9 @@ plan first.
 | Landing "How to plug Ryngo.md into your agent" section | claude | spec'd, codex to implement | `mvp/docs/LANDING_RYNGO_MD.md` (claude, done) → `mvp/landing/index.html` + `mvp/landing/landing.css` (codex). Drop-in HTML + CSS in the spec; ~70 lines net. |
 | Backend — `GET /api/ryngo-md?format=raw` for download flow | claude | shipped | `mvp/server.js` |
 | **Landing overhaul — 9 changes spec'd** (live stats banner, Free tier, latest-news, "coming soon", tagline companion, footer, newsletter, screenshots) | claude (plan) → split | spec'd | `mvp/docs/LANDING_OVERHAUL.md` is canonical. Three iterations; see file for per-change owner. |
-| Iter 1.A — `/api/stats/public` live-stats endpoint | claude | not started | `mvp/lib/events.js` (+getLiveStats), `mvp/lib/stats-baseline.js` (new), `mvp/server.js` |
+| Iter 1.A — `/api/stats/public` live-stats endpoint | claude | shipped | `mvp/lib/events.js` (+getLiveStats), `mvp/lib/stats-baseline.js` (new), `mvp/server.js` (+ /api/stats/public route, 60 s cache). Corpus baseline carries 293k nodes / 184k edges / 137k defs / 66.9M tokens across 54 repos so the banner never shows zeros. |
 | Iter 1.B — Free pricing card + Calendly footer + companion tagline + 3 Ryngo.md cards | codex | claimed | `mvp/landing/index.html`, `mvp/landing/landing.css` |
-| Iter 1.C — `build-news.js` + `news.json` | claude | not started | `mvp/scripts/build-news.js`, `mvp/landing/data/news.json` |
+| Iter 1.C — `build-news.js` + `news.json` | claude | shipped | `mvp/scripts/build-news.js` parses `CHANGELOG.md` → top 6 dated items in `landing/data/news.json`. npm run build:news. |
 | Iter 2 — hero stats banner + latest-news + roadmap + newsletter | codex | depends on 1.A + 1.C | `mvp/landing/{index.html,landing.css,stats.js (new)}` |
 | Iter 3 — feature screenshots + mascot swap | both | gated on logo finalist pick | `mvp/landing/images/*` (new), `mvp/landing/{index.html,landing.css}` |
 | Research — competitor landing audits (LiteLLM + Unsloth) | claude | shipped | `litellmresearch.md`, `unslothresearch.md` (repo root) |

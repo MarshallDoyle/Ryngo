@@ -362,6 +362,56 @@ async function insertAdapterOutcomes(analysisRunId, ir) {
   }
 }
 
+/**
+ * Aggregate the public stats banner from `analysis_runs` and
+ * `repo_submissions`. Counts only successful runs ("ok"). Distinct repos
+ * deduplicate across multiple submissions of the same repo (e.g. branch
+ * compares, re-analyzes after a commit).
+ *
+ * Returns `null` when the events DB is unreachable / not configured so
+ * the caller can fall back to the corpus baseline. Never throws —
+ * stats are best-effort, the page must render either way.
+ */
+export async function getLiveStats() {
+  if (!eventsEnabled()) return null;
+  if (!(await ensureEventSchema())) return null;
+  try {
+    const result = await pool.query(`
+      select
+        count(distinct
+          coalesce(s.repo_owner, '?') || '/' || coalesce(s.repo_name, '?')
+        ) filter (where s.repo_owner is not null and s.repo_name is not null)
+          as repos_analyzed,
+        coalesce(sum(a.analyzed_file_count), 0)::bigint as files_parsed,
+        coalesce(sum(a.node_count),         0)::bigint as nodes_generated,
+        coalesce(sum(a.edge_count),         0)::bigint as edges_generated,
+        coalesce(sum(a.route_count),        0)::bigint as routes_extracted,
+        coalesce(sum(a.db_model_count),     0)::bigint as db_models_extracted,
+        coalesce(sum(a.package_count),      0)::bigint as packages_resolved,
+        coalesce(sum(a.diagnostic_count),   0)::bigint as diagnostics,
+        max(a.finished_at) as last_run_at
+      from analysis_runs a
+      left join repo_submissions s on s.id = a.submission_id
+      where a.status = 'ok'
+    `);
+    const row = result.rows[0] || {};
+    return {
+      reposAnalyzed: Number(row.repos_analyzed || 0),
+      filesParsed: Number(row.files_parsed || 0),
+      nodesGenerated: Number(row.nodes_generated || 0),
+      edgesGenerated: Number(row.edges_generated || 0),
+      routesExtracted: Number(row.routes_extracted || 0),
+      dbModelsExtracted: Number(row.db_models_extracted || 0),
+      packagesResolved: Number(row.packages_resolved || 0),
+      diagnostics: Number(row.diagnostics || 0),
+      lastRunAt: row.last_run_at ? new Date(row.last_run_at).toISOString() : null,
+    };
+  } catch (err) {
+    failClosed(err);
+    return null;
+  }
+}
+
 async function createSchema() {
   pool = pool || new Pool(poolOptions());
   await pool.query(`

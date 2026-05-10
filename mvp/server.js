@@ -36,12 +36,14 @@ import { buildViewModel } from "./lib/view-model.js";
 import { handleMcpHttpRequest } from "./lib/mcp.js";
 import {
   eventHealth,
+  getLiveStats,
   recordAnalysisRun,
   recordRejectedSubmission,
   recordUsageEvent,
 } from "./lib/events.js";
 import { GitHubPreflightError, preflightGitHubRepo } from "./lib/github.js";
 import * as regionsLib from "./lib/regions.js";
+import { buildHeadline, readBaseline } from "./lib/stats-baseline.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.PORT) || 3000;
@@ -85,6 +87,37 @@ app.get("/api/health", async (_req, res) => {
     commit: process.env.GIT_SHA || null,
     checks,
   });
+});
+
+// Public stats banner data source. Combines live aggregates from the
+// events warehouse with a corpus baseline so the landing page never
+// shows zeros — even on a cold deploy. 60-second in-memory cache: the
+// banner doesn't need real-time precision.
+let _statsCache = null;
+let _statsCachedAt = 0;
+const STATS_TTL_MS = 60 * 1000;
+
+app.get("/api/stats/public", async (_req, res) => {
+  const now = Date.now();
+  if (_statsCache && now - _statsCachedAt < STATS_TTL_MS) {
+    res.set("cache-control", "public, max-age=60");
+    return res.json(_statsCache);
+  }
+  const [live, baseline] = await Promise.all([
+    getLiveStats().catch(() => null),
+    readBaseline().catch(() => null),
+  ]);
+  const headline = buildHeadline({ baseline, live });
+  const payload = {
+    asOf: new Date().toISOString(),
+    live,
+    baseline,
+    headline,
+  };
+  _statsCache = payload;
+  _statsCachedAt = now;
+  res.set("cache-control", "public, max-age=60");
+  res.json(payload);
 });
 
 // Streamable HTTP MCP endpoint for ChatGPT Apps / hosted MCP connectors.
