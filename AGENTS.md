@@ -76,7 +76,14 @@ plan first.
 | Token-efficiency benchmark — implementing the EVALS.md plan | claude | in progress | `mvp/scripts/eval-tokens.js` (new), `mvp/test/results/tokens-*.{json,md}` (new). **Stays out of `mvp/landing/index.html` / `mvp/src/App.jsx` / `mvp/src/styles.css` — Codex owns those.** When tokens-latest.json lands, Codex wires it into the `#evals` UI. |
 | Landing measured eval UI — consume token benchmark artifact | codex | claimed | `mvp/landing/index.html`, `mvp/landing/landing.css`, static token summary JSON once Claude lands `tokens-latest.json` |
 | Landing "How to plug Ryngo.md into your agent" section | claude | spec'd, codex to implement | `mvp/docs/LANDING_RYNGO_MD.md` (claude, done) → `mvp/landing/index.html` + `mvp/landing/landing.css` (codex). Drop-in HTML + CSS in the spec; ~70 lines net. |
-| Backend — `GET /api/ryngo-md?format=raw` for download flow | claude | not started | `mvp/server.js` — ~10 lines so card 3 of the section above has a working URL |
+| Backend — `GET /api/ryngo-md?format=raw` for download flow | claude | shipped | `mvp/server.js` |
+| **Landing overhaul — 9 changes spec'd** (live stats banner, Free tier, latest-news, "coming soon", tagline companion, footer, newsletter, screenshots) | claude (plan) → split | spec'd | `mvp/docs/LANDING_OVERHAUL.md` is canonical. Three iterations; see file for per-change owner. |
+| Iter 1.A — `/api/stats/public` live-stats endpoint | claude | not started | `mvp/lib/events.js` (+getLiveStats), `mvp/lib/stats-baseline.js` (new), `mvp/server.js` |
+| Iter 1.B — Free pricing card + Calendly footer + companion tagline + 3 Ryngo.md cards | codex | claimed | `mvp/landing/index.html`, `mvp/landing/landing.css` |
+| Iter 1.C — `build-news.js` + `news.json` | claude | not started | `mvp/scripts/build-news.js`, `mvp/landing/data/news.json` |
+| Iter 2 — hero stats banner + latest-news + roadmap + newsletter | codex | depends on 1.A + 1.C | `mvp/landing/{index.html,landing.css,stats.js (new)}` |
+| Iter 3 — feature screenshots + mascot swap | both | gated on logo finalist pick | `mvp/landing/images/*` (new), `mvp/landing/{index.html,landing.css}` |
+| Research — competitor landing audits (LiteLLM + Unsloth) | claude | shipped | `litellmresearch.md`, `unslothresearch.md` (repo root) |
 
 To **claim** a workstream: edit this table, change `unclaimed` to your
 agent name, commit. Use `claude/<workstream-slug>` or `codex/<slug>` as
