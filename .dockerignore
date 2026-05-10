@@ -1,0 +1,15 @@
+# Keep the build context small + honest. Default-deny, then allow only
+# the active code under mvp/. The legacy Plinth design corpus
+# (adapters/, design/, spec/, etc.) doesn't ship in any image.
+*
+!mvp/
+
+# But still exclude mvp build artifacts + local state.
+mvp/node_modules
+mvp/dist
+mvp/.ryngo
+mvp/.vite
+mvp/test/results
+mvp/.env
+mvp/.env.*
+!mvp/.env.example

@@ -1,0 +1,445 @@
+/* Ryngo landing — same tokens as the app's styles.css so the brand
+   reads continuous when a visitor crosses from / to /app. Light is
+   default; dark mode opts in via prefers-color-scheme so the landing
+   doesn't need a toggle. */
+
+:root {
+  color-scheme: light;
+  --bg: #fbfaf2;
+  --panel: #f4f1e3;
+  --line: #d8d3b4;
+  --border: #b9b394;
+  --text: #1a1a1a;
+  --muted: #5a5a5a;
+  --accent: #5a8a00;
+  --accent-ink: #fbfaf2;
+  --link: #0e7490;
+  --code-bg: #f0ecd6;
+  --fn: #1d4ed8;
+  --cls: #7e22ce;
+  --pkg: #92400e;
+  --call: #15803d;
+  --shadow-soft: 0 1px 0 rgba(40, 35, 10, 0.04), 0 12px 40px -16px rgba(40, 35, 10, 0.18);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --bg: #030712;
+    --panel: #0b1220;
+    --line: #1f2937;
+    --border: #374151;
+    --text: #e5e7eb;
+    --muted: #9ca3af;
+    --accent: #c8ff3d;
+    --accent-ink: #030712;
+    --link: #60a5fa;
+    --code-bg: #050a13;
+    --fn: #a5d8ff;
+    --cls: #d8b4fe;
+    --pkg: #fbbf24;
+    --call: #86efac;
+    --shadow-soft: 0 1px 0 rgba(0, 0, 0, 0.4), 0 16px 40px -12px rgba(0, 0, 0, 0.6);
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, ui-sans-serif,
+    sans-serif;
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  color: var(--link);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+a:hover {
+  border-bottom-color: var(--link);
+}
+
+code {
+  font-family:
+    ui-monospace, "JetBrains Mono", "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.92em;
+  background: var(--code-bg);
+  padding: 1px 5px;
+  border-radius: 3px;
+  color: var(--text);
+}
+
+pre {
+  background: var(--code-bg);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 14px 16px;
+  overflow-x: auto;
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 12px 0 22px;
+}
+pre code {
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Header
+   -------------------------------------------------------------------------- */
+
+.site {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 32px;
+  border-bottom: 1px solid var(--line);
+  background: var(--panel);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  backdrop-filter: saturate(180%) blur(8px);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 0;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+.brand:hover {
+  border: 0;
+}
+.brand-name {
+  font-size: 17px;
+}
+
+.logomark {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.site-nav {
+  display: inline-flex;
+  align-items: center;
+  gap: 22px;
+}
+.site-nav a {
+  font-size: 14px;
+  color: var(--muted);
+  border-bottom: 0;
+  font-weight: 500;
+}
+.site-nav a:hover {
+  color: var(--text);
+}
+.site-nav .cta {
+  background: var(--accent);
+  color: var(--accent-ink);
+  padding: 7px 14px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+.site-nav .cta:hover {
+  filter: brightness(1.05);
+  border-bottom: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Hero
+   -------------------------------------------------------------------------- */
+
+.hero {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 96px 32px 72px;
+  text-align: center;
+}
+
+.tagline {
+  margin: 0 0 20px;
+  font-size: clamp(34px, 6vw, 56px);
+  line-height: 1.04;
+  letter-spacing: -0.025em;
+  font-weight: 700;
+}
+
+.lede {
+  margin: 0 auto 36px;
+  max-width: 660px;
+  font-size: 17px;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.cta-row {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 11px 22px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  border-bottom: 0;
+}
+.cta.primary {
+  background: var(--accent);
+  color: var(--accent-ink);
+  box-shadow: var(--shadow-soft);
+}
+.cta.primary:hover {
+  filter: brightness(1.05);
+  border-bottom: 0;
+}
+.cta.ghost {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.cta.ghost:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  border-bottom: 1px solid var(--accent);
+}
+
+.hero-foot {
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted);
+  font-family:
+    ui-monospace, "JetBrains Mono", "SFMono-Regular", Menlo, Consolas, monospace;
+}
+
+/* --------------------------------------------------------------------------
+   Sections
+   -------------------------------------------------------------------------- */
+
+.section {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 72px 32px;
+  border-top: 1px solid var(--line);
+}
+.section.section-alt {
+  background: var(--panel);
+  max-width: none;
+  padding-left: 0;
+  padding-right: 0;
+}
+.section.section-alt > * {
+  max-width: 880px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 32px;
+  padding-right: 32px;
+}
+
+.section h2 {
+  margin: 0 0 32px;
+  font-size: 28px;
+  letter-spacing: -0.015em;
+  font-weight: 700;
+}
+
+.section h3 {
+  margin: 22px 0 6px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.section-lede {
+  margin: 0 0 32px;
+  color: var(--muted);
+  font-size: 15.5px;
+  max-width: 640px;
+}
+
+.section-aside {
+  margin: 28px 0 0;
+  padding: 14px 18px;
+  background: var(--bg);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 6px 6px 0;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.inline-link {
+  border-bottom: 1px solid var(--link);
+}
+
+/* --------------------------------------------------------------------------
+   How-to-use steps
+   -------------------------------------------------------------------------- */
+
+.how-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 28px;
+}
+.how-steps li {
+  position: relative;
+  padding: 20px 24px 22px 70px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+.step-num {
+  position: absolute;
+  top: 20px;
+  left: 22px;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family:
+    ui-monospace, "JetBrains Mono", "SFMono-Regular", Menlo, Consolas, monospace;
+  font-weight: 700;
+  font-size: 14px;
+}
+.how-steps h3 {
+  margin: 0 0 6px;
+  font-size: 17px;
+}
+.how-steps p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 15px;
+}
+.how-steps strong {
+  color: var(--text);
+  font-weight: 600;
+}
+.how-steps em {
+  color: var(--text);
+  font-style: normal;
+  font-weight: 600;
+}
+
+/* --------------------------------------------------------------------------
+   Personas
+   -------------------------------------------------------------------------- */
+
+.personas {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+}
+.personas > div {
+  padding: 18px 22px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+.personas h3 {
+  margin: 0 0 8px;
+  font-size: 15px;
+  color: var(--accent);
+  letter-spacing: 0.01em;
+}
+.personas p {
+  margin: 0;
+  font-size: 14.5px;
+  color: var(--muted);
+}
+
+@media (max-width: 720px) {
+  .personas {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   FAQ
+   -------------------------------------------------------------------------- */
+
+.faq {
+  margin: 0;
+  padding: 0;
+}
+.faq dt {
+  font-weight: 600;
+  margin-top: 18px;
+  font-size: 15.5px;
+}
+.faq dt:first-child {
+  margin-top: 0;
+}
+.faq dd {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 15px;
+}
+
+/* --------------------------------------------------------------------------
+   Footer
+   -------------------------------------------------------------------------- */
+
+.site-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 32px 32px 48px;
+  border-top: 1px solid var(--line);
+  background: var(--panel);
+  font-size: 13px;
+  color: var(--muted);
+}
+.site-foot .foot-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  color: var(--text);
+}
+.site-foot .foot-tag {
+  font-family:
+    ui-monospace, "JetBrains Mono", "SFMono-Regular", Menlo, Consolas, monospace;
+}
+.foot-nav {
+  display: inline-flex;
+  gap: 14px;
+}
+.foot-nav a {
+  border-bottom: 0;
+  color: var(--muted);
+}
+.foot-nav a:hover {
+  color: var(--text);
+  border-bottom: 0;
+}

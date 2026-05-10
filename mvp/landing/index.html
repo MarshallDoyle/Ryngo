@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="en" data-theme-default="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Ryngo — the map your coding agent is missing. Paste a GitHub URL, get a typed node-editor of your codebase. Annotations live in markdown your AI agent reads." />
+    <title>Ryngo — see your codebase as a graph</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23030712' rx='6'/%3E%3Cpath d='M8 24V8h6a5 5 0 010 10H8 M13 18l5 6' stroke='%23c8ff3d' stroke-width='2' fill='none' stroke-linejoin='round' stroke-linecap='round'/%3E%3C/svg%3E" />
+    <link rel="stylesheet" href="/landing.css" />
+    <meta property="og:title" content="Ryngo — the map your coding agent is missing" />
+    <meta property="og:description" content="Paste a GitHub URL. See your codebase as a typed node-editor. Mark intents in markdown your AI reads." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://ryngo.ai/" />
+  </head>
+  <body>
+    <header class="site">
+      <a class="brand" href="/" aria-label="Ryngo home">
+        <svg class="logomark" width="22" height="22" viewBox="0 0 32 32" aria-hidden="true">
+          <rect width="32" height="32" rx="6" fill="#030712" />
+          <path d="M8 24V8h6a5 5 0 010 10H8 M13 18l5 6" stroke="#c8ff3d" stroke-width="2" fill="none" stroke-linejoin="round" stroke-linecap="round" />
+        </svg>
+        <span class="brand-name">Ryngo</span>
+      </a>
+      <nav class="site-nav">
+        <a href="#how">How to use</a>
+        <a href="#mcp">Install MCP</a>
+        <a href="#faq">FAQ</a>
+        <a class="cta" href="/app">Open the app →</a>
+      </nav>
+    </header>
+
+    <section class="hero">
+      <h1 class="tagline">The map your coding agent is missing.</h1>
+      <p class="lede">
+        Paste a GitHub URL. Get a typed node-editor of your codebase —
+        files, functions, types, routes, db models — grouped into stack
+        layers. Mark intents in markdown your AI agent reads. We are not
+        a coding agent. We are the map your coding agent is missing.
+      </p>
+      <div class="cta-row">
+        <a class="cta primary" href="/app">Try it on your repo →</a>
+        <a class="cta ghost" href="#mcp">Install the MCP server →</a>
+      </div>
+      <p class="hero-foot">
+        Deterministic. No LLM inference on our end. Same map at ten
+        files and at ten thousand.
+      </p>
+    </section>
+
+    <section id="how" class="section">
+      <h2>How to use Ryngo</h2>
+      <ol class="how-steps">
+        <li>
+          <span class="step-num">1</span>
+          <h3>Paste a GitHub URL</h3>
+          <p>
+            Open <a class="inline-link" href="/app">/app</a> and drop
+            in a public repo. Ryngo clones shallow, parses every file
+            into the IR, and throws the source away. No code stored.
+          </p>
+        </li>
+        <li>
+          <span class="step-num">2</span>
+          <h3>Pick a view</h3>
+          <p>
+            <strong>Layers</strong> groups every file into Frontend /
+            Backend / Data / Infra / Tests / Config — your product as
+            a graph. <strong>Files</strong> drills into per-function
+            detail with typed ports for params and return values.
+            Toggle anytime; the toggle persists.
+          </p>
+        </li>
+        <li>
+          <span class="step-num">3</span>
+          <h3>Mark intents → your AI reads them</h3>
+          <p>
+            Right-click any node: <em>refactor</em>,
+            <em>extract</em>, <em>delete</em>,
+            <em>add tests</em>. Each intent is saved as a markdown
+            file in <code>.ryngo/intents/</code>. Claude Code, Codex,
+            Cursor, Aider — any agent that reads your repo — picks
+            them up automatically. When the agent applies the change,
+            click Verify and Ryngo diffs the IR against your stated
+            intent.
+          </p>
+        </li>
+      </ol>
+    </section>
+
+    <section id="mcp" class="section section-alt">
+      <h2>Install the MCP server</h2>
+      <p class="section-lede">
+        Ryngo ships an MCP (Model Context Protocol) server so Claude
+        Code, Claude Desktop, ChatGPT Apps, Cursor, and any other
+        MCP-compatible client can query your codebase map directly.
+        Nine tools: <code>analyze_repo</code>,
+        <code>get_topology</code>, <code>get_compact_ir</code>,
+        <code>get_subgraph</code>, <code>english_signature</code>,
+        <code>find_node</code>, <code>list_intents</code>,
+        <code>read_intent</code>, <code>list_annotations</code>.
+        No inference happens on our side — your agent uses your model.
+      </p>
+
+      <h3>Claude Code</h3>
+      <p>
+        Add to <code>~/.config/claude-code/mcp.json</code>:
+      </p>
+      <pre><code>{
+  "mcpServers": {
+    "ryngo": {
+      "command": "npx",
+      "args": ["-y", "ryngo-mcp"]
+    }
+  }
+}</code></pre>
+      <p>Restart Claude Code; the 9 Ryngo tools appear automatically.</p>
+
+      <h3>Claude Desktop</h3>
+      <p>
+        Same JSON shape; the file lives at
+        <code>~/Library/Application Support/Claude/claude_desktop_config.json</code>
+        on macOS.
+      </p>
+
+      <h3>ChatGPT Apps SDK + hosted MCP connectors</h3>
+      <p>
+        We expose Streamable HTTP MCP at <code>https://ryngo.ai/mcp</code>.
+        Point any hosted MCP connector at that URL — no installation,
+        no local process. Same 9 tools.
+      </p>
+
+      <h3>Self-host</h3>
+      <pre><code>git clone https://github.com/MarshallDoyle/Ryngo
+cd Ryngo/mvp
+npm install
+npm run mcp        # stdio MCP for Claude Code / Codex
+npm start          # HTTP server (API + /mcp + landing + /app)</code></pre>
+
+      <p class="section-aside">
+        Try it from your agent:
+        <em>"Use ryngo to give me the topology of github.com/tiangolo/sqlmodel,
+        then list every function that takes a Session parameter."</em>
+      </p>
+    </section>
+
+    <section class="section">
+      <h2>Who Ryngo is for</h2>
+      <div class="personas">
+        <div>
+          <h3>Vibe coders</h3>
+          <p>
+            You prompted your way to a product and within a week
+            couldn't answer what your own product actually does.
+            Ryngo is the loop closer: see the structure, mark the
+            change, hand the marks back to your AI of choice. Every
+            annotation lives in a markdown file your agent reads.
+          </p>
+        </div>
+        <div>
+          <h3>PMs &amp; execs</h3>
+          <p>
+            See the system you own. Ask "what's in scope?" without
+            messaging engineering. Share a link to a real
+            architecture map instead of holding another meeting. No
+            engineering jargon — Frontend / Backend / Data / Infra
+            and counts that mean what they say.
+          </p>
+        </div>
+        <div>
+          <h3>Engineers</h3>
+          <p>
+            Stop explaining the codebase to PMs and execs. Send them
+            a Ryngo link. They pan around. You get your afternoon
+            back. Same map your agents see — coordination overhead
+            drops to zero.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section id="faq" class="section section-alt">
+      <h2>FAQ</h2>
+      <dl class="faq">
+        <dt>Does Ryngo store my code?</dt>
+        <dd>
+          No. We clone shallow, build the IR, and throw the source
+          away. Nothing on our disk after the response is sent.
+        </dd>
+        <dt>Does Ryngo call an LLM?</dt>
+        <dd>
+          No. Ryngo never runs inference. Your agent uses our MCP
+          server to fetch maps, then calls whatever model it's paying
+          for. We are not a coding agent.
+        </dd>
+        <dt>Which languages work?</dt>
+        <dd>
+          TypeScript, JavaScript, Python, and Jupyter notebooks are
+          first-class today. Files in Go, Rust, Java, Ruby, C# appear
+          as nodes; deep extraction requires the language toolchain
+          and is in flight.
+        </dd>
+        <dt>How big a repo can I throw at it?</dt>
+        <dd>
+          Up to 1500 files in the shallow clone. Beyond that, we
+          truncate honestly. Ryngo is "service-sized," not
+          "monorepo-of-the-quarter."
+        </dd>
+        <dt>Can I run it on a private repo?</dt>
+        <dd>
+          Self-host the Docker image and point it at any git URL it
+          can reach. Hosted private-repo support arrives later.
+        </dd>
+        <dt>Is it open source?</dt>
+        <dd>
+          Yes — <a class="inline-link" href="https://github.com/MarshallDoyle/Ryngo">github.com/MarshallDoyle/Ryngo</a>.
+          Self-hosting is supported; the deployment plan ships in
+          <code>mvp/docs/HOSTING.md</code>.
+        </dd>
+      </dl>
+    </section>
+
+    <footer class="site-foot">
+      <span class="foot-brand">
+        <svg width="16" height="16" viewBox="0 0 32 32" aria-hidden="true">
+          <rect width="32" height="32" rx="6" fill="#030712" />
+          <path d="M8 24V8h6a5 5 0 010 10H8 M13 18l5 6" stroke="#c8ff3d" stroke-width="2" fill="none" stroke-linejoin="round" stroke-linecap="round" />
+        </svg>
+        Ryngo
+      </span>
+      <span class="foot-tag">— the map your coding agent is missing</span>
+      <nav class="foot-nav">
+        <a href="https://github.com/MarshallDoyle/Ryngo">github</a>
+        <a href="/app">app</a>
+        <a href="#mcp">mcp</a>
+      </nav>
+    </footer>
+  </body>
+</html>

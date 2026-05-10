@@ -377,17 +377,41 @@ app.get("/api/branches", async (req, res) => {
   }
 });
 
-// In production, serve the built frontend from ./dist.
+// In production, serve two static surfaces:
+//   /         → the marketing landing (mvp/landing/, hand-authored HTML)
+//   /app      → the SPA (mvp/dist/, vite-built)
+// Shared assets at /assets/* come from the SPA's vite-built bundle.
+// /api/* and /mcp are bound above and take precedence over the static
+// fall-throughs because they were registered earlier on `app`.
 const distDir = path.join(__dirname, "dist");
+const landingDir = path.join(__dirname, "landing");
 if (isProd) {
   if (!existsSync(distDir)) {
     console.warn(
       `[startup] NODE_ENV=production but ${distDir} doesn't exist. Run \`npm run build\` first.`,
     );
   }
-  app.use(express.static(distDir));
-  app.get("*", (_req, res) => {
+  if (!existsSync(landingDir)) {
+    console.warn(
+      `[startup] NODE_ENV=production but ${landingDir} doesn't exist.`,
+    );
+  }
+
+  // SPA assets (/assets/*) — must come before the landing.
+  app.use("/assets", express.static(path.join(distDir, "assets")));
+
+  // SPA at /app — every /app/* path serves the SPA's index.html so the
+  // client-side router takes over.
+  app.use("/app", express.static(distDir));
+  app.get(/^\/app(\/.*)?$/, (_req, res) => {
     res.sendFile(path.join(distDir, "index.html"));
+  });
+
+  // Landing at root. Static for the HTML + landing.css, then a final
+  // wildcard sends anything else to the landing's index (no 404 page).
+  app.use(express.static(landingDir));
+  app.get("*", (_req, res) => {
+    res.sendFile(path.join(landingDir, "index.html"));
   });
 }
 
