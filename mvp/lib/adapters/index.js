@@ -24,9 +24,10 @@ import fastapi from "./fastapi.js";
 import nextjs from "./nextjs.js";
 import django from "./django.js";
 import prisma from "./prisma.js";
+import graphql from "./graphql.js";
 import env from "./env.js";
 
-const REGISTRY = [express, fastapi, nextjs, django, prisma, env];
+const REGISTRY = [express, fastapi, nextjs, django, prisma, graphql, env];
 
 /**
  * Run all adapters whose `detect(ctx)` returns true.

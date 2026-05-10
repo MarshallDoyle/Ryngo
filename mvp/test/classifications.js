@@ -214,6 +214,18 @@ export const CLASSIFICATIONS = [
       byPredicate(ir, (n) => n.kind === "http-route" && n.data?.framework === "django"),
   },
   {
+    id: "gql_types",
+    group: "adapters",
+    label: "GraphQL types (SDL)",
+    count: (ir) => byKind(ir, "gql-type"),
+  },
+  {
+    id: "gql_resolvers",
+    group: "adapters",
+    label: "GraphQL resolvers (Query/Mutation/Subscription)",
+    count: (ir) => byKind(ir, "gql-resolver"),
+  },
+  {
     id: "db_models",
     group: "adapters",
     label: "DB models (any source)",

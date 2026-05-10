@@ -85,6 +85,10 @@ export const CORPUS = [
   { url: "https://github.com/wagtail/bakerydemo",  family: "app",        lang: "py", note: "real Django app (Wagtail bakery demo)",
     expects: { http_routes_django: { min: 1 }, db_models: { min: 1 } } },
 
+  // -- GraphQL (exercises the graphql adapter) ---------------------------
+  { url: "https://github.com/graphql/graphql-js",  family: "framework",  lang: "js", note: "GraphQL JS reference",
+    expects: { gql_types: { min: 1 } } },
+
   // -- Python: real apps -------------------------------------------------
   { url: "https://github.com/tiangolo/full-stack-fastapi-template", family: "app", lang: "py", note: "FastAPI starter",
     expects: { http_routes_fastapi: { min: 10 }, env_nodes: { min: 15 } } },
