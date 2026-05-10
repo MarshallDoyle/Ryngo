@@ -13,7 +13,7 @@ import {
   ListToolsRequestSchema,
   ReadResourceRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
-import { analyzeRepo } from "./analyze.js";
+import { getCachedIR } from "./analysis-cache.js";
 import {
   compactJson,
   englishSignature,
@@ -21,29 +21,15 @@ import {
   slice as sliceProjection,
 } from "./projection-llm.js";
 import { buildViewModel } from "./view-model.js";
-import { recordAnalysisRun, recordMcpToolCall } from "./events.js";
+import { recordAnalysisRun, recordMcpToolCall, recordRejectedSubmission } from "./events.js";
+import { preflightReason } from "./github.js";
 import * as intentsLib from "./intents.js";
 import * as annotationsLib from "./annotations.js";
 
-const SESSION_CACHE_MS = 5 * 60 * 1000;
 const WIDGET_URI = "ui://widget/ryngo-viewer.html";
 
-const irCache = new Map(); // key -> { ts, ir }
-
-function cacheKey(url, ref) {
-  return `${url}@${ref || "HEAD"}`;
-}
-
 async function getIR(githubUrl, ref) {
-  const k = cacheKey(githubUrl, ref);
-  const hit = irCache.get(k);
-  if (hit && Date.now() - hit.ts < SESSION_CACHE_MS) return hit.ir;
-  const ir = await analyzeRepo(githubUrl, ref || "");
-  irCache.set(k, { ts: Date.now(), ir });
-  if (irCache.size > 8) {
-    const oldest = [...irCache.entries()].sort((a, b) => a[1].ts - b[1].ts)[0];
-    if (oldest) irCache.delete(oldest[0]);
-  }
+  const { ir } = await getCachedIR(githubUrl, ref);
   return ir;
 }
 
@@ -272,6 +258,16 @@ export function createRyngoMcpServer({ enableWidgets = false } = {}) {
       });
       return result;
     } catch (err) {
+      const reason = preflightReason(err);
+      if (reason && args.github_url) {
+        void recordRejectedSubmission({
+          source: "mcp",
+          githubUrl: args.github_url,
+          ref: args.ref,
+          reason,
+          error: err,
+        });
+      }
       void recordMcpToolCall({
         toolName: name,
         args,

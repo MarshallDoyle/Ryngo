@@ -21,7 +21,20 @@ Current event boundaries:
   weak files, and quality flags.
 - Web `/api/analyze` successes and failures.
 - Web `/api/diff` submissions.
+- Repo rejections before clone, including rate limits, oversized repos,
+  invalid URLs, inaccessible repos, and clone saturation.
 - Source opens, annotations, intent creation, and intent verification.
+
+Operational report:
+
+```bash
+cd mvp
+npm run quality:report
+```
+
+With `DATABASE_URL`, this reads Postgres and prints weak languages,
+diagnostic codes, quality flags, and recent submissions. Without
+`DATABASE_URL`, it falls back to the latest corpus summary.
 
 This is the data spine for learning which repos, files, languages, adapters,
 and code patterns Ryngo compiles well, and which ones need better parser /

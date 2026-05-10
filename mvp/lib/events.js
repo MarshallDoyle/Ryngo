@@ -19,6 +19,45 @@ export function eventsEnabled() {
   return Boolean(process.env.DATABASE_URL) && process.env.RYNGO_EVENTS !== "off" && !disabled;
 }
 
+/** Check whether the optional event database is reachable. */
+export async function eventHealth() {
+  const configured = Boolean(process.env.DATABASE_URL) && process.env.RYNGO_EVENTS !== "off";
+  if (!configured) {
+    return {
+      ok: true,
+      configured: false,
+      databaseUrl: Boolean(process.env.DATABASE_URL),
+    };
+  }
+  if (disabled) {
+    return {
+      ok: false,
+      configured: true,
+      databaseUrl: true,
+      error: "event writes are disabled after a database error",
+    };
+  }
+  try {
+    if (!(await ensureEventSchema())) {
+      return {
+        ok: false,
+        configured: true,
+        databaseUrl: true,
+        error: "event schema was not initialized",
+      };
+    }
+    await pool.query("select 1");
+    return { ok: true, configured: true, databaseUrl: true };
+  } catch (err) {
+    return {
+      ok: false,
+      configured: true,
+      databaseUrl: true,
+      error: cleanText(errorMessage(err), 500),
+    };
+  }
+}
+
 /** Create event tables if Postgres is configured. */
 export async function ensureEventSchema() {
   if (!eventsEnabled()) return false;
@@ -52,6 +91,48 @@ export async function recordUsageEvent(eventName, props = {}) {
       reqHash(props.req, "ua"),
     ],
   );
+  return id;
+}
+
+/** Record a repo submission that was rejected before analysis started. */
+export async function recordRejectedSubmission({
+  source,
+  githubUrl,
+  ref,
+  reason,
+  error,
+  req,
+}) {
+  if (!(await ensureEventSchema())) return null;
+  const repo = repoParts(githubUrl);
+  const id = crypto.randomUUID();
+  await safeQuery(
+    `insert into repo_submissions (
+      id, source, repo_host, repo_owner, repo_name, ref, accepted, reject_reason,
+      ip_hash, user_agent_hash
+    ) values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
+    [
+      id,
+      source || "api",
+      repo?.host || null,
+      repo?.owner || null,
+      repo?.name || null,
+      cleanText(ref, 120),
+      false,
+      cleanText(reason || errorMessage(error), 500),
+      reqHash(req, "ip"),
+      reqHash(req, "ua"),
+    ],
+  );
+  await recordUsageEvent("repo_reject", {
+    source,
+    githubUrl,
+    ref,
+    status: "rejected",
+    error,
+    req,
+    props: { reason },
+  });
   return id;
 }
 
@@ -282,7 +363,7 @@ async function insertAdapterOutcomes(analysisRunId, ir) {
 }
 
 async function createSchema() {
-  pool = pool || new Pool({ connectionString: process.env.DATABASE_URL });
+  pool = pool || new Pool(poolOptions());
   await pool.query(`
     create table if not exists repo_submissions (
       id uuid primary key,
@@ -411,6 +492,14 @@ async function createSchema() {
       on mcp_tool_calls(tool_name, created_at desc);
   `);
   return true;
+}
+
+function poolOptions() {
+  const out = { connectionString: process.env.DATABASE_URL };
+  if (process.env.CLOUD_SQL_CONNECTION_NAME) {
+    out.host = `/cloudsql/${process.env.CLOUD_SQL_CONNECTION_NAME}`;
+  }
+  return out;
 }
 
 async function safeQuery(sql, params) {

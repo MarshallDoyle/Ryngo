@@ -16,6 +16,7 @@
     "smoke:mcp": "node scripts/mcp-smoke.js",
     "smoke:mcp:http": "node scripts/mcp-http-smoke.js",
     "smoke:view-model": "node scripts/view-model-smoke.js",
+    "quality:report": "node scripts/quality-report.js",
     "mcp:map": "node scripts/mcp-map.js",
     "mcp:config": "node scripts/print-mcp-config.js",
     "corpus": "node scripts/corpus-run.js",

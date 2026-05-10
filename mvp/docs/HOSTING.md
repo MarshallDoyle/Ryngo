@@ -24,18 +24,48 @@ so the deployed app is still the MVP server and MCP endpoint.
 path, but the currently working console trigger is the root-Dockerfile
 trigger.
 
-The deployed MCP connector URL will be:
+Current production URLs:
 
 ```text
-https://<cloud-run-service-url>/mcp
+ChatGPT widget endpoint: https://ryngo-261437541038.us-west1.run.app/mcp
+Claude/Codex plain endpoint: https://ryngo-261437541038.us-west1.run.app/mcp/plain
 ```
 
 After deploy, verify it from this checkout:
 
 ```bash
 cd mvp
-npm run smoke:mcp:http -- https://<cloud-run-service-url>/mcp
+npm run smoke:mcp:http -- https://ryngo-261437541038.us-west1.run.app/mcp
+npm run smoke:mcp:http -- https://ryngo-261437541038.us-west1.run.app/mcp/plain
 ```
+
+## Reliable beta runtime
+
+This pass makes the single Cloud Run service usable as an open beta:
+
+- Expensive endpoints are rate-limited in-process:
+  `/api/analyze` and `/api/compile-report` at 10/hour/IP, `/api/diff` at
+  5/hour/IP, and `/mcp` + `/mcp/plain` at 30 POSTs/hour/IP.
+- Analysis work has a per-IP cap of 2 units and a process-wide cap of 6
+  units. Diffs cost 2 units.
+- HTTP and MCP share the same 5-minute successful-IR cache (max 8 entries).
+- Public GitHub repos are preflighted through the GitHub API before clone;
+  repos over 200 MB are rejected before work starts.
+- `/api/health` reports git, event DB, MCP endpoint paths, revision metadata,
+  and `.ryngo` storage writability.
+
+Production persistence target:
+
+| Resource | Value |
+|---|---|
+| Cloud SQL instance | `ryngo-prod-pg` |
+| Database | `ryngo` |
+| Runtime DB user | `ryngo_app` |
+| Database secret | `ryngo-database-url` |
+| Event salt secret | `ryngo-event-salt` |
+| Runtime service account | `ryngo-runtime@personal-site-488021.iam.gserviceaccount.com` |
+| GCS state bucket | `ryngo-state-personal-site-488021-us-west1` |
+| State mount | `/app/.ryngo` |
 
 ## Goals (in priority order)
 
@@ -60,9 +90,9 @@ npm run smoke:mcp:http -- https://<cloud-run-service-url>/mcp
 - Repo: `https://github.com/MarshallDoyle/Ryngo`. The active Cloud Build
   trigger targets `main`.
 - Stack: Node 20+, Express, Vite-built React SPA. Requires `git` CLI
-  on the host (for `analyzeRepo`'s shallow clones). No database yet;
-  the usage / compiler-quality warehouse is planned separately in
-  [`DATA_WAREHOUSE.md`](DATA_WAREHOUSE.md).
+  on the host (for `analyzeRepo`'s shallow clones). The optional usage /
+  compiler-quality database is Postgres via `DATABASE_URL`; production uses
+  Cloud SQL once the `ryngo-database-url` secret is attached.
 
 ## Recommended architecture: Cloud Run + GitHub Actions
 

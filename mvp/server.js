@@ -11,9 +11,9 @@
 import express from "express";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { existsSync } from "node:fs";
+import { existsSync, promises as fs } from "node:fs";
 import { spawn } from "node:child_process";
-import { analyzeRepo } from "./lib/analyze.js";
+import { getCachedIR } from "./lib/analysis-cache.js";
 import { diffIRs } from "./lib/diff.js";
 import * as annotations from "./lib/annotations.js";
 import * as regions from "./lib/regions.js";
@@ -23,7 +23,7 @@ import {
   loadIntentSnapshot,
 } from "./lib/snapshots.js";
 import { verifyIntent } from "./lib/verify.js";
-import { readMaybe } from "./lib/storage.js";
+import { readMaybe, RYNGO_ROOT } from "./lib/storage.js";
 import {
   compactJson,
   englishSignature,
@@ -33,7 +33,13 @@ import {
 } from "./lib/projection-llm.js";
 import { buildViewModel } from "./lib/view-model.js";
 import { handleMcpHttpRequest } from "./lib/mcp.js";
-import { eventsEnabled, recordAnalysisRun, recordUsageEvent } from "./lib/events.js";
+import {
+  eventHealth,
+  recordAnalysisRun,
+  recordRejectedSubmission,
+  recordUsageEvent,
+} from "./lib/events.js";
+import { GitHubPreflightError, preflightGitHubRepo } from "./lib/github.js";
 import * as regionsLib from "./lib/regions.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -41,31 +47,38 @@ const PORT = Number(process.env.PORT) || 3000;
 const isProd = process.env.NODE_ENV === "production";
 
 const app = express();
+app.set("trust proxy", true);
 app.use(express.json({ limit: "32kb" }));
 
 // Simple per-IP concurrency cap so a single client can't queue many clones.
 const inFlightByIp = new Map();
 const MAX_INFLIGHT_PER_IP = 2;
+const MAX_INFLIGHT_GLOBAL_UNITS = 6;
+let inFlightGlobalUnits = 0;
+
+const analyzeRateLimit = rateLimit("analyze", 10, 60 * 60 * 1000);
+const compileReportRateLimit = rateLimit("compile-report", 10, 60 * 60 * 1000);
+const diffRateLimit = rateLimit("diff", 5, 60 * 60 * 1000);
+const mcpRateLimit = rateLimit("mcp", 30, 60 * 60 * 1000, { mcp: true });
 
 app.get("/api/health", async (_req, res) => {
-  const git = await gitHealth();
+  const [git, events, storage] = await Promise.all([
+    gitHealth(),
+    eventHealth(),
+    storageHealth(),
+  ]);
   const checks = {
     git,
-    events: {
-      configured: eventsEnabled(),
-      databaseUrl: Boolean(process.env.DATABASE_URL),
-    },
+    events,
     mcp: {
       chatgpt: "/mcp",
       plain: "/mcp/plain",
     },
-    storage: {
-      ryngoDir: path.join(__dirname, ".ryngo"),
-      mounted: existsSync(path.join(__dirname, ".ryngo")),
-    },
+    storage,
   };
-  res.status(git.ok ? 200 : 503).json({
-    ok: git.ok,
+  const ok = git.ok && events.ok && storage.ok;
+  res.status(ok ? 200 : 503).json({
+    ok,
     mode: isProd ? "production" : "development",
     revision: process.env.K_REVISION || null,
     commit: process.env.GIT_SHA || null,
@@ -86,7 +99,7 @@ app.options("/mcp", (_req, res) => {
     .status(204)
     .end();
 });
-app.post("/mcp", (req, res) => {
+app.post("/mcp", mcpRateLimit, (req, res) => {
   res.set("Access-Control-Allow-Origin", "*");
   handleMcpHttpRequest(req, res, { enableWidgets: true });
 });
@@ -101,7 +114,7 @@ app.options("/mcp/plain", (_req, res) => {
     .status(204)
     .end();
 });
-app.post("/mcp/plain", (req, res) => {
+app.post("/mcp/plain", mcpRateLimit, (req, res) => {
   res.set("Access-Control-Allow-Origin", "*");
   handleMcpHttpRequest(req, res, { enableWidgets: false });
 });
@@ -226,29 +239,41 @@ app.get("/api/source", async (req, res) => {
     });
 });
 
-app.post("/api/analyze", async (req, res) => {
+app.post("/api/analyze", analyzeRateLimit, async (req, res) => {
   const url = typeof req.body?.url === "string" ? req.body.url : "";
   const ref = typeof req.body?.ref === "string" ? req.body.ref : "";
   if (!url) {
-    return res.status(400).json({ error: "Body must include a `url` string." });
-  }
-
-  const ip = req.ip || "unknown";
-  const current = inFlightByIp.get(ip) || 0;
-  if (current >= MAX_INFLIGHT_PER_IP) {
-    return res.status(429).json({
-      error: `Too many concurrent analyses from this client (max ${MAX_INFLIGHT_PER_IP}). Wait for the previous one.`,
+    return rejectRepoRequest(req, res, {
+      status: 400,
+      source: "web",
+      githubUrl: url,
+      ref,
+      reason: "invalid_url",
+      message: "Body must include a `url` string.",
     });
   }
-  inFlightByIp.set(ip, current + 1);
+
+  let meta;
+  try {
+    meta = await preflightGitHubRepo(url);
+  } catch (err) {
+    return rejectPreflightError(req, res, err, { source: "web", githubUrl: url, ref });
+  }
+  const release = acquireAnalysisSlot(req, res, {
+    units: 1,
+    source: "web",
+    githubUrl: meta.normalizedUrl,
+    ref,
+  });
+  if (!release) return;
 
   const startedAt = Date.now();
   try {
-    const ir = await analyzeRepo(url, ref);
+    const { ir, cached } = await getCachedIR(meta.normalizedUrl, ref, { preflight: false });
     const ms = Date.now() - startedAt;
     void recordAnalysisRun({
       source: "web",
-      githubUrl: url,
+      githubUrl: meta.normalizedUrl,
       ref: ref || ir.ref,
       status: "ok",
       durationMs: ms,
@@ -258,13 +283,13 @@ app.post("/api/analyze", async (req, res) => {
     console.log(
       `[analyze ok] ${ir.repo}@${ir.ref}  files=${ir.stats.files} analyzed=${ir.stats.analyzedFiles} edges=${ir.stats.edges} pkg=${ir.stats.packages} ${ms}ms${ir.stats.truncated ? " (truncated)" : ""}`,
     );
-    res.json({ ir });
+    res.json({ ir, cached });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     const ms = Date.now() - startedAt;
     void recordAnalysisRun({
       source: "web",
-      githubUrl: url,
+      githubUrl: meta.normalizedUrl,
       ref,
       status: "error",
       durationMs: ms,
@@ -274,48 +299,58 @@ app.post("/api/analyze", async (req, res) => {
     console.warn(`[analyze err] ${url}@${ref || "HEAD"}  ${ms}ms  ${message}`);
     res.status(400).json({ error: message });
   } finally {
-    const next = (inFlightByIp.get(ip) || 1) - 1;
-    if (next <= 0) inFlightByIp.delete(ip);
-    else inFlightByIp.set(ip, next);
+    release();
   }
 });
 
-app.post("/api/compile-report", async (req, res) => {
+app.post("/api/compile-report", compileReportRateLimit, async (req, res) => {
   const url = typeof req.body?.url === "string" ? req.body.url : "";
   const ref = typeof req.body?.ref === "string" ? req.body.ref : "";
   if (!url) {
-    return res.status(400).json({ error: "Body must include a `url` string." });
-  }
-
-  const ip = req.ip || "unknown";
-  const current = inFlightByIp.get(ip) || 0;
-  if (current >= MAX_INFLIGHT_PER_IP) {
-    return res.status(429).json({
-      error: `Too many concurrent analyses from this client (max ${MAX_INFLIGHT_PER_IP}). Wait for the previous one.`,
+    return rejectRepoRequest(req, res, {
+      status: 400,
+      source: "web",
+      githubUrl: url,
+      ref,
+      reason: "invalid_url",
+      message: "Body must include a `url` string.",
     });
   }
-  inFlightByIp.set(ip, current + 1);
+
+  let meta;
+  try {
+    meta = await preflightGitHubRepo(url);
+  } catch (err) {
+    return rejectPreflightError(req, res, err, { source: "web", githubUrl: url, ref });
+  }
+  const release = acquireAnalysisSlot(req, res, {
+    units: 1,
+    source: "web",
+    githubUrl: meta.normalizedUrl,
+    ref,
+  });
+  if (!release) return;
 
   const startedAt = Date.now();
   try {
-    const ir = await analyzeRepo(url, ref);
+    const { ir, cached } = await getCachedIR(meta.normalizedUrl, ref, { preflight: false });
     const ms = Date.now() - startedAt;
     void recordAnalysisRun({
       source: "web",
-      githubUrl: url,
+      githubUrl: meta.normalizedUrl,
       ref: ref || ir.ref,
       status: "ok",
       durationMs: ms,
       ir,
       req,
     });
-    res.json({ report: ir.quality });
+    res.json({ report: ir.quality, cached });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     const ms = Date.now() - startedAt;
     void recordAnalysisRun({
       source: "web",
-      githubUrl: url,
+      githubUrl: meta.normalizedUrl,
       ref,
       status: "error",
       durationMs: ms,
@@ -324,9 +359,7 @@ app.post("/api/compile-report", async (req, res) => {
     });
     res.status(400).json({ error: message });
   } finally {
-    const next = (inFlightByIp.get(ip) || 1) - 1;
-    if (next <= 0) inFlightByIp.delete(ip);
-    else inFlightByIp.set(ip, next);
+    release();
   }
 });
 
@@ -336,14 +369,19 @@ app.post("/api/compile-report", async (req, res) => {
 // Response: { ir }   ir.nodes/edges each carry _diff: 'added'|'removed'|'unchanged'
 // ---------------------------------------------------------------------------
 
-app.post("/api/diff", async (req, res) => {
+app.post("/api/diff", diffRateLimit, async (req, res) => {
   const url = typeof req.body?.url === "string" ? req.body.url : "";
   const base = typeof req.body?.base === "string" ? req.body.base : "";
   const head = typeof req.body?.head === "string" ? req.body.head : "";
   if (!url || !base || !head) {
-    return res
-      .status(400)
-      .json({ error: "Body must include `url`, `base`, and `head`." });
+    return rejectRepoRequest(req, res, {
+      status: 400,
+      source: "web",
+      githubUrl: url,
+      ref: `${base}..${head}`,
+      reason: "invalid_url",
+      message: "Body must include `url`, `base`, and `head`.",
+    });
   }
   if (base === head) {
     return res
@@ -351,27 +389,37 @@ app.post("/api/diff", async (req, res) => {
       .json({ error: "`base` and `head` must be different refs." });
   }
 
-  const ip = req.ip || "unknown";
-  const current = inFlightByIp.get(ip) || 0;
-  // Diff costs two clones, so charge each request as two units.
-  if (current + 2 > MAX_INFLIGHT_PER_IP) {
-    return res.status(429).json({
-      error: `Too many concurrent analyses from this client (max ${MAX_INFLIGHT_PER_IP}). Wait for the previous one.`,
+  let meta;
+  try {
+    meta = await preflightGitHubRepo(url);
+  } catch (err) {
+    return rejectPreflightError(req, res, err, {
+      source: "web",
+      githubUrl: url,
+      ref: `${base}..${head}`,
     });
   }
-  inFlightByIp.set(ip, current + 2);
+  const release = acquireAnalysisSlot(req, res, {
+    units: 2,
+    source: "web",
+    githubUrl: meta.normalizedUrl,
+    ref: `${base}..${head}`,
+  });
+  if (!release) return;
 
   const startedAt = Date.now();
   try {
-    const [baseIR, headIR] = await Promise.all([
-      analyzeRepo(url, base),
-      analyzeRepo(url, head),
+    const [baseResult, headResult] = await Promise.all([
+      getCachedIR(meta.normalizedUrl, base, { preflight: false }),
+      getCachedIR(meta.normalizedUrl, head, { preflight: false }),
     ]);
+    const baseIR = baseResult.ir;
+    const headIR = headResult.ir;
     const ir = diffIRs(baseIR, headIR);
     const ms = Date.now() - startedAt;
     void recordUsageEvent("diff_submit", {
       source: "web",
-      githubUrl: url,
+      githubUrl: meta.normalizedUrl,
       ref: `${base}..${head}`,
       status: "ok",
       durationMs: ms,
@@ -392,7 +440,7 @@ app.post("/api/diff", async (req, res) => {
     const ms = Date.now() - startedAt;
     void recordUsageEvent("diff_submit", {
       source: "web",
-      githubUrl: url,
+      githubUrl: meta.normalizedUrl,
       ref: `${base}..${head}`,
       status: "error",
       durationMs: ms,
@@ -403,9 +451,7 @@ app.post("/api/diff", async (req, res) => {
     console.warn(`[diff err] ${url}  ${base}..${head}  ${ms}ms  ${message}`);
     res.status(400).json({ error: message });
   } finally {
-    const next = (inFlightByIp.get(ip) || 2) - 2;
-    if (next <= 0) inFlightByIp.delete(ip);
-    else inFlightByIp.set(ip, next);
+    release();
   }
 });
 
@@ -950,6 +996,150 @@ function repoUrlFromStorageKey(repo) {
   const parts = String(repo || "").split("__");
   if (parts.length !== 2 || !parts[0] || !parts[1]) return "";
   return `https://github.com/${parts[0]}/${parts[1]}`;
+}
+
+function rateLimit(name, max, windowMs, opts = {}) {
+  const hits = new Map();
+  return (req, res, next) => {
+    const now = Date.now();
+    const key = `${name}:${clientKey(req)}`;
+    const current = hits.get(key);
+    const bucket = current && now - current.startedAt < windowMs
+      ? current
+      : { count: 0, startedAt: now };
+    bucket.count += 1;
+    hits.set(key, bucket);
+    const retryAfter = Math.max(1, Math.ceil((bucket.startedAt + windowMs - now) / 1000));
+    res.set("X-RateLimit-Limit", String(max));
+    res.set("X-RateLimit-Remaining", String(Math.max(0, max - bucket.count)));
+    res.set("X-RateLimit-Reset", String(Math.ceil((bucket.startedAt + windowMs) / 1000)));
+    if (bucket.count <= max) return next();
+
+    const githubUrl = req.body?.arguments?.github_url || req.body?.url || "";
+    const ref = req.body?.arguments?.ref || req.body?.ref || "";
+    void recordLimitReject(req, { source: opts.mcp ? "mcp" : "web", githubUrl, ref, reason: "rate_limited" });
+    if (opts.mcp) {
+      return res.status(429).json({
+        jsonrpc: "2.0",
+        error: {
+          code: -32000,
+          message: `Rate limit exceeded for ${name}; retry after ${retryAfter}s.`,
+        },
+        id: req.body?.id ?? null,
+      });
+    }
+    return res.status(429).json({
+      error: `Rate limit exceeded for ${name}; retry after ${retryAfter}s.`,
+      reason: "rate_limited",
+      retryAfterSeconds: retryAfter,
+    });
+  };
+}
+
+function acquireAnalysisSlot(req, res, { units, source, githubUrl, ref }) {
+  const ip = clientKey(req);
+  const current = inFlightByIp.get(ip) || 0;
+  if (current + units > MAX_INFLIGHT_PER_IP) {
+    rejectRepoRequest(req, res, {
+      status: 429,
+      source,
+      githubUrl,
+      ref,
+      reason: "clone_saturated",
+      message: `Too many concurrent analyses from this client (max ${MAX_INFLIGHT_PER_IP}). Wait for the previous one.`,
+    });
+    return null;
+  }
+  if (inFlightGlobalUnits + units > MAX_INFLIGHT_GLOBAL_UNITS) {
+    rejectRepoRequest(req, res, {
+      status: 429,
+      source,
+      githubUrl,
+      ref,
+      reason: "clone_saturated",
+      message: "Ryngo is busy analyzing other repos. Try again in a moment.",
+    });
+    return null;
+  }
+  inFlightByIp.set(ip, current + units);
+  inFlightGlobalUnits += units;
+  return () => {
+    const next = (inFlightByIp.get(ip) || units) - units;
+    if (next <= 0) inFlightByIp.delete(ip);
+    else inFlightByIp.set(ip, next);
+    inFlightGlobalUnits = Math.max(0, inFlightGlobalUnits - units);
+  };
+}
+
+function rejectPreflightError(req, res, err, context) {
+  const status = err instanceof GitHubPreflightError ? err.status : 502;
+  const reason = err instanceof GitHubPreflightError ? err.reason : "repo_preflight_failed";
+  return rejectRepoRequest(req, res, {
+    ...context,
+    status,
+    reason,
+    message: err.message || String(err),
+    error: err,
+  });
+}
+
+function rejectRepoRequest(req, res, { status, source, githubUrl, ref, reason, message, error }) {
+  void recordRejectedSubmission({
+    source,
+    githubUrl,
+    ref,
+    reason,
+    error: error || new Error(message),
+    req,
+  });
+  return res.status(status).json({ error: message, reason });
+}
+
+async function recordLimitReject(req, { source, githubUrl, ref, reason }) {
+  if (githubUrl) {
+    await recordRejectedSubmission({
+      source,
+      githubUrl,
+      ref,
+      reason,
+      req,
+    });
+    return;
+  }
+  await recordUsageEvent("rate_limit", {
+    source,
+    status: "rate_limited",
+    req,
+    props: { reason },
+  });
+}
+
+function clientKey(req) {
+  return req.ip || req.get("x-forwarded-for") || "unknown";
+}
+
+async function storageHealth() {
+  const dir = RYNGO_ROOT;
+  const mounted = existsSync(dir);
+  if (!mounted) {
+    return { ok: true, mounted: false, writable: false, ryngoDir: dir };
+  }
+  const name = `.health-${process.pid}-${Date.now()}.txt`;
+  const file = path.join(dir, name);
+  try {
+    await fs.writeFile(file, "ok", "utf8");
+    const text = await fs.readFile(file, "utf8");
+    await fs.rm(file, { force: true });
+    return { ok: text === "ok", mounted: true, writable: text === "ok", ryngoDir: dir };
+  } catch (err) {
+    return {
+      ok: false,
+      mounted: true,
+      writable: false,
+      ryngoDir: dir,
+      error: err.message || String(err),
+    };
+  }
 }
 
 function gitHealth() {
