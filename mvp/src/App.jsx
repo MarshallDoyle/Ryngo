@@ -725,6 +725,10 @@ const FOCUS_HUB_W = 280;
 const FOCUS_HUB_H = 64;
 const FOCUS_SAT_W = 220;
 const FOCUS_SAT_H = 40;
+// Collapsed-by-default satellites are only ~26 px tall (header strip).
+// The grid uses this for rowH so 22 small chips don't reserve 1500 px of
+// vertical space — they pack into a tight, viewport-aspect grid instead.
+const FOCUS_SAT_H_COLLAPSED = 28;
 
 function layoutFocus(rawNodes, rawEdges, focusId, theme = "dark", aspectRatio = 16 / 10) {
   const STYLE = theme === "light" ? STYLE_LIGHT : STYLE_DARK;
@@ -762,44 +766,57 @@ function layoutFocus(rawNodes, rawEdges, focusId, theme = "dark", aspectRatio = 
   const incoming = [...inIds].map((id) => byId.get(id)).filter(Boolean);
   const outgoing = [...outIds].map((id) => byId.get(id)).filter(Boolean);
 
-  // Position: hub in the middle, callers on the left, callees on the right.
-  // Phase 4.4.2 — when there are many satellites, distribute them into a
-  // multi-column grid sized to match the viewport aspect ratio instead of
-  // stacking everything in one tall vertical column. The hub stays
-  // centered between the two satellite blocks.
-  const VGAP = 16;
-  const HGAP = 24;
-  const HUB_PAD = 80;
+  // Phase 4.4.2 layout — when there are many satellites, distribute them
+  // into a multi-column grid sized to match the viewport aspect ratio.
+  // Phase 4.4.4 (this commit): grid uses the COLLAPSED satellite height
+  // for rowH so chips pack tight; hub re-centers when only one side has
+  // satellites; column cap raised so very-wide windows fill horizontally.
+  const VGAP = 18;
+  const HGAP = 28;
+  const HUB_PAD = 96;
 
+  // The focus view's React Flow canvas takes only the right ~55 % of
+  // the window when the source panel is visible. Use that as the
+  // effective aspect for column-count math so the satellite cluster
+  // matches what the user actually sees.
+  const focusCanvasAspect = aspectRatio * 0.55;
   const colsFor = (n) => {
-    if (n <= 6) return 1;
-    if (n <= 12) return 2;
-    if (n <= 22) return Math.min(3, Math.round(Math.sqrt(n * 0.6 * aspectRatio)));
-    return Math.min(5, Math.round(Math.sqrt(n * 0.6 * aspectRatio)));
+    if (n <= 4) return 1;
+    if (n <= 8) return 2;
+    // cols ≈ sqrt(N × aspect × itemHeight / itemWidth) gives a layout
+    // whose bounding box matches the canvas aspect. With short wide
+    // collapsed chips this naturally lands on 2-3 cols for typical
+    // landscape canvases, and grows for ultrawide.
+    const ideal = Math.round(
+      Math.sqrt(
+        (n * focusCanvasAspect * (FOCUS_SAT_H_COLLAPSED + 18)) /
+          (FOCUS_SAT_W + 28),
+      ),
+    );
+    return Math.max(2, Math.min(5, ideal));
   };
 
   /**
    * Stack n nodes into `cols` columns. Direction = -1 means satellites
-   * grow leftward (callers); +1 means rightward (callees). Returns
-   *   { placed: [{ node, x, y }], width, height }
-   * so the hub can be repositioned between the two blocks.
+   * grow leftward (callers); +1 means rightward (callees).
    */
   const stackInColumns = (arr, direction) => {
+    if (arr.length === 0) return { placed: [], width: 0, height: 0 };
     const cols = colsFor(arr.length);
     const rowsPerCol = Math.ceil(arr.length / cols);
     const colW = FOCUS_SAT_W + HGAP;
-    const rowH = FOCUS_SAT_H + VGAP;
+    const rowH = FOCUS_SAT_H_COLLAPSED + VGAP;
     const totalH = rowsPerCol * rowH - VGAP;
     const totalW = cols * colW - HGAP;
     const placed = [];
     for (let i = 0; i < arr.length; i++) {
       const col = Math.floor(i / rowsPerCol);
       const row = i % rowsPerCol;
-      // Direction -1 (callers): rightmost column is closest to hub
-      // Direction +1 (callees): leftmost column is closest to hub
+      // Direction -1 (callers): rightmost column is closest to hub.
+      // Direction +1 (callees): leftmost column is closest to hub.
       const colSlot = direction === -1 ? cols - 1 - col : col;
       const x = direction * (colSlot * colW + FOCUS_SAT_W / 2);
-      const y = row * rowH - totalH / 2 + FOCUS_SAT_H / 2;
+      const y = row * rowH - totalH / 2 + FOCUS_SAT_H_COLLAPSED / 2;
       placed.push({ node: arr[i], x, y });
     }
     return { placed, width: totalW, height: totalH };
@@ -808,21 +825,22 @@ function layoutFocus(rawNodes, rawEdges, focusId, theme = "dark", aspectRatio = 
   const left = stackInColumns(incoming, -1);
   const right = stackInColumns(outgoing, +1);
 
-  const hubX = 0;
+  // Hub re-centers when only one side has satellites — otherwise the canvas
+  // looks unbalanced (hub on far left with everything to the right). When
+  // both sides exist, hub stays at 0.
+  let hubX = 0;
   const hubY = 0;
-  const leftEdge = -(left.width + HUB_PAD + FOCUS_HUB_W / 2);
-  const rightEdge = right.width + HUB_PAD + FOCUS_HUB_W / 2;
-  // Re-anchor satellites relative to the hub padding.
-  const leftPlaced = left.placed.map((p) => ({
-    ...p,
-    x: p.x - HUB_PAD - FOCUS_HUB_W / 2,
-  }));
-  const rightPlaced = right.placed.map((p) => ({
-    ...p,
-    x: p.x + HUB_PAD + FOCUS_HUB_W / 2,
-  }));
-  void leftEdge;
-  void rightEdge;
+  if (left.placed.length === 0 && right.placed.length > 0) {
+    // Outgoing-only: shift hub leftward so the satellite block is centered.
+    hubX = -(right.width + HUB_PAD) / 2;
+  } else if (right.placed.length === 0 && left.placed.length > 0) {
+    hubX = (left.width + HUB_PAD) / 2;
+  }
+
+  const leftAnchorX = hubX - HUB_PAD - FOCUS_HUB_W / 2;
+  const rightAnchorX = hubX + HUB_PAD + FOCUS_HUB_W / 2;
+  const leftPlaced = left.placed.map((p) => ({ ...p, x: p.x + leftAnchorX }));
+  const rightPlaced = right.placed.map((p) => ({ ...p, x: p.x + rightAnchorX }));
 
   const rfNodes = [];
 

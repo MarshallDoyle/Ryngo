@@ -2110,3 +2110,66 @@ html.theming *::after {
     fill 1s ease,
     stroke 1s ease !important;
 }
+
+/* ============================================================================
+   Phase 4.4.4 — node card polish + focus-view edge readability
+   ============================================================================ */
+
+/* Soft elevation on the four typed cards. Pulls them off the canvas
+   without competing with the layer accent stripes or the diff overlay
+   green/red glow. */
+.rfn-fn,
+.rfn-cls,
+.rfn-cell,
+.rfn-pkg,
+.rfn-chip {
+  box-shadow:
+    0 1px 0 rgba(40, 35, 10, 0.04),
+    0 4px 14px -8px rgba(40, 35, 10, 0.18);
+}
+[data-theme="dark"] .rfn-fn,
+[data-theme="dark"] .rfn-cls,
+[data-theme="dark"] .rfn-cell,
+[data-theme="dark"] .rfn-pkg,
+[data-theme="dark"] .rfn-chip {
+  box-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.35),
+    0 6px 16px -8px rgba(0, 0, 0, 0.55);
+}
+
+/* Layer super-containers get a stronger card treatment so they read as
+   real panels rather than borders on the canvas. */
+.rfn-layer {
+  box-shadow:
+    0 1px 0 rgba(40, 35, 10, 0.05),
+    0 16px 36px -22px rgba(40, 35, 10, 0.2);
+}
+[data-theme="dark"] .rfn-layer {
+  box-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.4),
+    0 22px 44px -24px rgba(0, 0, 0, 0.55);
+}
+
+/* Hover lift on collapsed chips so it's clear the row is interactive. */
+.rfn-fn-collapsed:hover,
+.rfn-cls-collapsed:hover,
+.rfn-cell-collapsed:hover,
+.rfn-chip:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 2px 0 rgba(40, 35, 10, 0.05),
+    0 10px 22px -12px rgba(40, 35, 10, 0.28);
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+
+/* Focus-view edges: when 22 lines fan out from a single hub, default
+   bezier opacity is too quiet; bump alpha + stroke a hair so each
+   trace is legible. Scoped via .focus-graph so repo-view edges stay
+   subtle. */
+.focus-graph .react-flow__edge-path {
+  stroke-width: 1.4;
+}
+.focus-graph .react-flow__edge:hover .react-flow__edge-path {
+  stroke-width: 2.2;
+  filter: drop-shadow(0 0 4px var(--accent));
+}
