@@ -1,28 +1,44 @@
 /**
- * CellNode — Jupyter cell. Shows the cell index + label header, then the
- * first few lines of source as a monospace preview. One left/right handle
- * (cells call out to imported packages and back).
+ * CellNode — Jupyter cell. Header-only by default; click the chevron
+ * to expand and see the source preview. Layout uses the COLLAPSED
+ * height as the size hint, so collapsed nodes pack tightly and
+ * expanding briefly overflows (acceptable for v1).
  */
-import { memo } from "react";
+import { memo, useState } from "react";
 import { Handle, Position } from "reactflow";
 
 const PREVIEW_LINES = 3;
 
 function CellNode({ data }) {
-  const lines = String(data?.source || "")
-    .split("\n")
-    .slice(0, PREVIEW_LINES);
+  const [expanded, setExpanded] = useState(false);
+  const sourceLines = String(data?.source || "").split("\n");
+  const visible = sourceLines.slice(0, PREVIEW_LINES);
   return (
-    <div className="rfn-cell">
+    <div
+      className={`rfn-cell ${expanded ? "rfn-cell-expanded" : "rfn-cell-collapsed"}`}
+    >
       <Handle type="target" position={Position.Left} className="rfn-handle rfn-handle-cell" />
-      <div className="rfn-cell-header">
+      <button
+        type="button"
+        className="rfn-cell-header"
+        onClick={(e) => {
+          e.stopPropagation();
+          setExpanded((v) => !v);
+        }}
+        title={expanded ? "Collapse" : "Expand"}
+      >
+        <span className="rfn-disclosure" aria-hidden="true">
+          {expanded ? "▾" : "▸"}
+        </span>
         <span className="rfn-cell-icon" aria-hidden="true">▢</span>
         <span className="rfn-cell-label mono">{data?.label}</span>
-      </div>
-      <pre className="rfn-cell-preview mono">
-        {lines.join("\n")}
-        {String(data?.source || "").split("\n").length > PREVIEW_LINES ? "\n…" : ""}
-      </pre>
+      </button>
+      {expanded && (
+        <pre className="rfn-cell-preview mono">
+          {visible.join("\n")}
+          {sourceLines.length > PREVIEW_LINES ? "\n…" : ""}
+        </pre>
+      )}
       <Handle type="source" position={Position.Right} className="rfn-handle rfn-handle-cell" />
     </div>
   );
