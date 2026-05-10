@@ -1,7 +1,36 @@
 # Ryngo — hosting & deployment plan
 
-Plan, not implementation. None of this is shipped yet. When you say "go",
-the order of operations below is what we'll execute.
+This is now partly implemented. The current focus is the MCP endpoint:
+one Docker image serves the Ryngo web app, the REST projection APIs, and
+the Streamable HTTP MCP server at `/mcp`.
+
+## Current Cloud Build UI values
+
+Use these in the Cloud Run "Set up with Cloud Build" wizard:
+
+| Field | Value |
+|---|---|
+| Branch | `^main$` once `main` exists, or `^claude/foundation$` for the current branch |
+| Build type | Cloud Build configuration file |
+| Build config file location | `/cloudbuild.yaml` |
+
+`origin` currently has `refs/heads/main`, so `^main$` is the right
+branch regex for normal deploys. The checked-in `cloudbuild.yaml` builds
+`mvp/Dockerfile` with `mvp/` as the Docker context, pushes the image to
+Artifact Registry, and updates the `ryngo` Cloud Run service.
+
+The deployed MCP connector URL will be:
+
+```text
+https://<cloud-run-service-url>/mcp
+```
+
+After deploy, verify it from this checkout:
+
+```bash
+cd mvp
+npm run smoke:mcp:http -- https://<cloud-run-service-url>/mcp
+```
 
 ## Goals (in priority order)
 
@@ -23,9 +52,9 @@ the order of operations below is what we'll execute.
 
 - Domain: **`ryngo.ai`** owned (registrar TBD; let's confirm before we
   start so DNS can be pre-staged).
-- Repo: not yet on GitHub. Currently lives at
-  `/Users/marshalldoyle/Desktop/untitled folder 3/`. **Step 0** of any
-  deploy work is `git init` + push to a fresh GitHub repo.
+- Repo: `https://github.com/MarshallDoyle/Ryngo`. The local checkout is
+  currently on `claude/foundation`; deploy triggers should target a real
+  remote branch.
 - Stack: Node 20+, Express, Vite-built React SPA. Requires `git` CLI
   on the host (for `analyzeRepo`'s shallow clones). No database yet;
   the usage / compiler-quality warehouse is planned separately in
@@ -75,11 +104,14 @@ the order of operations below is what we'll execute.
 
 ## Phased rollout
 
-### Phase 7.1 — Repo + container (1 hour)
+### Phase 7.1 — Repo + container
+
+Status: mostly done.
 
 1. `git init` in the project root, add a sane `.gitignore`
    (`node_modules`, `dist`, `.ryngo/`, `test/results/`, `.env*`).
 2. Create GitHub repo (public or private — your call), push.
+   - Done: `MarshallDoyle/Ryngo` exists as `origin`.
 3. Add `mvp/Dockerfile`:
    ```Dockerfile
    FROM node:20-alpine AS build
@@ -106,10 +138,13 @@ the order of operations below is what we'll execute.
      to `git clone --depth=1`.
    - Cloud Run injects `PORT=8080`; our `server.js` already reads
      `process.env.PORT` so no code change.
+   - Done.
 4. Add `mvp/.dockerignore` (mirrors `.gitignore` plus `dist` —
    the build stage rebuilds it).
+   - Done.
 5. Local smoke: `docker build -t ryngo:local mvp/ && docker run --rm
    -p 8080:8080 ryngo:local`. Hit `http://localhost:8080/api/health`.
+   - Also run `npm run smoke:mcp:http -- http://localhost:8080/mcp`.
 
 ### Phase 7.2 — Google Cloud project + Workload Identity (45 min)
 

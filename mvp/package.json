@@ -12,6 +12,7 @@
     "start": "NODE_ENV=production node server.js",
     "smoke": "node scripts/smoke.js",
     "smoke:mcp": "node scripts/mcp-smoke.js",
+    "smoke:mcp:http": "node scripts/mcp-http-smoke.js",
     "smoke:view-model": "node scripts/view-model-smoke.js",
     "mcp:map": "node scripts/mcp-map.js",
     "mcp:config": "node scripts/print-mcp-config.js",

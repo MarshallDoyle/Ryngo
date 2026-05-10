@@ -142,13 +142,15 @@ clusters, inspector facts, and prompts that agents receive.
 ```bash
 cd mvp
 npm run smoke:mcp
+npm run smoke:mcp:http -- http://localhost:3000/mcp
 npm run smoke:view-model
 npm run mcp:map -- https://github.com/vercel/ms
 ```
 
 Use these before handing work between Claude and Codex. The first check
-proves tool/resource discovery, the second proves deterministic
-projection behavior, and the third proves a real GitHub URL can become
+proves stdio tool/resource discovery, the HTTP check proves the
+ChatGPT/Cloud Run path, the view-model check proves deterministic
+projection behavior, and `mcp:map` proves a real GitHub URL can become
 a usable MCP map.
 
 ## Tool boundary for future logging
