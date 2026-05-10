@@ -221,6 +221,26 @@ export const CLASSIFICATIONS = [
       byPredicate(ir, (n) => n.kind === "http-route" && n.data?.framework === "rails"),
   },
   {
+    id: "http_routes_spring",
+    group: "adapters",
+    label: "Spring routes",
+    count: (ir) =>
+      byPredicate(ir, (n) => n.kind === "http-route" && n.data?.framework === "spring"),
+  },
+  {
+    id: "db_models_sqlalchemy",
+    group: "adapters",
+    label: "SQLAlchemy models",
+    count: (ir) =>
+      byPredicate(ir, (n) => n.kind === "db-model" && n.data?.framework === "sqlalchemy"),
+  },
+  {
+    id: "infra_resources",
+    group: "adapters",
+    label: "Terraform resources",
+    count: (ir) => byKind(ir, "infra-resource"),
+  },
+  {
     id: "gql_types",
     group: "adapters",
     label: "GraphQL types (SDL)",

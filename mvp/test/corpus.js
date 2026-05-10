@@ -89,6 +89,10 @@ export const CORPUS = [
   { url: "https://github.com/graphql/graphql-js",  family: "framework",  lang: "js", note: "GraphQL JS reference",
     expects: { gql_types: { min: 1 } } },
 
+  // -- Terraform (exercises the terraform adapter) -----------------------
+  { url: "https://github.com/terraform-aws-modules/terraform-aws-vpc", family: "stub", lang: "hcl", note: "VPC module (HCL → infra-resource nodes)",
+    expects: { infra_resources: { min: 5 } } },
+
   // -- Python: real apps -------------------------------------------------
   { url: "https://github.com/tiangolo/full-stack-fastapi-template", family: "app", lang: "py", note: "FastAPI starter",
     expects: { http_routes_fastapi: { min: 10 }, env_nodes: { min: 15 } } },
@@ -104,7 +108,8 @@ export const CORPUS = [
   // -- Stubbed languages (assert graceful degradation) -------------------
   { url: "https://github.com/golang/example",        family: "stub",   lang: "go",     note: "Go example (stub backend)" },
   { url: "https://github.com/tokio-rs/mio",          family: "stub",   lang: "rust",   note: "Mio (stub backend)" },
-  { url: "https://github.com/spring-projects/spring-petclinic", family: "stub", lang: "java", note: "Spring petclinic (stub)" },
+  { url: "https://github.com/spring-projects/spring-petclinic", family: "stub", lang: "java", note: "Spring petclinic — exercises spring adapter (stub Java parser)",
+    expects: { http_routes_spring: { min: 5 }, db_models: { min: 1 } } },
   { url: "https://github.com/rails/rails",           family: "stub",   lang: "ruby",   note: "Rails (stub for Ruby parser; rails adapter scans routes.rb + models)",
     expects: { http_routes_rails: { min: 1 }, db_models: { min: 1 } } },
   { url: "https://github.com/dotnet/AspNetCore.Docs", family: "stub",  lang: "csharp", note: "ASP.NET docs (stub)" },
