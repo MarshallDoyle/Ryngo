@@ -25,6 +25,7 @@ import { detectLang, isAnalyzable, parseFile } from "./parsers/index.js";
 import { resolveSymbols } from "./resolver.js";
 import { runAdapters } from "./adapters/index.js";
 import { annotateEffects } from "./effects.js";
+import { buildCompileReport } from "./quality.js";
 
 const MAX_FILES = 1500;
 const MAX_FILE_BYTES = 1_000_000;
@@ -122,10 +123,11 @@ async function buildIR(rootDir, repoName) {
   // -- pass 1: file nodes ---------------------------------------------------
   const nodes = [];
   const fileIndex = new Map();
+  const fileNodesByPath = new Map();
   for (const f of files) {
     const id = `file:${f.relPath}`;
-    fileIndex.set(f.relPath, id);
-    nodes.push({
+    const analyzable = isAnalyzable(f.relPath);
+    const fileNode = {
       id,
       kind: "file",
       label: path.posix.basename(f.relPath),
@@ -134,28 +136,84 @@ async function buildIR(rootDir, repoName) {
         size: f.size,
         ext: path.extname(f.relPath),
         lang: detectLang(f.relPath) || "",
-        analyzable: isAnalyzable(f.relPath),
+        analyzable,
+        parserBackend: analyzable ? null : "unsupported",
+        parseStatus: analyzable ? "pending" : "unsupported",
       },
-    });
+    };
+    fileIndex.set(f.relPath, id);
+    fileNodesByPath.set(f.relPath, fileNode);
+    nodes.push(fileNode);
   }
 
   // -- Tier 0: parse --------------------------------------------------------
   const parsedFiles = [];
   const parsedMap = new Map();
   const fileTextCache = new Map();
+  const parseDiagnostics = [];
   for (const f of files) {
+    const fileNode = fileNodesByPath.get(f.relPath);
     if (!isAnalyzable(f.relPath)) continue;
-    if (f.size > MAX_SOURCE_BYTES_FOR_PARSE) continue;
+    if (f.size > MAX_SOURCE_BYTES_FOR_PARSE) {
+      if (fileNode) {
+        fileNode.data.parserBackend = "skipped";
+        fileNode.data.parseStatus = "skipped_large";
+      }
+      parseDiagnostics.push({
+        stage: "parse",
+        severity: "warning",
+        code: "skipped_large_file",
+        file: f.relPath,
+        message: `Skipped ${f.relPath}; file exceeds parser cap`,
+      });
+      continue;
+    }
     const raw = await fs
       .readFile(path.join(rootDir, f.relPath), "utf8")
       .catch(() => null);
-    if (raw == null) continue;
+    if (raw == null) {
+      if (fileNode) {
+        fileNode.data.parserBackend = "error";
+        fileNode.data.parseStatus = "error";
+      }
+      parseDiagnostics.push({
+        stage: "parse",
+        severity: "warning",
+        code: "read_failed",
+        file: f.relPath,
+        message: `Could not read ${f.relPath}`,
+      });
+      continue;
+    }
     fileTextCache.set(f.relPath, raw);
 
     const parsed = parseFile(f.relPath, raw);
-    if (!parsed) continue;
+    if (!parsed) {
+      if (fileNode) {
+        fileNode.data.parserBackend = "unsupported";
+        fileNode.data.parseStatus = "unsupported";
+      }
+      continue;
+    }
     if (parsed.defs?.length > MAX_DEFS_PER_FILE) {
       parsed.defs = parsed.defs.slice(0, MAX_DEFS_PER_FILE);
+    }
+    if (fileNode) {
+      fileNode.data.parserBackend = parsed.backend || "unknown";
+      fileNode.data.parseStatus =
+        parsed.backend === "stub" || parsed.backend === "error" ? parsed.backend : "ok";
+      if (parsed.diagnostics?.length) {
+        fileNode.data.diagnostics = parsed.diagnostics.slice(0, 5);
+      }
+    }
+    for (const diagnostic of parsed.diagnostics || []) {
+      parseDiagnostics.push({
+        stage: "parse",
+        severity: parsed.backend === "error" ? "error" : "warning",
+        code: parsed.backend === "stub" ? "stub_backend" : "parser_diagnostic",
+        file: f.relPath,
+        message: diagnostic,
+      });
     }
     parsedFiles.push({ relPath: f.relPath, parsed });
     parsedMap.set(f.relPath, parsed);
@@ -239,6 +297,9 @@ async function buildIR(rootDir, repoName) {
   ir.stats = {
     files: files.length,
     analyzedFiles: parsedMap.size,
+    parsedFiles: parsedFiles.filter(({ parsed }) => parsed.backend !== "stub" && parsed.backend !== "error").length,
+    stubbedFiles: parsedFiles.filter(({ parsed }) => parsed.backend === "stub").length,
+    parseErrorFiles: parsedFiles.filter(({ parsed }) => parsed.backend === "error").length,
     definitions: defCount,
     cells: cellCount,
     packages: resolved.packages.size,
@@ -251,9 +312,11 @@ async function buildIR(rootDir, repoName) {
     ranAdapters: adapterResult.ranAdapters,
   };
   ir.diagnostics = [
+    ...parseDiagnostics.slice(0, 20),
     ...resolved.diagnostics.slice(0, 20),
     ...adapterResult.diagnostics.slice(0, 20),
   ];
+  ir.quality = buildCompileReport(ir);
 
   return ir;
 }

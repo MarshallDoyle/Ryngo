@@ -49,6 +49,7 @@ const byId = new Map(messages.filter((m) => m.id).map((m) => [m.id, m]));
 assert.equal(byId.get(1)?.result?.serverInfo?.name, "ryngo");
 const tools = byId.get(2)?.result?.tools || [];
 assert.ok(tools.some((t) => t.name === "get_view_model"), "get_view_model advertised");
+assert.ok(tools.some((t) => t.name === "get_compile_report"), "get_compile_report advertised");
 assert.ok(tools.length >= 10, "existing tools plus get_view_model advertised");
 assert.equal(stderr.trim(), "", "stderr should stay clean during discovery");
 

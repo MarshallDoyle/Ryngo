@@ -31,6 +31,8 @@ const ir = {
         ext: ".ts",
         lang: "ts",
         analyzable: true,
+        parserBackend: "regex",
+        parseStatus: "ok",
         size: 1200,
       },
     },

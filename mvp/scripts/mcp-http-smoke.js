@@ -15,6 +15,9 @@ const toolNames = tools.result?.tools?.map((tool) => tool.name) || [];
 if (!toolNames.includes("get_view_model")) {
   throw new Error(`get_view_model missing from ${endpoint}; tools=${toolNames.join(", ")}`);
 }
+if (!toolNames.includes("get_compile_report")) {
+  throw new Error(`get_compile_report missing from ${endpoint}; tools=${toolNames.join(", ")}`);
+}
 
 let resourceUris = [];
 if (expectWidget) {
@@ -53,6 +56,28 @@ if (map.result?.isError) {
 const vm = map.result?.structuredContent;
 if (!vm || vm.version !== 1) {
   throw new Error(`get_view_model did not return RyngoViewModel v1 from ${endpoint}`);
+}
+if (!vm.summary?.quality?.status) {
+  throw new Error(`get_view_model did not include compiler quality summary from ${endpoint}`);
+}
+
+const compileReport = await mcpPost({
+  jsonrpc: "2.0",
+  id: 4,
+  method: "tools/call",
+  params: {
+    name: "get_compile_report",
+    arguments: {
+      github_url: githubUrl,
+    },
+  },
+});
+
+if (compileReport.error) {
+  throw new Error(compileReport.error.message || JSON.stringify(compileReport.error));
+}
+if (!compileReport.result?.structuredContent?.summary?.status) {
+  throw new Error(`get_compile_report did not return structuredContent from ${endpoint}`);
 }
 
 console.log(

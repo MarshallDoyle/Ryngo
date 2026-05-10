@@ -127,6 +127,13 @@ const BASE_TOOLS = [
     },
   },
   {
+    name: "get_compile_report",
+    description:
+      "Return a deterministic compiler-quality report for a repo: parser coverage, " +
+      "stubbed/unsupported files, weak files, quality flags, and recommendations.",
+    inputSchema: githubRefSchema(),
+  },
+  {
     name: "get_compact_ir",
     description:
       "Return a stripped-down IR with stable node ids. Drops layout, diff, and debug fields.",
@@ -362,6 +369,7 @@ export async function dispatch(name, args, { enableWidgets = false } = {}) {
         repo: ir.repo,
         ref: ir.ref,
         stats: ir.stats,
+        quality: ir.quality?.summary || null,
         nodeCount: ir.nodes.length,
         edgeCount: ir.edges.length,
       });
@@ -399,6 +407,18 @@ export async function dispatch(name, args, { enableWidgets = false } = {}) {
     case "get_compact_ir": {
       const ir = await getIR(args.github_url, args.ref);
       return jsonResult(compactJson(ir));
+    }
+    case "get_compile_report": {
+      const ir = await getIR(args.github_url, args.ref);
+      return {
+        structuredContent: ir.quality,
+        content: [
+          {
+            type: "text",
+            text: compileReportMarkdown(ir.quality),
+          },
+        ],
+      };
     }
     case "get_topology": {
       const ir = await getIR(args.github_url, args.ref);
@@ -492,6 +512,10 @@ function viewModelMarkdown(vm) {
   const prompts = (vm.prompts || [])
     .map((p) => `- ${p}`)
     .join("\n");
+  const quality = vm.summary.quality;
+  const qualityLine = quality
+    ? `- Compiler quality: ${quality.status} (${Math.round(quality.score * 100)}%), parsed ${Math.round(quality.parsedFileRatio * 100)}% of analyzable files`
+    : "- Compiler quality: unavailable";
 
   return [
     `# Ryngo map: ${vm.repo}@${vm.ref}`,
@@ -504,6 +528,7 @@ function viewModelMarkdown(vm) {
     `- Functions/classes: ${stats.functions} functions, ${stats.classes} classes`,
     `- Routes/data/env: ${stats.routes} routes, ${stats.dbModels} models, ${stats.envVars} env vars`,
     `- Packages: ${stats.packages}`,
+    qualityLine,
     languages ? `- Languages: ${languages}` : "- Languages: none detected",
     clusters ? `- Clusters: ${clusters}` : "- Clusters: none",
     "",
@@ -519,6 +544,42 @@ function viewModelMarkdown(vm) {
   ]
     .filter((part) => part !== "")
     .join("\n");
+}
+
+function compileReportMarkdown(report) {
+  const flags = (report.summary?.topFlags || [])
+    .map((entry) => `- ${entry.flag}: ${entry.count}`)
+    .join("\n");
+  const weakFiles = (report.weakFiles || [])
+    .slice(0, 10)
+    .map((file) => `- ${file.path} (${file.parseStatus}, ${file.flags.join(", ")})`)
+    .join("\n");
+  const recommendations = (report.recommendations || [])
+    .map((item) => `- ${item}`)
+    .join("\n");
+  return [
+    `# Compile report: ${report.repo}@${report.ref}`,
+    "",
+    `Status: ${report.status} (${Math.round(report.score * 100)}%)`,
+    "",
+    "## Coverage",
+    `- Files: ${report.stats.files}`,
+    `- Analyzable: ${report.stats.analyzableFiles}`,
+    `- Parsed: ${report.stats.parsedFiles}`,
+    `- Stubbed: ${report.stats.stubbedFiles}`,
+    `- Unsupported: ${report.stats.unsupportedFiles}`,
+    `- Parse errors: ${report.stats.erroredFiles}`,
+    `- Files with definitions: ${report.stats.filesWithDefs}`,
+    "",
+    "## Top flags",
+    flags || "- None",
+    "",
+    "## Weak files",
+    weakFiles || "- None",
+    "",
+    "## Recommendations",
+    recommendations || "- None",
+  ].join("\n");
 }
 
 function githubRefSchema() {

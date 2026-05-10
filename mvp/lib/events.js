@@ -228,8 +228,8 @@ async function insertFileOutcomes(analysisRunId, ir) {
         cleanText(data.lang, 30),
         intOrNull(data.size),
         Boolean(data.analyzable),
-        data.analyzable ? "regex" : "unsupported",
-        data.analyzable ? "ok" : "unsupported",
+        data.parserBackend || (data.analyzable ? "unknown" : "unsupported"),
+        data.parseStatus || (data.analyzable ? "unknown" : "unsupported"),
         defs,
         classes,
         outgoing,
@@ -242,6 +242,7 @@ async function insertFileOutcomes(analysisRunId, ir) {
 
 async function insertDiagnostics(analysisRunId, ir) {
   for (const diagnostic of (ir.diagnostics || []).slice(0, MAX_DIAGNOSTICS_PER_RUN)) {
+    const diag = normalizeDiagnostic(diagnostic);
     await safeQuery(
       `insert into compiler_diagnostics (
         id, analysis_run_id, stage, severity, code, message_template, details
@@ -249,10 +250,10 @@ async function insertDiagnostics(analysisRunId, ir) {
       [
         crypto.randomUUID(),
         analysisRunId,
-        cleanText(diagnostic.stage || "unknown", 40),
-        cleanText(diagnostic.severity || "info", 20),
-        cleanText(diagnostic.code || diagnostic.kind || "diagnostic", 80),
-        cleanText(diagnostic.message || diagnostic.message_template || "", 500),
+        cleanText(diag.stage, 40),
+        cleanText(diag.severity, 20),
+        cleanText(diag.code, 80),
+        cleanText(diag.message, 500),
         safeJson(diagnostic),
       ],
     );
@@ -473,6 +474,23 @@ function cleanText(value, max) {
 function errorMessage(error) {
   if (!error) return null;
   return error instanceof Error ? error.message : String(error);
+}
+
+function normalizeDiagnostic(diagnostic) {
+  if (typeof diagnostic === "string") {
+    return {
+      stage: "unknown",
+      severity: "info",
+      code: "diagnostic",
+      message: diagnostic,
+    };
+  }
+  return {
+    stage: diagnostic?.stage || "unknown",
+    severity: diagnostic?.severity || "info",
+    code: diagnostic?.code || diagnostic?.kind || "diagnostic",
+    message: diagnostic?.message || diagnostic?.message_template || "",
+  };
 }
 
 function intOrNull(value) {

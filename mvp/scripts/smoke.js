@@ -48,7 +48,9 @@ async function main() {
     ir.stats &&
     typeof ir.stats.files === "number" &&
     fileNodes.length > 0 &&
-    Array.isArray(ir.stats.ranAdapters);
+    Array.isArray(ir.stats.ranAdapters) &&
+    ir.quality &&
+    typeof ir.quality.score === "number";
 
   console.log(
     `smoke: ${baseOk ? "ok" : "FAIL"}  ${ms}ms  files=${ir.stats.files} analyzed=${ir.stats.analyzedFiles} edges=${ir.stats.edges}`,
@@ -63,6 +65,11 @@ async function main() {
     `       routes=${routes.length}, dbModels=${dbModels.length}, envReads=${envNodes.length}`,
   );
   console.log(`       ranAdapters=[${ir.stats.ranAdapters.join(", ")}]`);
+  if (ir.quality) {
+    console.log(
+      `       quality=${ir.quality.status} score=${Math.round(ir.quality.score * 100)} parsed=${ir.quality.stats.parsedFiles}/${ir.quality.stats.analyzableFiles}`,
+    );
+  }
   if (ir.diagnostics?.length) {
     console.log(`       diagnostics(first 3): ${ir.diagnostics.slice(0, 3).join(" | ")}`);
   }

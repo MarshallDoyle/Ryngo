@@ -12,6 +12,7 @@ import express from "express";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { existsSync } from "node:fs";
+import { spawn } from "node:child_process";
 import { analyzeRepo } from "./lib/analyze.js";
 import { diffIRs } from "./lib/diff.js";
 import * as annotations from "./lib/annotations.js";
@@ -32,7 +33,7 @@ import {
 } from "./lib/projection-llm.js";
 import { buildViewModel } from "./lib/view-model.js";
 import { handleMcpHttpRequest } from "./lib/mcp.js";
-import { recordAnalysisRun, recordUsageEvent } from "./lib/events.js";
+import { eventsEnabled, recordAnalysisRun, recordUsageEvent } from "./lib/events.js";
 import * as regionsLib from "./lib/regions.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -46,8 +47,30 @@ app.use(express.json({ limit: "32kb" }));
 const inFlightByIp = new Map();
 const MAX_INFLIGHT_PER_IP = 2;
 
-app.get("/api/health", (_req, res) => {
-  res.json({ ok: true, mode: isProd ? "production" : "development" });
+app.get("/api/health", async (_req, res) => {
+  const git = await gitHealth();
+  const checks = {
+    git,
+    events: {
+      configured: eventsEnabled(),
+      databaseUrl: Boolean(process.env.DATABASE_URL),
+    },
+    mcp: {
+      chatgpt: "/mcp",
+      plain: "/mcp/plain",
+    },
+    storage: {
+      ryngoDir: path.join(__dirname, ".ryngo"),
+      mounted: existsSync(path.join(__dirname, ".ryngo")),
+    },
+  };
+  res.status(git.ok ? 200 : 503).json({
+    ok: git.ok,
+    mode: isProd ? "production" : "development",
+    revision: process.env.K_REVISION || null,
+    commit: process.env.GIT_SHA || null,
+    checks,
+  });
 });
 
 // Streamable HTTP MCP endpoint for ChatGPT Apps / hosted MCP connectors.
@@ -249,6 +272,56 @@ app.post("/api/analyze", async (req, res) => {
       req,
     });
     console.warn(`[analyze err] ${url}@${ref || "HEAD"}  ${ms}ms  ${message}`);
+    res.status(400).json({ error: message });
+  } finally {
+    const next = (inFlightByIp.get(ip) || 1) - 1;
+    if (next <= 0) inFlightByIp.delete(ip);
+    else inFlightByIp.set(ip, next);
+  }
+});
+
+app.post("/api/compile-report", async (req, res) => {
+  const url = typeof req.body?.url === "string" ? req.body.url : "";
+  const ref = typeof req.body?.ref === "string" ? req.body.ref : "";
+  if (!url) {
+    return res.status(400).json({ error: "Body must include a `url` string." });
+  }
+
+  const ip = req.ip || "unknown";
+  const current = inFlightByIp.get(ip) || 0;
+  if (current >= MAX_INFLIGHT_PER_IP) {
+    return res.status(429).json({
+      error: `Too many concurrent analyses from this client (max ${MAX_INFLIGHT_PER_IP}). Wait for the previous one.`,
+    });
+  }
+  inFlightByIp.set(ip, current + 1);
+
+  const startedAt = Date.now();
+  try {
+    const ir = await analyzeRepo(url, ref);
+    const ms = Date.now() - startedAt;
+    void recordAnalysisRun({
+      source: "web",
+      githubUrl: url,
+      ref: ref || ir.ref,
+      status: "ok",
+      durationMs: ms,
+      ir,
+      req,
+    });
+    res.json({ report: ir.quality });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    const ms = Date.now() - startedAt;
+    void recordAnalysisRun({
+      source: "web",
+      githubUrl: url,
+      ref,
+      status: "error",
+      durationMs: ms,
+      error: err,
+      req,
+    });
     res.status(400).json({ error: message });
   } finally {
     const next = (inFlightByIp.get(ip) || 1) - 1;
@@ -877,6 +950,36 @@ function repoUrlFromStorageKey(repo) {
   const parts = String(repo || "").split("__");
   if (parts.length !== 2 || !parts[0] || !parts[1]) return "";
   return `https://github.com/${parts[0]}/${parts[1]}`;
+}
+
+function gitHealth() {
+  return new Promise((resolve) => {
+    const child = spawn("git", ["--version"], { stdio: ["ignore", "pipe", "pipe"] });
+    let stdout = "";
+    let stderr = "";
+    const timer = setTimeout(() => {
+      child.kill("SIGKILL");
+      resolve({ ok: false, error: "git --version timed out" });
+    }, 3000);
+    child.stdout.on("data", (chunk) => {
+      stdout += chunk.toString();
+    });
+    child.stderr.on("data", (chunk) => {
+      stderr += chunk.toString();
+    });
+    child.on("error", (err) => {
+      clearTimeout(timer);
+      resolve({ ok: false, error: err.code === "ENOENT" ? "git not found on PATH" : err.message });
+    });
+    child.on("close", (code) => {
+      clearTimeout(timer);
+      if (code === 0) {
+        resolve({ ok: true, version: stdout.trim() });
+      } else {
+        resolve({ ok: false, error: stderr.trim() || `git exited ${code}` });
+      }
+    });
+  });
 }
 
 // ---------------------------------------------------------------------------

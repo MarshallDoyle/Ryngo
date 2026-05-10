@@ -17,6 +17,8 @@ Current shipped tables:
 Current event boundaries:
 
 - MCP tool calls, including `get_view_model` node/edge/truncation counts.
+- Compiler-quality reports, including parser backends, parse statuses,
+  weak files, and quality flags.
 - Web `/api/analyze` successes and failures.
 - Web `/api/diff` submissions.
 - Source opens, annotations, intent creation, and intent verification.

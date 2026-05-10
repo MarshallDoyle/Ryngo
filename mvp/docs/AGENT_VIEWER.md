@@ -7,7 +7,8 @@ high-level codebase data behind it.
 The shared contract is `RyngoViewModel v1`, returned by the MCP tool
 `get_view_model(github_url, ref?, mode?, max_nodes?)`. It contains the
 repo summary, capped graph nodes, edges, clusters, highlights, default
-inspector facts, truncation limits, and suggested drill-down prompts.
+inspector facts, compiler-quality summary, truncation limits, and
+suggested drill-down prompts.
 
 ## One-command proof
 
@@ -78,7 +79,8 @@ inspect first.
 ```
 
 Claude should call `get_view_model`, then use `get_subgraph`,
-`find_node`, or `english_signature` when you ask follow-up questions.
+`get_compile_report`, `find_node`, or `english_signature` when you ask
+follow-up questions.
 
 ## Codex
 
@@ -165,6 +167,7 @@ clusters, inspector facts, and prompts that agents receive.
 ```bash
 cd mvp
 npm run smoke:mcp
+npm run smoke:compile-report
 npm run smoke:mcp:http -- http://localhost:3000/mcp
 npm run smoke:mcp:http -- http://localhost:3000/mcp/plain
 npm run smoke:view-model
@@ -172,17 +175,19 @@ npm run mcp:map -- https://github.com/vercel/ms
 ```
 
 Use these before handing work between Claude and Codex. The first check
-proves stdio tool/resource discovery, the HTTP check proves the
-ChatGPT/Cloud Run path, the view-model check proves deterministic
-projection behavior, and `mcp:map` proves a real GitHub URL can become
-a usable MCP map.
+proves stdio tool/resource discovery, the compile-report check proves
+compiler-quality scoring, the HTTP check proves the ChatGPT/Cloud Run
+path, the view-model check proves deterministic projection behavior,
+and `mcp:map` proves a real GitHub URL can become a usable MCP map.
 
 ## Tool boundary for future logging
 
 The clean event boundaries for the later database workstream are:
 
 - `get_view_model`: repo submission, ref, mode, node cap, returned and
-  omitted counts.
+  omitted counts, compiler-quality status.
+- `get_compile_report`: parser backends, parse statuses, weak files,
+  quality flags, and recommendations.
 - `get_subgraph`: selected node, hop count, returned neighborhood.
 - `find_node`: query text and match count.
 - `english_signature`: selected node and whether a prose signature was

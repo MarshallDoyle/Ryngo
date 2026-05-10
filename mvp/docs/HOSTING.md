@@ -295,10 +295,11 @@ ryngo.ai to the world:
    keep console but emit JSON) so Cloud Logging can index them.
 6. **Error tracking**: Sentry or GCP Error Reporting. Sentry's
    free tier covers this fine.
-7. **Health endpoint enrichment**: `/api/health` should report
-   git availability, GCS mount availability, and the
-   `mcp-server.js` handshake (in case we expose the MCP server
-   over HTTP later).
+7. **Health endpoint enrichment**: `/api/health` now reports git
+   availability, event database configuration, MCP endpoint paths, revision
+   metadata, and whether `.ryngo/` is visible to the container. The next
+   hardening pass should add a real GCS write/read probe once the bucket is
+   mounted.
 
 ### Phase 7.7 — Cost model
 
@@ -330,7 +331,7 @@ roadmap) to cut that.
 - [ ] Rate limiter wired
 - [ ] Structured logs flowing to Cloud Logging
 - [ ] Error tracking wired (Sentry DSN as a Cloud Run env var)
-- [ ] `/api/health` reports green from prod URL
+- [x] `/api/health` reports green from prod URL
 - [ ] First production-tagged release deployed
 
 ### Phase 7.9 — When to do this work

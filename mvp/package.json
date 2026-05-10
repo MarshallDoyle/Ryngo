@@ -11,6 +11,7 @@
     "build": "vite build",
     "start": "NODE_ENV=production node server.js",
     "smoke": "node scripts/smoke.js",
+    "smoke:compile-report": "node scripts/compile-report-smoke.js",
     "smoke:events": "node scripts/events-smoke.js",
     "smoke:mcp": "node scripts/mcp-smoke.js",
     "smoke:mcp:http": "node scripts/mcp-http-smoke.js",

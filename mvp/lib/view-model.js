@@ -263,6 +263,7 @@ function selectedEndpoint(id, selectedIds, byId) {
 
 function buildSummary(ir, nodes, edges, layers, degree) {
   const files = nodes.filter((n) => n.kind === "file");
+  const quality = ir.quality?.summary || null;
   const languages = {};
   for (const f of files) {
     const lang = f.data?.lang || "other";
@@ -293,6 +294,7 @@ function buildSummary(ir, nodes, edges, layers, degree) {
       envVars: nodes.filter((n) => n.kind === "env").length,
       packages: nodes.filter((n) => n.kind === "package").length,
     },
+    quality,
     languages: sortObject(languages),
     dominantLayer: layers.dominantLayer,
     hotspots,
