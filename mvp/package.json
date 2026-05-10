@@ -21,6 +21,7 @@
     "mcp:config": "node scripts/print-mcp-config.js",
     "corpus": "node scripts/corpus-run.js",
     "corpus:watch": "node scripts/corpus-watch.js",
+    "eval:tokens": "node scripts/eval-tokens.js",
     "mcp": "node mcp-server.js",
     "db:up": "docker compose up -d db",
     "db:down": "docker compose down",

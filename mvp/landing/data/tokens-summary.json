@@ -1,0 +1,366 @@
+{
+  "iso": "2026-05-10T20:38:11.950Z",
+  "repos": 54,
+  "methodology": {
+    "charsPerToken": 4,
+    "sliceHops": 2,
+    "timeoutMs": 180000,
+    "note": "1 token ≈ 4 chars (OpenAI rule of thumb). `chars` recorded alongside every count so anyone with tiktoken installed can recompute with a real tokenizer."
+  },
+  "headline": {
+    "medianRatios": {
+      "topology": 0.0011858983355320402,
+      "compactIR": 0.60837683200988,
+      "viewModel": 0.13898713386257872,
+      "focusedSubgraph": 0.002843408319718487,
+      "englishSignature": 0.00006383603501619307
+    },
+    "meanRatios": {
+      "topology": 0.005825934661727553,
+      "compactIR": 0.6764097580733419,
+      "viewModel": 0.2633310595223129,
+      "focusedSubgraph": 0.05515064474104131,
+      "englishSignature": 0.0003693928687362833
+    },
+    "sampleSize": 53
+  },
+  "byLanguage": {
+    "TypeScript/JavaScript": {
+      "repos": 30,
+      "medianRatios": {
+        "topology": 0.001255243571496032,
+        "compactIR": 0.5191644190220781,
+        "viewModel": 0.10713235047951256,
+        "focusedSubgraph": 0.0032756696092939284,
+        "englishSignature": 0.00004686451230093023
+      }
+    },
+    "Python/Jupyter": {
+      "repos": 18,
+      "medianRatios": {
+        "topology": 0.001241546892238808,
+        "compactIR": 0.9202233261599229,
+        "viewModel": 0.14993909731718827,
+        "focusedSubgraph": 0.0026274678226114487,
+        "englishSignature": 0.00008394980069698004
+      }
+    },
+    "Go": {
+      "repos": 1,
+      "medianRatios": {
+        "topology": 0.0017320475610897855,
+        "compactIR": 0.11370658178073215,
+        "viewModel": 0.2828854976125831,
+        "focusedSubgraph": 0.0036513435071622506,
+        "englishSignature": 0.0005149330587023687
+      }
+    },
+    "Rust": {
+      "repos": 1,
+      "medianRatios": {
+        "topology": 0.0002134237436963773,
+        "compactIR": 0.016281182733409352,
+        "viewModel": 0.03548322184483484,
+        "focusedSubgraph": 0,
+        "englishSignature": 0
+      }
+    },
+    "Java": {
+      "repos": 1,
+      "medianRatios": {
+        "topology": 0.021531258243207597,
+        "compactIR": 0.35393036138222106,
+        "viewModel": 0.481963861777895,
+        "focusedSubgraph": 0,
+        "englishSignature": 0
+      }
+    },
+    "Ruby": {
+      "repos": 1,
+      "medianRatios": {
+        "topology": 0.0001733341129887813,
+        "compactIR": 0.07362773679945869,
+        "viewModel": 0.002634052008587348,
+        "focusedSubgraph": 0.0004583956361570783,
+        "englishSignature": 0.000002506035368512501
+      }
+    },
+    "C#": {
+      "repos": 1,
+      "medianRatios": {
+        "topology": 0.0000709447993028061,
+        "compactIR": 0.3293783623199272,
+        "viewModel": 0.0752389751378788,
+        "focusedSubgraph": 0.000028418229266180857,
+        "englishSignature": 8.061909011682513e-7
+      }
+    }
+  },
+  "byRepresentation": {
+    "topology": {
+      "medianRatio": 0.0011858983355320402,
+      "meanRatio": 0.005825934661727553,
+      "minRatio": 0.00000844934595133873,
+      "maxRatio": 0.09840288511076764,
+      "samples": 53
+    },
+    "compactIR": {
+      "medianRatio": 0.60837683200988,
+      "meanRatio": 0.6764097580733419,
+      "minRatio": 0.016281182733409352,
+      "maxRatio": 1.9087436185360545,
+      "samples": 53
+    },
+    "viewModel": {
+      "medianRatio": 0.13898713386257872,
+      "meanRatio": 0.2633310595223129,
+      "minRatio": 0.002634052008587348,
+      "maxRatio": 3.16795466254508,
+      "samples": 53
+    },
+    "focusedSubgraph": {
+      "medianRatio": 0.002843408319718487,
+      "meanRatio": 0.05515064474104131,
+      "minRatio": 0,
+      "maxRatio": 0.6521816606551434,
+      "samples": 53
+    },
+    "englishSignature": {
+      "medianRatio": 0.00006383603501619307,
+      "meanRatio": 0.0003693928687362833,
+      "minRatio": 0,
+      "maxRatio": 0.00463678516228748,
+      "samples": 53
+    }
+  },
+  "featured": [
+    {
+      "repo": "microsoft/TypeScript",
+      "lang": "ts",
+      "rawTokens": 29588089,
+      "tokensPerRepresentation": {
+        "topology": 250,
+        "compactIR": 15379273,
+        "viewModel": 1576192,
+        "focusedSubgraph": 451,
+        "englishSignature": 19
+      },
+      "ratios": {
+        "topology": 0.00000844934595133873,
+        "compactIR": 0.5197791922283321,
+        "viewModel": 0.05327116597492998,
+        "focusedSubgraph": 0.000015242620096215069,
+        "englishSignature": 6.421502923017435e-7
+      }
+    },
+    {
+      "repo": "facebook/react",
+      "lang": "js",
+      "rawTokens": 5455016,
+      "tokensPerRepresentation": {
+        "topology": 640,
+        "compactIR": 4447685,
+        "viewModel": 31962,
+        "focusedSubgraph": 2764,
+        "englishSignature": 19
+      },
+      "ratios": {
+        "topology": 0.00011732321225088983,
+        "compactIR": 0.8153385801251546,
+        "viewModel": 0.005859194546817095,
+        "focusedSubgraph": 0.0005066896229085305,
+        "englishSignature": 0.0000034830328636982917
+      }
+    },
+    {
+      "repo": "dotnet/AspNetCore.Docs",
+      "lang": "csharp",
+      "rawTokens": 4961604,
+      "tokensPerRepresentation": {
+        "topology": 352,
+        "compactIR": 1634245,
+        "viewModel": 373306,
+        "focusedSubgraph": 141,
+        "englishSignature": 4
+      },
+      "ratios": {
+        "topology": 0.0000709447993028061,
+        "compactIR": 0.3293783623199272,
+        "viewModel": 0.0752389751378788,
+        "focusedSubgraph": 0.000028418229266180857,
+        "englishSignature": 8.061909011682513e-7
+      }
+    },
+    {
+      "repo": "rails/rails",
+      "lang": "ruby",
+      "rawTokens": 4788440,
+      "tokensPerRepresentation": {
+        "topology": 830,
+        "compactIR": 352562,
+        "viewModel": 12613,
+        "focusedSubgraph": 2195,
+        "englishSignature": 12
+      },
+      "ratios": {
+        "topology": 0.0001733341129887813,
+        "compactIR": 0.07362773679945869,
+        "viewModel": 0.002634052008587348,
+        "focusedSubgraph": 0.0004583956361570783,
+        "englishSignature": 0.000002506035368512501
+      }
+    },
+    {
+      "repo": "norvig/pytudes",
+      "lang": "py",
+      "rawTokens": 3517655,
+      "tokensPerRepresentation": {
+        "topology": 119,
+        "compactIR": 215422,
+        "viewModel": 18331,
+        "focusedSubgraph": 1930,
+        "englishSignature": 24
+      },
+      "ratios": {
+        "topology": 0.00003382935506750946,
+        "compactIR": 0.06124022964162205,
+        "viewModel": 0.005211142081869882,
+        "focusedSubgraph": 0.0005486609687419602,
+        "englishSignature": 0.000006822727072438883
+      }
+    },
+    {
+      "repo": "shadcn-ui/ui",
+      "lang": "ts",
+      "rawTokens": 3203497,
+      "tokensPerRepresentation": {
+        "topology": 774,
+        "compactIR": 2356199,
+        "viewModel": 75539,
+        "focusedSubgraph": 227561,
+        "englishSignature": 12
+      },
+      "ratios": {
+        "topology": 0.00024161096451783784,
+        "compactIR": 0.7355084147105492,
+        "viewModel": 0.02358016879678676,
+        "focusedSubgraph": 0.07103518436258875,
+        "englishSignature": 0.000003745906426633145
+      }
+    },
+    {
+      "repo": "pydantic/pydantic",
+      "lang": "py",
+      "rawTokens": 1806662,
+      "tokensPerRepresentation": {
+        "topology": 268,
+        "compactIR": 1304452,
+        "viewModel": 39314,
+        "focusedSubgraph": 106,
+        "englishSignature": 13
+      },
+      "ratios": {
+        "topology": 0.00014833986656054093,
+        "compactIR": 0.7220232672187714,
+        "viewModel": 0.02176057281328771,
+        "focusedSubgraph": 0.00005867173826648261,
+        "englishSignature": 0.000007195590542115791
+      }
+    },
+    {
+      "repo": "pypa/pip",
+      "lang": "py",
+      "rawTokens": 1494416,
+      "tokensPerRepresentation": {
+        "topology": 284,
+        "compactIR": 1322866,
+        "viewModel": 17717,
+        "focusedSubgraph": 577,
+        "englishSignature": 15
+      },
+      "ratios": {
+        "topology": 0.00019004079185447694,
+        "compactIR": 0.8852059935118468,
+        "viewModel": 0.011855467286217492,
+        "focusedSubgraph": 0.00038610400316913093,
+        "englishSignature": 0.00001003736576696181
+      }
+    },
+    {
+      "repo": "vuejs/core",
+      "lang": "ts",
+      "rawTokens": 1071210,
+      "tokensPerRepresentation": {
+        "topology": 227,
+        "compactIR": 619554,
+        "viewModel": 55048,
+        "focusedSubgraph": 142,
+        "englishSignature": 24
+      },
+      "ratios": {
+        "topology": 0.0002119098962855089,
+        "compactIR": 0.5783683871509788,
+        "viewModel": 0.051388616611122005,
+        "focusedSubgraph": 0.00013256037564996593,
+        "englishSignature": 0.000022404570532388607
+      }
+    },
+    {
+      "repo": "sveltejs/svelte",
+      "lang": "ts",
+      "rawTokens": 962393,
+      "tokensPerRepresentation": {
+        "topology": 241,
+        "compactIR": 1531720,
+        "viewModel": 225710,
+        "focusedSubgraph": 937,
+        "englishSignature": 11
+      },
+      "ratios": {
+        "topology": 0.0002504174490047205,
+        "compactIR": 1.5915743360560604,
+        "viewModel": 0.23452996852637123,
+        "focusedSubgraph": 0.0009736147291179383,
+        "englishSignature": 0.000011429842070754878
+      }
+    },
+    {
+      "repo": "tiangolo/fastapi",
+      "lang": "py",
+      "rawTokens": 952769,
+      "tokensPerRepresentation": {
+        "topology": 706,
+        "compactIR": 1285975,
+        "viewModel": 23537,
+        "focusedSubgraph": 113,
+        "englishSignature": 12
+      },
+      "ratios": {
+        "topology": 0.0007409980803321686,
+        "compactIR": 1.3497238050356382,
+        "viewModel": 0.02470378444302869,
+        "focusedSubgraph": 0.0001186016757472168,
+        "englishSignature": 0.000012594868220943377
+      }
+    },
+    {
+      "repo": "nestjs/nest",
+      "lang": "ts",
+      "rawTokens": 823532,
+      "tokensPerRepresentation": {
+        "topology": 267,
+        "compactIR": 996719,
+        "viewModel": 51888,
+        "focusedSubgraph": 77,
+        "englishSignature": 18
+      },
+      "ratios": {
+        "topology": 0.00032421326675830447,
+        "compactIR": 1.2102978390639343,
+        "viewModel": 0.06300665912192847,
+        "focusedSubgraph": 0.00009349970614378069,
+        "englishSignature": 0.0000218570741634812
+      }
+    }
+  ]
+}

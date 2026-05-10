@@ -55,7 +55,7 @@ plan first.
 |---|---|---|---|
 | Phase 4.3 — keyboard shortcuts + `?` overlay | claude | shipped | `mvp/src/components/HelpOverlay.jsx`, `mvp/src/App.jsx` |
 | Phase 4.5 — landing page (`ryngo.ai/`) with embedded demo + walkthrough | unclaimed | planning | `mvp/landing/*` (new), `mvp/scripts/build-demo-irs.js` (new), `mvp/server.js`, `mvp/vite.config.js` |
-| Ryngo design system / brand pass | unclaimed | not started | `mvp/src/styles.css`, possibly a new `mvp/src/lib/tokens.js` |
+| Ryngo design system / brand pass | codex | in progress | `mvp/src/styles.css`, `mvp/landing/landing.css`, `mvp/landing/logos.html`, possibly a new `mvp/src/lib/tokens.js` |
 | Public API docs + OpenAPI spec | unclaimed | not started | `mvp/docs/API.md` (new), `mvp/openapi.yaml` (new) |
 | Phase 5.1 (real) — tree-sitter swap | unclaimed | not started | `mvp/lib/parsers/ts.js`, `mvp/lib/parsers/py.js` (heavy) |
 | Phase 5.4 — Go via `go list` | unclaimed | not started | `mvp/lib/parsers/go-list.js` (new) |
@@ -71,6 +71,10 @@ plan first.
 | Adapter framework expansion: Spring ✓ shipped | claude | shipped | `mvp/lib/adapters/spring.js` |
 | Adapter framework expansion: SQLAlchemy ✓ shipped | claude | shipped | `mvp/lib/adapters/sqlalchemy.js` |
 | Adapter framework expansion: Terraform ✓ shipped | claude | shipped | `mvp/lib/adapters/terraform.js` |
+| Landing logo lab — 30 SVG mark candidates | codex | shipped | `mvp/landing/logos.html` |
+| Landing eval plan | codex | shipped | `mvp/docs/EVALS.md` |
+| Token-efficiency benchmark — implementing the EVALS.md plan | claude | in progress | `mvp/scripts/eval-tokens.js` (new), `mvp/test/results/tokens-*.{json,md}` (new). **Stays out of `mvp/landing/index.html` / `mvp/src/App.jsx` / `mvp/src/styles.css` — Codex owns those.** When tokens-latest.json lands, Codex wires it into the `#evals` UI. |
+| Landing measured eval UI — consume token benchmark artifact | codex | claimed | `mvp/landing/index.html`, `mvp/landing/landing.css`, static token summary JSON once Claude lands `tokens-latest.json` |
 
 To **claim** a workstream: edit this table, change `unclaimed` to your
 agent name, commit. Use `claude/<workstream-slug>` or `codex/<slug>` as
