@@ -207,6 +207,13 @@ export const CLASSIFICATIONS = [
       ),
   },
   {
+    id: "http_routes_django",
+    group: "adapters",
+    label: "Django routes",
+    count: (ir) =>
+      byPredicate(ir, (n) => n.kind === "http-route" && n.data?.framework === "django"),
+  },
+  {
     id: "db_models",
     group: "adapters",
     label: "DB models (any source)",
