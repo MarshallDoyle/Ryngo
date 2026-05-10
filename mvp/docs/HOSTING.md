@@ -10,14 +10,19 @@ Use these in the Cloud Run "Set up with Cloud Build" wizard:
 
 | Field | Value |
 |---|---|
-| Branch | `^main$` once `main` exists, or `^claude/foundation$` for the current branch |
-| Build type | Cloud Build configuration file |
-| Build config file location | `/cloudbuild.yaml` |
+| Branch | `^main$` |
+| Build type | Dockerfile |
+| Source location | `/Dockerfile` |
 
 `origin` currently has `refs/heads/main`, so `^main$` is the right
-branch regex for normal deploys. The checked-in `cloudbuild.yaml` builds
-`mvp/Dockerfile` with `mvp/` as the Docker context, pushes the image to
-Artifact Registry, and updates the `ryngo` Cloud Run service.
+branch regex for normal deploys. The checked-in root `Dockerfile`
+exists specifically because the Cloud Run console-generated trigger
+builds from repo root. That Dockerfile copies only `mvp/` into the image,
+so the deployed app is still the MVP server and MCP endpoint.
+
+`cloudbuild.yaml` is kept for a later cleaner trigger/GitHub Actions
+path, but the currently working console trigger is the root-Dockerfile
+trigger.
 
 The deployed MCP connector URL will be:
 
@@ -52,9 +57,8 @@ npm run smoke:mcp:http -- https://<cloud-run-service-url>/mcp
 
 - Domain: **`ryngo.ai`** owned (registrar TBD; let's confirm before we
   start so DNS can be pre-staged).
-- Repo: `https://github.com/MarshallDoyle/Ryngo`. The local checkout is
-  currently on `claude/foundation`; deploy triggers should target a real
-  remote branch.
+- Repo: `https://github.com/MarshallDoyle/Ryngo`. The active Cloud Build
+  trigger targets `main`.
 - Stack: Node 20+, Express, Vite-built React SPA. Requires `git` CLI
   on the host (for `analyzeRepo`'s shallow clones). No database yet;
   the usage / compiler-quality warehouse is planned separately in
