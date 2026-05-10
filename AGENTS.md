@@ -53,13 +53,13 @@ plan first.
 
 | Workstream | Owner | Status | Files in flight |
 |---|---|---|---|
-| Phase 4.3 — keyboard shortcuts + `?` overlay | unclaimed | not started | `mvp/src/components/HelpOverlay.jsx` (new) + `mvp/src/App.jsx` |
+| Phase 4.3 — keyboard shortcuts + `?` overlay | claude | shipped | `mvp/src/components/HelpOverlay.jsx`, `mvp/src/App.jsx` |
 | Phase 4.5 — landing page (`ryngo.ai/`) with embedded demo + walkthrough | unclaimed | planning | `mvp/landing/*` (new), `mvp/scripts/build-demo-irs.js` (new), `mvp/server.js`, `mvp/vite.config.js` |
 | Ryngo design system / brand pass | unclaimed | not started | `mvp/src/styles.css`, possibly a new `mvp/src/lib/tokens.js` |
 | Public API docs + OpenAPI spec | unclaimed | not started | `mvp/docs/API.md` (new), `mvp/openapi.yaml` (new) |
 | Phase 5.1 (real) — tree-sitter swap | unclaimed | not started | `mvp/lib/parsers/ts.js`, `mvp/lib/parsers/py.js` (heavy) |
 | Phase 5.4 — Go via `go list` | unclaimed | not started | `mvp/lib/parsers/go-list.js` (new) |
-| Phase 6.2 — anomaly badges | claude | next | `mvp/test/anomaly.js` (new) + `mvp/scripts/corpus-run.js` |
+| Phase 6.2 — anomaly badges | claude | shipped | `mvp/test/anomaly.js`, `mvp/scripts/corpus-run.js` |
 | Phase 6.3 — per-repo `expects` | claude | shipped | `mvp/test/corpus.js`, `mvp/scripts/corpus-run.js` |
 | Phase 6.4 — PR-blocking corpus check | claude | shipped | `.github/workflows/corpus.yml` |
 | Phase 7 — hosting (Cloud Run + GH Actions) | unclaimed | not started | `mvp/Dockerfile` (new), `.github/workflows/deploy-*.yml` (new) |
@@ -67,7 +67,10 @@ plan first.
 | Agent viewer MCP/App contract | codex | in progress | `mvp/lib/view-model.js`, `mvp/lib/mcp.js`, `mvp/server.js`, `mvp/src/App.jsx` |
 | Adapter framework expansion: Django ✓ shipped | claude | shipped | `mvp/lib/adapters/django.js` |
 | Adapter framework expansion: GraphQL ✓ shipped | claude | shipped | `mvp/lib/adapters/graphql.js` |
-| Adapter framework expansion: Rails / Spring / Terraform / SQLAlchemy | claude | next | `mvp/lib/adapters/<name>.js` |
+| Adapter framework expansion: Rails ✓ shipped | claude | shipped | `mvp/lib/adapters/rails.js` |
+| Adapter framework expansion: Spring ✓ shipped | claude | shipped | `mvp/lib/adapters/spring.js` |
+| Adapter framework expansion: SQLAlchemy ✓ shipped | claude | shipped | `mvp/lib/adapters/sqlalchemy.js` |
+| Adapter framework expansion: Terraform ✓ shipped | claude | shipped | `mvp/lib/adapters/terraform.js` |
 
 To **claim** a workstream: edit this table, change `unclaimed` to your
 agent name, commit. Use `claude/<workstream-slug>` or `codex/<slug>` as
