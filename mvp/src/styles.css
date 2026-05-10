@@ -2031,3 +2031,82 @@ pre.code {
     min-height: 220px;
   }
 }
+
+/* ============================================================================
+   Phase 4.4.3 — collapsed-by-default node states + disclosure chevron
+   ============================================================================ */
+
+/* Header buttons (used as the click targets for expand/collapse) reset
+   to look like plain rows — no button chrome. */
+.rfn-fn-header,
+.rfn-cls-header,
+.rfn-cell-header {
+  width: 100%;
+  cursor: pointer;
+  border: 0;
+  text-align: left;
+}
+.rfn-fn-header:focus-visible,
+.rfn-cls-header:focus-visible,
+.rfn-cell-header:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.rfn-disclosure {
+  display: inline-block;
+  width: 12px;
+  font-size: 9px;
+  text-align: center;
+  margin-right: 2px;
+  opacity: 0.7;
+  flex-shrink: 0;
+}
+
+/* Collapsed state: shrink to header-only height; the layout already
+   sized the parent; everything past the header is display:none. */
+.rfn-fn-collapsed,
+.rfn-cls-collapsed,
+.rfn-cell-collapsed {
+  height: auto;
+  min-height: 22px;
+}
+.rfn-fn-collapsed .rfn-fn-sig,
+.rfn-fn-collapsed .rfn-fn-ports,
+.rfn-fn-collapsed .rfn-fn-return {
+  display: none;
+}
+.rfn-cls-collapsed .rfn-cls-body {
+  display: none;
+}
+.rfn-cell-collapsed .rfn-cell-preview {
+  display: none;
+}
+
+/* Expanded headers slightly taller for a comfier click target. */
+.rfn-fn-expanded .rfn-fn-header,
+.rfn-cls-expanded .rfn-cls-header,
+.rfn-cell-expanded .rfn-cell-header {
+  border-bottom: 1px solid var(--line);
+}
+
+/* ============================================================================
+   Theme-toggle transition — 1 s fade between light and dark.
+   Scoped to `html.theming` (added by toggleTheme in App.jsx, removed
+   ~1.1 s later) so hover states stay snappy outside the toggle window.
+   ============================================================================ */
+
+html.theming,
+html.theming body,
+html.theming *,
+html.theming *::before,
+html.theming *::after {
+  transition:
+    background-color 1s ease,
+    color 1s ease,
+    border-color 1s ease,
+    outline-color 1s ease,
+    box-shadow 1s ease,
+    fill 1s ease,
+    stroke 1s ease !important;
+}

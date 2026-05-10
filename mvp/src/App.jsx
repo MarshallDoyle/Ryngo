@@ -31,8 +31,8 @@ const DEF_W = 250;
 // fnNodeHeight() / classNodeHeight() / CELL_H based on their data.
 const DEF_H_MIN = 56;
 const DEF_GAP = 10;
-// Cells: a 3-line preview reads ~76px high.
-const CELL_H = 76;
+// Cells default to collapsed (header only); expanded reveals 3 source lines.
+const CELL_H = 24;
 const FILE_MIN_W = DEF_W + FILE_PAD_X * 2;
 const FILE_MIN_H = FILE_HEADER + 14;
 const PKG_W = 180;
@@ -726,7 +726,7 @@ const FOCUS_HUB_H = 64;
 const FOCUS_SAT_W = 220;
 const FOCUS_SAT_H = 40;
 
-function layoutFocus(rawNodes, rawEdges, focusId, theme = "dark") {
+function layoutFocus(rawNodes, rawEdges, focusId, theme = "dark", aspectRatio = 16 / 10) {
   const STYLE = theme === "light" ? STYLE_LIGHT : STYLE_DARK;
   // Same VIEWER_KNOWN_KINDS gate as layoutRepo — Phase-5 adapter nodes are
   // hidden until Phase 4.2 lands custom renderers.
@@ -763,24 +763,66 @@ function layoutFocus(rawNodes, rawEdges, focusId, theme = "dark") {
   const outgoing = [...outIds].map((id) => byId.get(id)).filter(Boolean);
 
   // Position: hub in the middle, callers on the left, callees on the right.
-  const VGAP = 12;
-  const hubX = 0;
-  const hubY = 0;
-  const leftX = hubX - FOCUS_HUB_W / 2 - 220;
-  const rightX = hubX + FOCUS_HUB_W / 2 + 60;
+  // Phase 4.4.2 — when there are many satellites, distribute them into a
+  // multi-column grid sized to match the viewport aspect ratio instead of
+  // stacking everything in one tall vertical column. The hub stays
+  // centered between the two satellite blocks.
+  const VGAP = 16;
+  const HGAP = 24;
+  const HUB_PAD = 80;
 
-  const stack = (arr, x) => {
-    const total = arr.length * (FOCUS_SAT_H + VGAP) - VGAP;
-    let y = -total / 2;
-    return arr.map((n) => {
-      const out = { node: n, x, y };
-      y += FOCUS_SAT_H + VGAP;
-      return out;
-    });
+  const colsFor = (n) => {
+    if (n <= 6) return 1;
+    if (n <= 12) return 2;
+    if (n <= 22) return Math.min(3, Math.round(Math.sqrt(n * 0.6 * aspectRatio)));
+    return Math.min(5, Math.round(Math.sqrt(n * 0.6 * aspectRatio)));
   };
 
-  const leftPlaced = stack(incoming, leftX);
-  const rightPlaced = stack(outgoing, rightX);
+  /**
+   * Stack n nodes into `cols` columns. Direction = -1 means satellites
+   * grow leftward (callers); +1 means rightward (callees). Returns
+   *   { placed: [{ node, x, y }], width, height }
+   * so the hub can be repositioned between the two blocks.
+   */
+  const stackInColumns = (arr, direction) => {
+    const cols = colsFor(arr.length);
+    const rowsPerCol = Math.ceil(arr.length / cols);
+    const colW = FOCUS_SAT_W + HGAP;
+    const rowH = FOCUS_SAT_H + VGAP;
+    const totalH = rowsPerCol * rowH - VGAP;
+    const totalW = cols * colW - HGAP;
+    const placed = [];
+    for (let i = 0; i < arr.length; i++) {
+      const col = Math.floor(i / rowsPerCol);
+      const row = i % rowsPerCol;
+      // Direction -1 (callers): rightmost column is closest to hub
+      // Direction +1 (callees): leftmost column is closest to hub
+      const colSlot = direction === -1 ? cols - 1 - col : col;
+      const x = direction * (colSlot * colW + FOCUS_SAT_W / 2);
+      const y = row * rowH - totalH / 2 + FOCUS_SAT_H / 2;
+      placed.push({ node: arr[i], x, y });
+    }
+    return { placed, width: totalW, height: totalH };
+  };
+
+  const left = stackInColumns(incoming, -1);
+  const right = stackInColumns(outgoing, +1);
+
+  const hubX = 0;
+  const hubY = 0;
+  const leftEdge = -(left.width + HUB_PAD + FOCUS_HUB_W / 2);
+  const rightEdge = right.width + HUB_PAD + FOCUS_HUB_W / 2;
+  // Re-anchor satellites relative to the hub padding.
+  const leftPlaced = left.placed.map((p) => ({
+    ...p,
+    x: p.x - HUB_PAD - FOCUS_HUB_W / 2,
+  }));
+  const rightPlaced = right.placed.map((p) => ({
+    ...p,
+    x: p.x + HUB_PAD + FOCUS_HUB_W / 2,
+  }));
+  void leftEdge;
+  void rightEdge;
 
   const rfNodes = [];
 
@@ -1131,6 +1173,16 @@ export default function App() {
   }, []);
 
   const toggleTheme = useCallback(() => {
+    // Mark the document as transitioning so styles.css can fade colors
+    // for ~1 s; the class is removed after the animation so hover states
+    // don't stay slow. Only fires on user action — the initial-mount
+    // theme application is instant.
+    if (typeof document !== "undefined") {
+      document.documentElement.classList.add("theming");
+      window.setTimeout(() => {
+        document.documentElement.classList.remove("theming");
+      }, 1100);
+    }
     setTheme((t) => (t === "dark" ? "light" : "dark"));
   }, []);
 
@@ -1217,8 +1269,8 @@ export default function App() {
   // ----- focus view layout -----
   const focusLayout = useMemo(() => {
     if (!ir || !focusedId) return null;
-    return layoutFocus(ir.nodes, ir.edges, focusedId, theme);
-  }, [ir, focusedId, theme]);
+    return layoutFocus(ir.nodes, ir.edges, focusedId, theme, aspectRatio);
+  }, [ir, focusedId, theme, aspectRatio]);
 
   // ----- branches: fetch per-repo on URL change so the datalist can autofill
   useEffect(() => {
