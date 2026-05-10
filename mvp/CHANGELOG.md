@@ -3,6 +3,7 @@
 Per `AGENTS.md` convention: one line per ship. `date · agent · one
 sentence`. Newest at top.
 
+2026-05-10  claude  feat(viewer): code panel — lightweight per-line syntax highlighting (TS/JS/Py: keywords, strings, comments, numbers, types, decorators) tied to existing palette tokens; theme-aware bg/colors (was hardcoded dark); polished focus-line + scrollbar; layer-view file chips bumped readability (12 px tag, hover border)
 2026-05-10  codex  Compiler-quality reports — per-file parse status/backend, MCP `get_compile_report`, `/api/compile-report`, and enriched deployment health checks
 2026-05-10  claude  feat(viewer): focus-view layout polish — hub re-centers when only one side has satellites; collapsed-height grid; column count derived from focus-canvas aspect (55 % of window); card shadows on all typed nodes + layers; bolder hover lift; focus-graph edges thicker for legibility when 20+ lines fan out from one hub
 2026-05-10  claude  feat(viewer): 1 s smooth fade between light and dark theme (`html.theming` class added on toggle, removed ~1.1 s later, scoped CSS so hover stays snappy outside the toggle window)

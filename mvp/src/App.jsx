@@ -2417,7 +2417,7 @@ function FocusView({
             </div>
           )}
           {!sourceLoading && !sourceErr && source && (
-            <CodeBlock text={source.text} focusLine={source.focusLine} />
+            <CodeBlock text={source.text} focusLine={source.focusLine} file={source.file} />
           )}
           {!sourceLoading && !sourceErr && !source && (
             <div className="muted" style={{ padding: 16 }}>
@@ -2494,11 +2494,119 @@ function FocusView({
 // Source-code rendering with line numbers + focus-line highlight
 // ============================================================================
 
-function CodeBlock({ text, focusLine }) {
+/**
+ * Lightweight per-line syntax highlighter. No dependencies. Recognises
+ * comments, strings, keywords, numbers, decorators (Py) and JSX tags.
+ * Multi-line constructs (template literal interpolations, Python
+ * docstrings) are intentionally not handled — code panel is for quick
+ * orientation, not a full editor.
+ *
+ * Returns an array of `{ kind, text }` so the renderer can wrap each
+ * span with a CSS class that picks color from the active theme.
+ */
+const CODE_LANG_BY_EXT = {
+  ".ts": "ts", ".tsx": "ts", ".js": "ts", ".jsx": "ts",
+  ".mjs": "ts", ".cjs": "ts",
+  ".py": "py", ".pyi": "py", ".ipynb": "py",
+};
+
+const TS_KEYWORDS = new Set([
+  "const", "let", "var", "function", "class", "interface", "enum", "type",
+  "import", "export", "from", "as", "default", "if", "else", "return", "for",
+  "while", "do", "switch", "case", "break", "continue", "try", "catch",
+  "finally", "throw", "new", "this", "super", "extends", "implements",
+  "async", "await", "yield", "of", "in", "typeof", "instanceof", "delete",
+  "void", "null", "undefined", "true", "false", "static", "public", "private",
+  "protected", "readonly", "abstract", "namespace", "module", "declare",
+  "any", "string", "number", "boolean", "never", "unknown", "object",
+]);
+
+const PY_KEYWORDS = new Set([
+  "def", "class", "import", "from", "as", "if", "elif", "else", "return",
+  "for", "while", "try", "except", "finally", "with", "in", "is", "not",
+  "and", "or", "lambda", "async", "await", "yield", "raise", "pass",
+  "continue", "break", "global", "nonlocal", "del", "True", "False", "None",
+  "self", "cls",
+]);
+
+function detectCodeLang(file) {
+  if (!file) return null;
+  const dot = file.lastIndexOf(".");
+  if (dot < 0) return null;
+  return CODE_LANG_BY_EXT[file.slice(dot).toLowerCase()] || null;
+}
+
+function highlightLine(line, lang) {
+  if (!line) return [{ kind: "plain", text: "" }];
+  if (!lang) return [{ kind: "plain", text: line }];
+  const len = line.length;
+  const claimed = new Array(len).fill(null);
+
+  const claim = (start, end, kind) => {
+    if (start < 0 || end > len || start >= end) return;
+    for (let i = start; i < end; i++) {
+      if (claimed[i] !== null) return; // don't double-claim
+    }
+    for (let i = start; i < end; i++) claimed[i] = kind;
+  };
+
+  let m;
+  // Order matters: comments + strings first so keywords inside them
+  // are not re-claimed.
+  if (lang === "py") {
+    const commentRe = /#[^\n]*/g;
+    while ((m = commentRe.exec(line))) claim(m.index, m.index + m[0].length, "comment");
+    // Triple-quoted opening on the same line — best-effort
+    const strRe = /(?:[rfRFbB]{0,2})("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')/g;
+    while ((m = strRe.exec(line))) claim(m.index, m.index + m[0].length, "string");
+    const decoRe = /(?:^|[^\w.])(@[\w.]+)/g;
+    while ((m = decoRe.exec(line))) {
+      const start = m.index + m[0].indexOf("@");
+      claim(start, start + m[1].length, "decorator");
+    }
+  } else {
+    const blockRe = /\/\*[^]*?\*\//g;
+    while ((m = blockRe.exec(line))) claim(m.index, m.index + m[0].length, "comment");
+    const lineRe = /\/\/[^\n]*/g;
+    while ((m = lineRe.exec(line))) claim(m.index, m.index + m[0].length, "comment");
+    const strRe = /"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|`(?:[^`\\]|\\.)*`/g;
+    while ((m = strRe.exec(line))) claim(m.index, m.index + m[0].length, "string");
+  }
+
+  const numRe = /\b(?:0[xX][0-9a-fA-F]+|0[bB][01]+|0[oO][0-7]+|\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)\b/g;
+  while ((m = numRe.exec(line))) claim(m.index, m.index + m[0].length, "number");
+
+  const keywords = lang === "py" ? PY_KEYWORDS : TS_KEYWORDS;
+  const idRe = /\b[A-Za-z_$][\w$]*\b/g;
+  while ((m = idRe.exec(line))) {
+    if (keywords.has(m[0])) {
+      claim(m.index, m.index + m[0].length, "keyword");
+    } else if (/^[A-Z]/.test(m[0])) {
+      claim(m.index, m.index + m[0].length, "type");
+    }
+  }
+
+  // Walk claimed[] and emit runs.
+  const out = [];
+  let i = 0;
+  while (i < len) {
+    const kind = claimed[i] || "plain";
+    let j = i + 1;
+    while (j < len && (claimed[j] || "plain") === kind) j++;
+    out.push({ kind, text: line.slice(i, j) });
+    i = j;
+  }
+  return out;
+}
+
+function CodeBlock({ text, focusLine, file }) {
   const ref = useRef(null);
-  const lines = useMemo(() => text.split("\n"), [text]);
+  const lang = useMemo(() => detectCodeLang(file), [file]);
+  const lines = useMemo(() => {
+    const raw = text.split("\n");
+    return raw.map((line) => highlightLine(line, lang));
+  }, [text, lang]);
   const focus0 = Math.max(1, focusLine || 1);
-  // Auto-scroll to the focus line on first paint.
   useEffect(() => {
     if (!ref.current) return;
     const el = ref.current.querySelector(`[data-line="${focus0}"]`);
@@ -2506,8 +2614,8 @@ function CodeBlock({ text, focusLine }) {
   }, [focus0]);
 
   return (
-    <pre className="code" ref={ref}>
-      {lines.map((line, i) => {
+    <pre className={`code${lang ? ` code-lang-${lang}` : ""}`} ref={ref}>
+      {lines.map((tokens, i) => {
         const ln = i + 1;
         const isFocus = ln === focus0;
         return (
@@ -2517,7 +2625,17 @@ function CodeBlock({ text, focusLine }) {
             className={`code-line${isFocus ? " code-focus" : ""}`}
           >
             <span className="code-gutter">{ln}</span>
-            <span className="code-text">{line || " "}</span>
+            <span className="code-text">
+              {tokens.length === 0 ? (
+                " "
+              ) : (
+                tokens.map((t, j) => (
+                  <span key={j} className={`hl hl-${t.kind}`}>
+                    {t.text || " "}
+                  </span>
+                ))
+              )}
+            </span>
           </div>
         );
       })}
