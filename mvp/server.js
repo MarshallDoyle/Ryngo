@@ -64,7 +64,22 @@ app.options("/mcp", (_req, res) => {
 });
 app.post("/mcp", (req, res) => {
   res.set("Access-Control-Allow-Origin", "*");
-  handleMcpHttpRequest(req, res);
+  handleMcpHttpRequest(req, res, { enableWidgets: true });
+});
+app.options("/mcp/plain", (_req, res) => {
+  res
+    .set({
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "POST, OPTIONS",
+      "Access-Control-Allow-Headers":
+        "content-type, mcp-session-id, mcp-protocol-version",
+    })
+    .status(204)
+    .end();
+});
+app.post("/mcp/plain", (req, res) => {
+  res.set("Access-Control-Allow-Origin", "*");
+  handleMcpHttpRequest(req, res, { enableWidgets: false });
 });
 app.get("/mcp", (_req, res) => {
   res.status(405).json({
@@ -73,7 +88,21 @@ app.get("/mcp", (_req, res) => {
     id: null,
   });
 });
+app.get("/mcp/plain", (_req, res) => {
+  res.status(405).json({
+    jsonrpc: "2.0",
+    error: { code: -32000, message: "Method not allowed." },
+    id: null,
+  });
+});
 app.delete("/mcp", (_req, res) => {
+  res.status(405).json({
+    jsonrpc: "2.0",
+    error: { code: -32000, message: "Method not allowed." },
+    id: null,
+  });
+});
+app.delete("/mcp/plain", (_req, res) => {
   res.status(405).json({
     jsonrpc: "2.0",
     error: { code: -32000, message: "Method not allowed." },

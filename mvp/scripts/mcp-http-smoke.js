@@ -3,6 +3,7 @@
  */
 const endpoint = process.argv[2] || "http://localhost:3000/mcp";
 const githubUrl = process.argv[3] || "https://github.com/vercel/ms";
+const expectWidget = !endpoint.includes("/plain");
 
 const tools = await mcpPost({
   jsonrpc: "2.0",
@@ -15,14 +16,17 @@ if (!toolNames.includes("get_view_model")) {
   throw new Error(`get_view_model missing from ${endpoint}; tools=${toolNames.join(", ")}`);
 }
 
-const resources = await mcpPost({
-  jsonrpc: "2.0",
-  id: 2,
-  method: "resources/list",
-});
-const resourceUris = resources.result?.resources?.map((resource) => resource.uri) || [];
-if (!resourceUris.includes("ui://widget/ryngo-viewer.html")) {
-  throw new Error(`viewer widget missing from ${endpoint}; resources=${resourceUris.join(", ")}`);
+let resourceUris = [];
+if (expectWidget) {
+  const resources = await mcpPost({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "resources/list",
+  });
+  resourceUris = resources.result?.resources?.map((resource) => resource.uri) || [];
+  if (!resourceUris.includes("ui://widget/ryngo-viewer.html")) {
+    throw new Error(`viewer widget missing from ${endpoint}; resources=${resourceUris.join(", ")}`);
+  }
 }
 
 const map = await mcpPost({

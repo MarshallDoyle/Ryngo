@@ -22,6 +22,24 @@ prints a markdown map, and ends with `MCP map OK`.
 
 ## Claude Code or Claude Desktop
 
+Use the plain endpoint when connecting through `mcp-remote`. Claude can
+use Ryngo's tools and structured summaries, but it should not receive
+ChatGPT widget resources.
+
+```json
+{
+  "mcpServers": {
+    "ryngo": {
+      "command": "npx",
+      "args": [
+        "mcp-remote",
+        "https://ryngo-261437541038.us-west1.run.app/mcp/plain"
+      ]
+    }
+  }
+}
+```
+
 Print the exact local config for this checkout:
 
 ```bash
@@ -89,8 +107,13 @@ node IDs for drill-down.
 
 ## ChatGPT Apps / HTTP MCP
 
-ChatGPT needs an HTTPS-accessible MCP endpoint. Locally, run Ryngo on
-port 3000 and tunnel it.
+ChatGPT should use the widget endpoint:
+
+```text
+https://ryngo-261437541038.us-west1.run.app/mcp
+```
+
+For local development, run Ryngo on port 3000 and tunnel it.
 
 Terminal 1:
 
@@ -143,6 +166,7 @@ clusters, inspector facts, and prompts that agents receive.
 cd mvp
 npm run smoke:mcp
 npm run smoke:mcp:http -- http://localhost:3000/mcp
+npm run smoke:mcp:http -- http://localhost:3000/mcp/plain
 npm run smoke:view-model
 npm run mcp:map -- https://github.com/vercel/ms
 ```

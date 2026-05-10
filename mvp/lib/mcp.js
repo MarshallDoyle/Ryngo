@@ -78,7 +78,7 @@ const viewModelOutputSchema = {
   ],
 };
 
-export const TOOLS = [
+const BASE_TOOLS = [
   {
     name: "analyze_repo",
     description:
@@ -121,8 +121,6 @@ export const TOOLS = [
     },
     outputSchema: viewModelOutputSchema,
     _meta: {
-      ui: { resourceUri: WIDGET_URI },
-      "openai/outputTemplate": WIDGET_URI,
       "openai/toolInvocation/invoking": "Mapping the repo...",
       "openai/toolInvocation/invoked": "Repo map ready.",
     },
@@ -225,18 +223,37 @@ export const TOOLS = [
   },
 ];
 
+export const TOOLS = toolsFor({ enableWidgets: false });
+
+function toolsFor({ enableWidgets }) {
+  return BASE_TOOLS.map((tool) => {
+    if (tool.name !== "get_view_model") return tool;
+    const next = {
+      ...tool,
+      _meta: { ...tool._meta },
+    };
+    if (enableWidgets) {
+      next._meta.ui = { resourceUri: WIDGET_URI };
+      next._meta["openai/outputTemplate"] = WIDGET_URI;
+    }
+    return next;
+  });
+}
+
 /** Create a Ryngo MCP server with tools and widget resources registered. */
-export function createRyngoMcpServer() {
+export function createRyngoMcpServer({ enableWidgets = false } = {}) {
   const server = new Server(
     { name: "ryngo", version: "0.1.0" },
-    { capabilities: { tools: {}, resources: {} } },
+    { capabilities: enableWidgets ? { tools: {}, resources: {} } : { tools: {} } },
   );
 
-  server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: TOOLS }));
+  server.setRequestHandler(ListToolsRequestSchema, async () => ({
+    tools: toolsFor({ enableWidgets }),
+  }));
   server.setRequestHandler(CallToolRequestSchema, async (req) => {
     const { name, arguments: args = {} } = req.params || {};
     try {
-      return await dispatch(name, args);
+      return await dispatch(name, args, { enableWidgets });
     } catch (err) {
       return {
         isError: true,
@@ -249,42 +266,45 @@ export function createRyngoMcpServer() {
       };
     }
   });
-  server.setRequestHandler(ListResourcesRequestSchema, async () => ({
-    resources: [
-      {
-        uri: WIDGET_URI,
-        name: "ryngo-viewer",
-        title: "Ryngo Code Map",
-        description: "Read-only graph widget for RyngoViewModel v1.",
-        mimeType: "text/html+skybridge",
-      },
-    ],
-  }));
-  server.setRequestHandler(ListResourceTemplatesRequestSchema, async () => ({
-    resourceTemplates: [],
-  }));
-  server.setRequestHandler(ReadResourceRequestSchema, async (req) => {
-    const uri = req.params?.uri;
-    if (uri !== WIDGET_URI) {
-      throw new Error(`unknown resource: ${uri}`);
-    }
-    return {
-      contents: [
+  if (enableWidgets) {
+    server.setRequestHandler(ListResourcesRequestSchema, async () => ({
+      resources: [
         {
           uri: WIDGET_URI,
-          mimeType: "text/html+skybridge",
-          text: ryngoViewerHtml(),
+          name: "ryngo-viewer",
+          title: "Ryngo Code Map",
+          description: "Read-only graph widget for RyngoViewModel v1.",
+          mimeType: "text/html;profile=mcp-app",
         },
       ],
-    };
-  });
+    }));
+    server.setRequestHandler(ListResourceTemplatesRequestSchema, async () => ({
+      resourceTemplates: [],
+    }));
+    server.setRequestHandler(ReadResourceRequestSchema, async (req) => {
+      const uri = req.params?.uri;
+      if (uri !== WIDGET_URI) {
+        throw new Error(`unknown resource: ${uri}`);
+      }
+      return {
+        contents: [
+          {
+            uri: WIDGET_URI,
+            mimeType: "text/html;profile=mcp-app",
+            text: ryngoViewerHtml(),
+            _meta: { ui: { prefersBorder: true } },
+          },
+        ],
+      };
+    });
+  }
 
   return server;
 }
 
 /** Handle one stateless Streamable HTTP MCP request. */
-export async function handleMcpHttpRequest(req, res) {
-  const server = createRyngoMcpServer();
+export async function handleMcpHttpRequest(req, res, { enableWidgets = true } = {}) {
+  const server = createRyngoMcpServer({ enableWidgets });
   const transport = new StreamableHTTPServerTransport({
     sessionIdGenerator: undefined,
   });
@@ -308,7 +328,7 @@ export async function handleMcpHttpRequest(req, res) {
 }
 
 /** Dispatch one Ryngo MCP tool call by name. */
-export async function dispatch(name, args) {
+export async function dispatch(name, args, { enableWidgets = false } = {}) {
   switch (name) {
     case "analyze_repo": {
       const ir = await getIR(args.github_url, args.ref);
@@ -326,7 +346,7 @@ export async function dispatch(name, args) {
         mode: args.mode,
         maxNodes: args.max_nodes,
       });
-      return {
+      const out = {
         structuredContent: viewModel,
         content: [
           {
@@ -336,9 +356,10 @@ export async function dispatch(name, args) {
         ],
         _meta: {
           contract: "RyngoViewModel v1",
-          widget: WIDGET_URI,
         },
       };
+      if (enableWidgets) out._meta.widget = WIDGET_URI;
+      return out;
     }
     case "get_compact_ir": {
       const ir = await getIR(args.github_url, args.ref);
@@ -540,6 +561,13 @@ function ryngoViewerHtml() {
   <script>
     let current = null;
     let selectedId = null;
+    if (window.openai && window.openai.toolOutput && window.openai.toolOutput.version === 1) {
+      render(window.openai.toolOutput);
+    }
+    window.addEventListener("openai:set_globals", (event) => {
+      const data = event.detail && event.detail.globals && event.detail.globals.toolOutput;
+      if (data && data.version === 1) render(data);
+    }, { passive: true });
     window.addEventListener("message", (event) => {
       if (event.source !== window.parent) return;
       const message = event.data;
