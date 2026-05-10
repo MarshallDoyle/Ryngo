@@ -729,6 +729,21 @@ app.get("/api/ryngo-md", async (req, res) => {
   try {
     const repo = takeRepo(req);
     const { state, raw, migratedFromLegacy } = await ryngoMdStore.read(repo);
+    // `?format=raw` (or `?download=1`) returns the manifest as a
+    // downloadable text/markdown attachment so the landing page's
+    // "commit to your repo" flow has a one-click path. Browsers honor
+    // the Content-Disposition filename; curl -O picks it up too.
+    const wantsRaw =
+      req.query?.format === "raw" || req.query?.download === "1";
+    if (wantsRaw) {
+      const slugFilename = `Ryngo.md`;
+      res.setHeader("content-type", "text/markdown; charset=utf-8");
+      res.setHeader(
+        "content-disposition",
+        `attachment; filename="${slugFilename}"`,
+      );
+      return res.send(raw || "# Ryngo\n\n## Comments\n\n## Suppressions\n");
+    }
     res.json({
       repo,
       raw,
@@ -740,6 +755,24 @@ app.get("/api/ryngo-md", async (req, res) => {
       })),
       migratedFromLegacy: !!migratedFromLegacy,
     });
+  } catch (err) {
+    res.status(err.status || 500).json({ error: err.message || String(err) });
+  }
+});
+
+// Convenience sibling route. `/api/ryngo-md/download` always returns the
+// raw Markdown — equivalent to `/api/ryngo-md?format=raw` but easier to
+// remember in landing copy and `curl -O` snippets.
+app.get("/api/ryngo-md/download", async (req, res) => {
+  try {
+    const repo = takeRepo(req);
+    const { raw } = await ryngoMdStore.read(repo);
+    res.setHeader("content-type", "text/markdown; charset=utf-8");
+    res.setHeader(
+      "content-disposition",
+      `attachment; filename="Ryngo.md"`,
+    );
+    res.send(raw || "# Ryngo\n\n## Comments\n\n## Suppressions\n");
   } catch (err) {
     res.status(err.status || 500).json({ error: err.message || String(err) });
   }

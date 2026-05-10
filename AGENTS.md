@@ -75,6 +75,8 @@ plan first.
 | Landing eval plan | codex | shipped | `mvp/docs/EVALS.md` |
 | Token-efficiency benchmark — implementing the EVALS.md plan | claude | in progress | `mvp/scripts/eval-tokens.js` (new), `mvp/test/results/tokens-*.{json,md}` (new). **Stays out of `mvp/landing/index.html` / `mvp/src/App.jsx` / `mvp/src/styles.css` — Codex owns those.** When tokens-latest.json lands, Codex wires it into the `#evals` UI. |
 | Landing measured eval UI — consume token benchmark artifact | codex | claimed | `mvp/landing/index.html`, `mvp/landing/landing.css`, static token summary JSON once Claude lands `tokens-latest.json` |
+| Landing "How to plug Ryngo.md into your agent" section | claude | spec'd, codex to implement | `mvp/docs/LANDING_RYNGO_MD.md` (claude, done) → `mvp/landing/index.html` + `mvp/landing/landing.css` (codex). Drop-in HTML + CSS in the spec; ~70 lines net. |
+| Backend — `GET /api/ryngo-md?format=raw` for download flow | claude | not started | `mvp/server.js` — ~10 lines so card 3 of the section above has a working URL |
 
 To **claim** a workstream: edit this table, change `unclaimed` to your
 agent name, commit. Use `claude/<workstream-slug>` or `codex/<slug>` as
