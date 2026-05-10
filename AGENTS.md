@@ -81,7 +81,7 @@ plan first.
 | Iter 1.A — `/api/stats/public` live-stats endpoint | claude | shipped | `mvp/lib/events.js` (+getLiveStats), `mvp/lib/stats-baseline.js` (new), `mvp/server.js` (+ /api/stats/public route, 60 s cache). Corpus baseline carries 293k nodes / 184k edges / 137k defs / 66.9M tokens across 54 repos so the banner never shows zeros. |
 | Iter 1.B — Free pricing card + Calendly footer + companion tagline + 3 Ryngo.md cards | claude | shipped | `mvp/landing/index.html`, `mvp/landing/landing.css` — claude took the slice solo. |
 | Iter 1.C — `build-news.js` + `news.json` | claude | shipped | `mvp/scripts/build-news.js` parses `CHANGELOG.md` → top 6 dated items in `landing/data/news.json`. npm run build:news. |
-| Iter 2 — hero stats banner + latest-news + roadmap + newsletter | codex | depends on 1.A + 1.C | `mvp/landing/{index.html,landing.css,stats.js (new)}` |
+| Iter 2 — hero stats banner + latest-news + roadmap | claude | shipped (minus newsletter) | `mvp/landing/index.html`, `mvp/landing/landing.css`. Inline hydration JS at end of index.html (no separate stats.js file needed). Newsletter deferred per user. |
 | Iter 3 — feature screenshots + mascot swap | both | gated on logo finalist pick | `mvp/landing/images/*` (new), `mvp/landing/{index.html,landing.css}` |
 | Research — competitor landing audits (LiteLLM + Unsloth) | claude | shipped | `litellmresearch.md`, `unslothresearch.md` (repo root) |
 

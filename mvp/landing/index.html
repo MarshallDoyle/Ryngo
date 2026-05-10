@@ -26,8 +26,8 @@
         <a href="#evals">Evals</a>
         <a href="#mcp">Install MCP</a>
         <a href="#ryngo-md">Ryngo.md</a>
+        <a href="#news">Latest</a>
         <a href="#pricing">Pricing</a>
-        <a href="logos.html">Logo lab</a>
         <a href="https://github.com/MarshallDoyle/Ryngo" target="_blank" rel="noopener">GitHub</a>
         <a href="#faq">FAQ</a>
         <a class="cta" href="/app">Open the app →</a>
@@ -41,6 +41,14 @@
         Paste a GitHub URL, get a typed node-editor. Mark intents in
         <code>Ryngo.md</code>; Claude Code, Cursor, Codex, and Aider all
         read the same file.
+      </p>
+      <p class="hero-multiplier" aria-label="Compression headline">
+        <strong id="multBig">843×</strong> less context. Same code map.
+        <small>
+          Topology in <span id="multTopology">0.12 %</span> of raw tokens
+          · single symbol in <span id="multSig">0.006 %</span>
+          · focused subgraph in <span id="multSub">0.28 %</span>.
+        </small>
       </p>
       <p class="lede">
         Paste a GitHub URL. Get a typed node-editor of your codebase —
@@ -73,6 +81,13 @@
           Live · clones a real public repo · no LLM inference · same map at ten files and at ten thousand
         </div>
       </div>
+
+      <section class="hero-stats" aria-label="Ryngo at a glance">
+        <span><strong id="statRepos">56</strong> repos compiled</span>
+        <span><strong id="statNodes">293.6k</strong> nodes generated</span>
+        <span><strong id="statTokens">66.9M</strong> tokens compressed</span>
+        <span><strong id="statRatio">843×</strong> smaller agent context</span>
+      </section>
 
       <p class="hero-foot">
         Built by <a class="inline-link" href="https://marshall-doyle.com/" target="_blank" rel="noopener">Marshall Doyle</a>.
@@ -298,6 +313,107 @@ npm start          # HTTP server (API + /mcp + landing + /app)</code></pre>
             drops to zero.
           </p>
         </div>
+      </div>
+    </section>
+
+    <section id="news" class="section">
+      <h2>Latest</h2>
+      <p class="section-lede">
+        Newest at the top. Auto-generated from
+        <a class="inline-link" href="https://github.com/MarshallDoyle/Ryngo/blob/main/mvp/CHANGELOG.md" target="_blank" rel="noopener">CHANGELOG.md</a>
+        every deploy.
+      </p>
+      <ul class="news-list" id="newsList">
+        <!-- Six fallback rows baked at build time. Hydration replaces
+             these with the latest entries from /data/news.json. -->
+        <li>
+          <time datetime="2026-05-10">2026-05-10</time>
+          <div>
+            <div class="news-title">Landing Iter 1.B — Free pricing tier, Ryngo.md cards, footer overhaul, tagline companion</div>
+            <div class="news-blurb">Four new sections plus matching CSS. Tagline companion at LiteLLM density, three flow cards for Ryngo.md, a single centered Free tile, footer with Cal.com + Discord + email.</div>
+          </div>
+        </li>
+        <li>
+          <time datetime="2026-05-10">2026-05-10</time>
+          <div>
+            <div class="news-title">Live stats banner backend — <code>/api/stats/public</code></div>
+            <div class="news-blurb">Aggregates the events warehouse + corpus baseline. 293k nodes, 184k edges, 66.9M tokens across 54 repos. Banner never shows zeros even on cold deploys.</div>
+          </div>
+        </li>
+        <li>
+          <time datetime="2026-05-10">2026-05-10</time>
+          <div>
+            <div class="news-title">Token-efficiency benchmark on the full 54-repo corpus</div>
+            <div class="news-blurb">Topology 0.12 %, focused subgraph 0.28 %, single-symbol signature 0.006 % of raw tokens. Per-language breakdown lives in <code>/data/tokens-summary.json</code>.</div>
+          </div>
+        </li>
+        <li>
+          <time datetime="2026-05-10">2026-05-10</time>
+          <div>
+            <div class="news-title">Phase 11 — <code>Ryngo.md</code> per-repo manifest</div>
+            <div class="news-blurb">One root-level markdown file holding comments + warning suppressions. Round-trip parser, MCP tool, dismiss UI, server endpoints, agent-template auto-discovery.</div>
+          </div>
+        </li>
+        <li>
+          <time datetime="2026-05-10">2026-05-10</time>
+          <div>
+            <div class="news-title">Compiler warnings on every function</div>
+            <div class="news-blurb">Heuristic O(n²) / O(n³) nested loops, I/O in loop, recursion without memoization, long functions, deep nesting. Red ⚠ badge on affected nodes with per-warning dismiss.</div>
+          </div>
+        </li>
+        <li>
+          <time datetime="2026-05-10">2026-05-10</time>
+          <div>
+            <div class="news-title">Removed the MAX_FILES = 1500 hard cap</div>
+            <div class="news-blurb">Compilation is deterministic regex + tree-walk; even 50 k-file monorepos finish in seconds. Per-file caps stay so a 50 MB generated bundle can't blow the parser.</div>
+          </div>
+        </li>
+      </ul>
+      <p class="news-foot">
+        <a class="inline-link" href="https://github.com/MarshallDoyle/Ryngo/blob/main/mvp/CHANGELOG.md" target="_blank" rel="noopener">Full changelog →</a>
+      </p>
+    </section>
+
+    <section id="roadmap" class="section section-alt">
+      <h2>Coming soon</h2>
+      <p class="section-lede">
+        Three threads in flight. The plan + per-agent claims live in
+        <a class="inline-link" href="https://github.com/MarshallDoyle/Ryngo/blob/main/AGENTS.md" target="_blank" rel="noopener">AGENTS.md</a>.
+      </p>
+      <div class="roadmap-grid">
+
+        <article class="roadmap-card">
+          <span class="roadmap-chip">in progress</span>
+          <h3>Tree-sitter parsers</h3>
+          <p>
+            Swap the regex extractors for tree-sitter in TS and Python.
+            Same IR shape, deeper signatures, fewer edge-case misses on
+            JSX, generics, and decorators. Drop-in on the existing parser
+            registry; no downstream changes.
+          </p>
+        </article>
+
+        <article class="roadmap-card">
+          <span class="roadmap-chip">next</span>
+          <h3>Go + Rust support</h3>
+          <p>
+            Go via <code>go list -deps -json</code>, Rust via
+            <code>rust-analyzer scip</code>. Real types, real
+            cross-crate edges. Lights up the typed-pipe coloring on a
+            second language family beyond TS and Python.
+          </p>
+        </article>
+
+        <article class="roadmap-card">
+          <span class="roadmap-chip">queued</span>
+          <h3>Multi-repo aggregation</h3>
+          <p>
+            One Ryngo view across your whole org's repos. Cross-repo
+            call graphs, shared regions, service-level diff. Sits on top
+            of today's per-repo IR with a federation layer.
+          </p>
+        </article>
+
       </div>
     </section>
 
@@ -618,6 +734,77 @@ git commit -m "ryngo: dismiss intentional warnings + auth notes"</code></pre>
       }
       slider?.addEventListener("input", updateEval);
       updateEval();
+    </script>
+
+    <script>
+      // Hydrate the hero stats banner + multiplier headline from
+      // /api/stats/public. The HTML ships with baked corpus-baseline
+      // numbers so the page renders meaningful values even if the fetch
+      // fails (offline, deploy in progress, …). When the fetch succeeds
+      // and live activity > 0, the banner reflects live + baseline.
+      (async () => {
+        try {
+          const stats = await fetch("/api/stats/public", { cache: "no-store" }).then((r) => r.json());
+          const h = stats?.headline;
+          if (!h) return;
+          const set = (id, val) => {
+            const el = document.getElementById(id);
+            if (el && val) el.textContent = val;
+          };
+          set("statRepos",  h.reposCompiledDisplay);
+          set("statNodes",  h.nodesGeneratedDisplay);
+          set("statTokens", h.tokensCompressedDisplay);
+          if (h.agentReadyContext) {
+            set("statRatio", h.agentReadyContext);
+            const big = h.agentReadyContext.replace(/\s*smaller$/, "");
+            set("multBig", big);
+          }
+          const ratios = stats?.baseline?.compressionRatios;
+          if (ratios) {
+            const pct = (r, dig = 2) => `${(r * 100).toFixed(dig)} %`;
+            if (ratios.topology)         set("multTopology", pct(ratios.topology));
+            if (ratios.englishSignature) set("multSig",      pct(ratios.englishSignature, 3));
+            if (ratios.focusedSubgraph)  set("multSub",      pct(ratios.focusedSubgraph));
+          }
+        } catch {
+          /* baked fallback values stay */
+        }
+      })();
+
+      // Hydrate the Latest section from /data/news.json. The HTML
+      // ships with 6 baked items so the section is fully rendered on
+      // first paint; this swap only runs when the deployed JSON
+      // contains newer entries.
+      (async () => {
+        try {
+          const news = await fetch("/data/news.json", { cache: "no-store" }).then((r) => r.json());
+          if (!Array.isArray(news?.items) || news.items.length === 0) return;
+          const list = document.getElementById("newsList");
+          if (!list) return;
+          list.innerHTML = news.items
+            .slice(0, 6)
+            .map(
+              (item) => `
+                <li>
+                  <time datetime="${escape(item.date)}">${escape(item.date)}</time>
+                  <div>
+                    <div class="news-title">${escape(item.title)}</div>
+                    <div class="news-blurb">${escape(item.blurb)}</div>
+                  </div>
+                </li>`,
+            )
+            .join("");
+        } catch {
+          /* baked fallback rows stay */
+        }
+        function escape(s) {
+          return String(s || "")
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;");
+        }
+      })();
     </script>
   </body>
 </html>
