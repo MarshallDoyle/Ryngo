@@ -105,7 +105,8 @@ export const CORPUS = [
   { url: "https://github.com/golang/example",        family: "stub",   lang: "go",     note: "Go example (stub backend)" },
   { url: "https://github.com/tokio-rs/mio",          family: "stub",   lang: "rust",   note: "Mio (stub backend)" },
   { url: "https://github.com/spring-projects/spring-petclinic", family: "stub", lang: "java", note: "Spring petclinic (stub)" },
-  { url: "https://github.com/rails/rails",           family: "stub",   lang: "ruby",   note: "Rails (stub)" },
+  { url: "https://github.com/rails/rails",           family: "stub",   lang: "ruby",   note: "Rails (stub for Ruby parser; rails adapter scans routes.rb + models)",
+    expects: { http_routes_rails: { min: 1 }, db_models: { min: 1 } } },
   { url: "https://github.com/dotnet/AspNetCore.Docs", family: "stub",  lang: "csharp", note: "ASP.NET docs (stub)" },
 
   // -- Mixed / utility --------------------------------------------------

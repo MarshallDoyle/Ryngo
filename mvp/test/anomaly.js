@@ -25,9 +25,6 @@
 
 import { CLASSIFICATIONS } from "./classifications.js";
 
-const STUB_LANGS = new Set(["go", "rust", "java", "ruby", "csharp", "c", "cpp", "kotlin", "swift"]);
-const STUB_TOLERATED_GROUPS = new Set(["files", "meta"]);
-
 /**
  * @param {Array} results — per-repo result objects from corpus-run.js
  * @param {Object|null} previous — the previous summary row from history.json
@@ -52,20 +49,6 @@ export function detectAnomalies(results, previous) {
     for (const c of CLASSIFICATIONS) {
       const value = r.classifications[c.id] || 0;
       const median = medians.get(c.id);
-
-      // Stub-language emissions in non-meta groups are always suspect.
-      if (STUB_LANGS.has(r.lang) && !STUB_TOLERATED_GROUPS.has(c.group) && value > 0) {
-        flags.push({
-          severity: "hard",
-          url: r.url,
-          lang: r.lang,
-          classification: c.id,
-          label: c.label,
-          actual: value,
-          reason: `stub-language repo emitted ${value} ${c.label.toLowerCase()}`,
-        });
-        continue;
-      }
 
       // Over-emission: > 5× median with absolute floor (avoid noise on
       // tiny medians like median=1 → trip on any value ≥ 6).

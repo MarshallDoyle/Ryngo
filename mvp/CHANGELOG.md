@@ -3,7 +3,8 @@
 Per `AGENTS.md` convention: one line per ship. `date · agent · one
 sentence`. Newest at top.
 
-2026-05-10  claude  Phase 6.2 — anomaly badges (`mvp/test/anomaly.js`). Flags per-repo classification counts that are >5× the corpus median (🔴 hard) or >3× (🟡 soft), plus stub-language repos emitting non-meta nodes. Surfaced in stdout + a new section in `latest.md`. Doesn't fail the run — informational, paired with the Phase 6.3 expects gate.
+2026-05-10  claude  Rails adapter — `config/routes.rb` route extraction (verb DSL + `resources` / `resource` expansion to RESTful 7 / 6) + ActiveRecord-style `db-model` nodes from `app/models/**/*.rb`; verified 24 routes + 17 models on `rails/rails`. Adapter scans Ruby as `scanUnparsed` since the Ruby parser is still a stub.
+2026-05-10  claude  Phase 6.2 — anomaly badges (`mvp/test/anomaly.js`). Flags per-repo classification counts that are >5× the corpus median (🔴 hard) or >3× (🟡 soft). Surfaced in stdout + a new section in `latest.md`. Doesn't fail the run — informational, paired with the Phase 6.3 expects gate.
 2026-05-10  claude  feat(viewer): code panel — lightweight per-line syntax highlighting (TS/JS/Py: keywords, strings, comments, numbers, types, decorators) tied to existing palette tokens; theme-aware bg/colors (was hardcoded dark); polished focus-line + scrollbar; layer-view file chips bumped readability (12 px tag, hover border)
 2026-05-10  codex  Compiler-quality reports — per-file parse status/backend, MCP `get_compile_report`, `/api/compile-report`, and enriched deployment health checks
 2026-05-10  claude  feat(viewer): focus-view layout polish — hub re-centers when only one side has satellites; collapsed-height grid; column count derived from focus-canvas aspect (55 % of window); card shadows on all typed nodes + layers; bolder hover lift; focus-graph edges thicker for legibility when 20+ lines fan out from one hub

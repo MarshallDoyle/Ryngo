@@ -214,6 +214,13 @@ export const CLASSIFICATIONS = [
       byPredicate(ir, (n) => n.kind === "http-route" && n.data?.framework === "django"),
   },
   {
+    id: "http_routes_rails",
+    group: "adapters",
+    label: "Rails routes",
+    count: (ir) =>
+      byPredicate(ir, (n) => n.kind === "http-route" && n.data?.framework === "rails"),
+  },
+  {
     id: "gql_types",
     group: "adapters",
     label: "GraphQL types (SDL)",
