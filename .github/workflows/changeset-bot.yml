@@ -1,0 +1,83 @@
+# Reminds PR authors that a changeset is needed (or that the absence
+# of one is intentional).
+#
+# This is purely advisory — the workflow only posts a sticky comment.
+# It is NOT a required check. We intentionally do not block PRs on
+# missing changesets:
+#   - Many PRs legitimately don't need one (docs-only, repo tooling,
+#     fixtures, private packages — see .changeset/README.md).
+#   - Bot-blocking-merge has a poor track record of teaching the
+#     workflow; a comment with the right `pnpm changeset` invocation
+#     is more useful than a red X.
+#
+# The required-check version of this can be added later (see
+# changesets/changesets-changelog-* recipes) once we've confirmed
+# the comment alone is enough signal.
+
+name: changeset-bot
+
+on:
+  pull_request_target:
+    # `pull_request_target` runs in the base-branch context with the
+    # base-branch secrets — necessary because `pull-requests: write`
+    # is required to comment, and we don't want to grant that to
+    # untrusted fork PR code. We compensate by NOT checking out the
+    # PR branch's code below; the changesets/action only reads the
+    # PR's metadata via the GitHub API.
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - labeled
+      - unlabeled
+
+permissions:
+  contents: read
+  pull-requests: write
+
+# Only one bot run per PR at a time. New commits supersede the
+# previous comment.
+concurrency:
+  group: changeset-bot-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  comment:
+    name: Changeset reminder comment
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    # Don't bother on draft PRs; the author isn't ready for review
+    # signal yet, and we'd just be noise.
+    if: github.event.pull_request.draft != true
+    steps:
+      - name: Checkout (base ref only)
+        uses: actions/checkout@v4
+        with:
+          # Deliberately NOT checking out the PR head — see comment
+          # at the top of this file. The base ref is enough for the
+          # changesets/action to inspect changeset files via the API.
+          ref: ${{ github.event.pull_request.base.ref }}
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --ignore-scripts
+
+      - name: Comment on PR
+        uses: changesets/action@v1
+        with:
+          # `setupGitUser: false` — we are not committing anything
+          # in this workflow; we only want the comment side effect.
+          setupGitUser: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

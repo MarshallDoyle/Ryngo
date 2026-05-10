@@ -1,0 +1,180 @@
+{
+  "ir": {
+    "edges": [
+      {
+        "category": "db-read",
+        "entity": "User",
+        "sourceId": "70e87c98dbb023e3f29ee11120e9a8ae",
+        "store": "postgres",
+        "targetId": "a3f98b1257525f9caa7fb42c7bf36496",
+        "valueType": {
+          "display": "Promise<User[]>",
+          "lang": "ts",
+          "source": "inferred"
+        }
+      },
+      {
+        "category": "db-write",
+        "entity": "User",
+        "op": "create",
+        "sourceId": "c02b393a98b46a6047a7972407a7ce8b",
+        "store": "postgres",
+        "targetId": "0aa88163a284b9bd77c2b8c6f0b87ec3",
+        "valueType": {
+          "display": "Promise<User>",
+          "lang": "ts",
+          "source": "inferred"
+        }
+      }
+    ],
+    "metadata": {
+      "commit": "0000000000000000000000000000000000000000",
+      "generatedAt": "2026-05-09T00:00:00.000Z",
+      "generators": [
+        {
+          "name": "codegraph-tree-sitter-ts",
+          "version": "0.1.0"
+        },
+        {
+          "name": "codegraph-adapter-prisma",
+          "version": "0.1.0"
+        }
+      ],
+      "repo": ""
+    },
+    "nodes": [
+      {
+        "id": "003e58053684936600fd5dda16008aac",
+        "lang": "none",
+        "name": "synthetic",
+        "path": "test-fixtures/synthetic",
+        "signature": "service||test-fixtures/synthetic",
+        "tier": "service"
+      },
+      {
+        "id": "5bc31203da7d17967d9565611495d111",
+        "lang": "ts",
+        "name": "03_orm.ts",
+        "parentId": "003e58053684936600fd5dda16008aac",
+        "path": "test-fixtures/synthetic/src/03_orm.ts",
+        "signature": "module|003e58053684936600fd5dda16008aac|test-fixtures/synthetic/src/03_orm.ts",
+        "tier": "module"
+      },
+      {
+        "exported": false,
+        "fields": [
+          {
+            "name": "id",
+            "type": {
+              "display": "string",
+              "lang": "ts",
+              "source": "annotated"
+            }
+          },
+          {
+            "name": "email",
+            "type": {
+              "display": "string",
+              "lang": "ts",
+              "source": "annotated"
+            }
+          },
+          {
+            "name": "name",
+            "type": {
+              "display": "string",
+              "lang": "ts",
+              "source": "annotated"
+            }
+          }
+        ],
+        "id": "b46b3c12221f9390dd54ac6ecaf90111",
+        "kind": "interface",
+        "name": "User",
+        "parentId": "5bc31203da7d17967d9565611495d111",
+        "signature": "type|5bc31203da7d17967d9565611495d111|User",
+        "tier": "type"
+      },
+      {
+        "asyncness": "async",
+        "exported": true,
+        "id": "70e87c98dbb023e3f29ee11120e9a8ae",
+        "kind": "async",
+        "name": "listActiveUsers",
+        "params": [],
+        "parentId": "5bc31203da7d17967d9565611495d111",
+        "pure": false,
+        "returnType": {
+          "display": "Promise<User[]>",
+          "lang": "ts",
+          "source": "annotated"
+        },
+        "signature": "function|5bc31203da7d17967d9565611495d111|listActiveUsers|0|",
+        "tier": "function"
+      },
+      {
+        "asyncness": "async",
+        "exported": true,
+        "id": "c02b393a98b46a6047a7972407a7ce8b",
+        "kind": "async",
+        "name": "createUser",
+        "params": [
+          {
+            "name": "email",
+            "type": {
+              "display": "string",
+              "lang": "ts",
+              "source": "annotated"
+            }
+          },
+          {
+            "name": "name",
+            "type": {
+              "display": "string",
+              "lang": "ts",
+              "source": "annotated"
+            }
+          }
+        ],
+        "parentId": "5bc31203da7d17967d9565611495d111",
+        "pure": false,
+        "returnType": {
+          "display": "Promise<User>",
+          "lang": "ts",
+          "source": "annotated"
+        },
+        "signature": "function|5bc31203da7d17967d9565611495d111|createUser|2|string,string",
+        "tier": "function"
+      },
+      {
+        "id": "a3f98b1257525f9caa7fb42c7bf36496",
+        "leaf": {
+          "entity": "User",
+          "flavor": "db-read",
+          "op": "findMany",
+          "store": "postgres"
+        },
+        "parentId": "70e87c98dbb023e3f29ee11120e9a8ae",
+        "pure": false,
+        "role": "db-read",
+        "signature": "expression|70e87c98dbb023e3f29ee11120e9a8ae|call|prisma.user.findMany|0",
+        "tier": "expression"
+      },
+      {
+        "id": "0aa88163a284b9bd77c2b8c6f0b87ec3",
+        "parentId": "c02b393a98b46a6047a7972407a7ce8b",
+        "pure": false,
+        "role": "db-write",
+        "signature": "expression|c02b393a98b46a6047a7972407a7ce8b|call|prisma.user.create|0",
+        "sink": {
+          "entity": "User",
+          "flavor": "db-write",
+          "op": "create",
+          "store": "postgres"
+        },
+        "tier": "expression"
+      }
+    ]
+  },
+  "schemaVersion": "0.1.0"
+}

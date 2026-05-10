@@ -1,0 +1,32 @@
+# Cursor rules — Ryngo project map
+
+This repository is mapped by Ryngo (https://ryngo.ai). The `.ryngo/`
+directory at the repo root is your structural source of truth.
+
+When the user asks for a structural change:
+
+1. **Read `.ryngo/intents/` first.** Most "I want this changed" requests
+   already have a stub there with affected nodes listed. If you find a
+   matching intent, work against it; don't invent a parallel plan.
+
+2. **Honor `.ryngo/rules.md`.** It contains hard architectural
+   invariants ("auth must not import payments", etc.). Treat as
+   non-negotiable.
+
+3. **Reference nodes by Ryngo id.** When you discuss code in chat or in
+   commit messages, use the stable ids from Ryngo (`file:…`, `def:…`,
+   `cell:…`, `pkg:…`) so the user can map your reply onto the graph.
+
+4. **Update intent status.** When you complete an intent, change the
+   frontmatter `status:` field from `open` to `done` in the same commit.
+
+5. **Don't rewrite `.ryngo/`** unless the user explicitly asks. The
+   files there are user-authored or Ryngo-authored — append, don't
+   overwrite.
+
+6. **Annotations are guidance, not requirements.** Notes in
+   `.ryngo/annotations.md` are hints and TODOs. Surface them in your
+   plan when relevant; don't act on them silently.
+
+After your change lands, Ryngo will re-analyse the repo and tick the
+acceptance checklist on each intent. Aim for every box to tick.

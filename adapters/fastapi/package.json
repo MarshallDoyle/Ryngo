@@ -1,0 +1,76 @@
+{
+  "name": "@codegraph/adapter-fastapi",
+  "version": "0.1.0",
+  "description": "codegraph framework adapter for FastAPI. Lifts decorator-based routes (@app.get/@router.post/...), composes APIRouter prefixes through include_router, extracts Pydantic body and response models, and matches cross-service client calls to backend routes.",
+  "license": "MIT",
+  "homepage": "https://github.com/codegraph/codegraph/tree/main/adapters/fastapi#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/codegraph/codegraph.git",
+    "directory": "adapters/fastapi"
+  },
+  "bugs": {
+    "url": "https://github.com/codegraph/codegraph/issues"
+  },
+  "keywords": [
+    "codegraph",
+    "codegraph-adapter",
+    "fastapi",
+    "python",
+    "static-analysis",
+    "ir",
+    "http-routes",
+    "pydantic",
+    "apirouter"
+  ],
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18.17"
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --dts --clean --target node18",
+    "dev": "tsup src/index.ts --format esm --dts --watch",
+    "clean": "rm -rf dist .turbo .tsbuildinfo",
+    "lint": "eslint src --ext .ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run clean && npm run build"
+  },
+  "dependencies": {
+    "@codegraph/adapter-sdk": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "tsup": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "peerDependencies": {
+    "@codegraph/adapter-sdk": "^0.1.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "codegraph": {
+    "adapter": {
+      "name": "fastapi",
+      "idScheme": "fastapi",
+      "apiVersion": 1
+    }
+  }
+}

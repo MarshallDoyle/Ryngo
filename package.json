@@ -1,0 +1,102 @@
+{
+  "name": "codegraph",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Deterministic, no-LLM static analysis. Compiles a codebase to a typed graph IR, renders it in a React Flow viewer, and diffs it in a GitHub Action.",
+  "license": "MIT",
+  "homepage": "https://github.com/codegraph/codegraph",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/codegraph/codegraph.git"
+  },
+  "engines": {
+    "node": ">=20.11.0",
+    "pnpm": ">=9.12.0"
+  },
+  "packageManager": "pnpm@9.12.3",
+  "workspaces": [
+    "packages/*",
+    "adapters/*"
+  ],
+  "scripts": {
+    "build": "turbo run build",
+    "build:core": "turbo run build --filter=@codegraph/core",
+    "build:cli": "turbo run build --filter=@codegraph/cli",
+    "build:viewer": "turbo run build --filter=@codegraph/viewer",
+    "build:action": "turbo run build --filter=@codegraph/action",
+    "build:adapters": "turbo run build --filter=./adapters/*",
+
+    "dev": "turbo run dev --concurrency=20",
+    "dev:viewer": "turbo run dev --filter=@codegraph/viewer",
+
+    "test": "turbo run test",
+    "test:unit": "turbo run test:unit",
+    "test:integration": "turbo run test:integration",
+    "test:watch": "turbo run test:watch --concurrency=20",
+    "test:determinism": "tsx scripts/check-determinism.ts",
+
+    "bench": "tsx bench/index.ts",
+    "bench:index": "tsx bench/index-perf.bench.ts",
+    "bench:diff": "tsx bench/diff-perf.bench.ts",
+    "bench:layout": "tsx bench/layout-perf.bench.ts",
+    "bench:load": "tsx bench/load-perf.bench.ts",
+    "bench:gate": "tsx scripts/perf-regression.ts",
+
+    "lint": "turbo run lint",
+    "lint:fix": "turbo run lint:fix",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,yaml,yml}\" --ignore-path .gitignore",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,yaml,yml}\" --ignore-path .gitignore",
+
+    "typecheck": "turbo run typecheck",
+    "check": "turbo run lint typecheck test",
+
+    "clean": "turbo run clean && rm -rf node_modules .turbo",
+    "clean:dist": "turbo run clean",
+
+    "changeset": "changeset",
+    "version-packages": "changeset version && pnpm install --lockfile-only",
+    "release": "turbo run build --filter='./packages/*' --filter='./adapters/*' && changeset publish",
+
+    "codegraph": "pnpm --filter @codegraph/cli exec codegraph",
+    "viewer:preview": "pnpm --filter @codegraph/viewer preview",
+
+    "prepare": "husky install || true"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.27.9",
+    "@types/node": "catalog:",
+    "@typescript-eslint/eslint-plugin": "^8.13.0",
+    "@typescript-eslint/parser": "^8.13.0",
+    "@vitest/coverage-v8": "2.1.4",
+    "eslint": "^9.14.0",
+    "eslint-config-prettier": "^9.1.0",
+    "fast-check": "^3.23.1",
+    "husky": "^9.1.6",
+    "lint-staged": "^15.2.10",
+    "mitata": "^0.1.11",
+    "prettier": "^3.3.3",
+    "rimraf": "^6.0.1",
+    "tsup": "catalog:",
+    "tsx": "^4.19.2",
+    "turbo": "^2.2.3",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,yaml,yml}": [
+      "prettier --write"
+    ]
+  },
+  "pnpm": {
+    "peerDependencyRules": {
+      "allowedVersions": {
+        "react": "18 || 19",
+        "react-dom": "18 || 19"
+      }
+    }
+  }
+}

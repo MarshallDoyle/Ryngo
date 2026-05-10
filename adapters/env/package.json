@@ -1,0 +1,75 @@
+{
+  "name": "@codegraph/adapter-env",
+  "version": "0.1.0",
+  "description": "codegraph framework adapter for environment variables. Detects process.env / import.meta.env / Bun.env / os.environ / os.getenv / pydantic-settings reads and parses .env files into a declared-keys registry.",
+  "license": "MIT",
+  "homepage": "https://github.com/codegraph/codegraph/tree/main/adapters/env#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/codegraph/codegraph.git",
+    "directory": "adapters/env"
+  },
+  "bugs": {
+    "url": "https://github.com/codegraph/codegraph/issues"
+  },
+  "keywords": [
+    "codegraph",
+    "codegraph-adapter",
+    "env",
+    "dotenv",
+    "process-env",
+    "pydantic-settings",
+    "static-analysis",
+    "ir"
+  ],
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18.17"
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --dts --clean --target node18",
+    "dev": "tsup src/index.ts --format esm --dts --watch",
+    "clean": "rm -rf dist .turbo .tsbuildinfo",
+    "lint": "eslint src --ext .ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run clean && npm run build"
+  },
+  "dependencies": {
+    "@codegraph/adapter-sdk": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "tsup": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "peerDependencies": {
+    "@codegraph/adapter-sdk": "^0.1.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "codegraph": {
+    "adapter": {
+      "name": "env",
+      "idScheme": "env",
+      "apiVersion": 1
+    }
+  }
+}

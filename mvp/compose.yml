@@ -1,0 +1,42 @@
+name: ryngo
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: ryngo-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-ryngo}
+      POSTGRES_USER: ${POSTGRES_USER:-ryngo}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ryngo_dev_password}
+    ports:
+      - "${RYNGO_DB_PORT:-55432}:5432"
+    volumes:
+      - ryngo-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+
+  app:
+    profiles: ["app"]
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 8080
+      DATABASE_URL: postgres://${POSTGRES_USER:-ryngo}:${POSTGRES_PASSWORD:-ryngo_dev_password}@db:5432/${POSTGRES_DB:-ryngo}
+    ports:
+      - "${RYNGO_APP_PORT:-8080}:8080"
+    volumes:
+      - ryngo-state:/app/.ryngo
+
+volumes:
+  ryngo-postgres-data:
+  ryngo-state:

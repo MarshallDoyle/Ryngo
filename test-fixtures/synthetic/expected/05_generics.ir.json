@@ -1,0 +1,236 @@
+{
+  "ir": {
+    "edges": [
+      {
+        "callKind": "constructor",
+        "category": "call",
+        "sourceId": "56c4e07b3aec8b224ac7ce5019ceebf3",
+        "targetId": "b004ae8cafecf199534262ce5799c7ff",
+        "valueType": {
+          "display": "Repo<User>",
+          "lang": "ts",
+          "source": "annotated",
+          "structural": {
+            "args": [
+              {
+                "kind": "ref",
+                "name": "User"
+              }
+            ],
+            "kind": "generic",
+            "name": "Repo"
+          }
+        }
+      },
+      {
+        "category": "type-flow",
+        "role": "return",
+        "sourceId": "b004ae8cafecf199534262ce5799c7ff",
+        "targetId": "f931f55baf51da09395796f372339b99",
+        "valueType": {
+          "display": "Repo<User>",
+          "lang": "ts",
+          "source": "inferred",
+          "structural": {
+            "args": [
+              {
+                "kind": "ref",
+                "name": "User"
+              }
+            ],
+            "kind": "generic",
+            "name": "Repo"
+          }
+        }
+      }
+    ],
+    "metadata": {
+      "commit": "0000000000000000000000000000000000000000",
+      "generatedAt": "2026-05-09T00:00:00.000Z",
+      "generators": [
+        {
+          "name": "codegraph-tree-sitter-ts",
+          "version": "0.1.0"
+        }
+      ],
+      "repo": ""
+    },
+    "nodes": [
+      {
+        "id": "003e58053684936600fd5dda16008aac",
+        "lang": "none",
+        "name": "synthetic",
+        "path": "test-fixtures/synthetic",
+        "signature": "service||test-fixtures/synthetic",
+        "tier": "service"
+      },
+      {
+        "id": "49cd72f5927904effee40aaa4b3a44b5",
+        "lang": "ts",
+        "name": "05_generics.ts",
+        "parentId": "003e58053684936600fd5dda16008aac",
+        "path": "test-fixtures/synthetic/src/05_generics.ts",
+        "signature": "module|003e58053684936600fd5dda16008aac|test-fixtures/synthetic/src/05_generics.ts",
+        "tier": "module"
+      },
+      {
+        "exported": false,
+        "fields": [
+          {
+            "name": "id",
+            "type": {
+              "display": "string",
+              "lang": "ts",
+              "source": "annotated"
+            }
+          },
+          {
+            "name": "email",
+            "type": {
+              "display": "string",
+              "lang": "ts",
+              "source": "annotated"
+            }
+          }
+        ],
+        "id": "faebe33c2ab22fe38270f7e92ddb90b4",
+        "kind": "interface",
+        "name": "User",
+        "parentId": "49cd72f5927904effee40aaa4b3a44b5",
+        "signature": "type|49cd72f5927904effee40aaa4b3a44b5|User",
+        "tier": "type"
+      },
+      {
+        "exported": true,
+        "id": "f931f55baf51da09395796f372339b99",
+        "kind": "class",
+        "name": "Repo",
+        "parentId": "49cd72f5927904effee40aaa4b3a44b5",
+        "signature": "type|49cd72f5927904effee40aaa4b3a44b5|Repo",
+        "tier": "type"
+      },
+      {
+        "asyncness": "sync",
+        "id": "b35683fe13f84d6692af27911ebf74f9",
+        "kind": "method",
+        "name": "add",
+        "params": [
+          {
+            "name": "item",
+            "type": {
+              "display": "T",
+              "lang": "ts",
+              "source": "annotated"
+            }
+          }
+        ],
+        "parentId": "f931f55baf51da09395796f372339b99",
+        "pure": false,
+        "receiverType": {
+          "display": "Repo<T>",
+          "lang": "ts",
+          "source": "annotated"
+        },
+        "returnType": {
+          "display": "void",
+          "lang": "ts",
+          "source": "annotated"
+        },
+        "signature": "function|f931f55baf51da09395796f372339b99|add|1|T|Repo<T>",
+        "tier": "function"
+      },
+      {
+        "asyncness": "sync",
+        "id": "044c0246cfc630b9e4c1d94618f82649",
+        "kind": "method",
+        "name": "get",
+        "params": [
+          {
+            "name": "id",
+            "type": {
+              "display": "string",
+              "lang": "ts",
+              "source": "annotated"
+            }
+          }
+        ],
+        "parentId": "f931f55baf51da09395796f372339b99",
+        "pure": true,
+        "receiverType": {
+          "display": "Repo<T>",
+          "lang": "ts",
+          "source": "annotated"
+        },
+        "returnType": {
+          "display": "T | undefined",
+          "lang": "ts",
+          "source": "annotated"
+        },
+        "signature": "function|f931f55baf51da09395796f372339b99|get|1|string|Repo<T>",
+        "tier": "function"
+      },
+      {
+        "asyncness": "sync",
+        "id": "0276d747286a588dcc4541976563a857",
+        "kind": "method",
+        "name": "all",
+        "params": [],
+        "parentId": "f931f55baf51da09395796f372339b99",
+        "pure": true,
+        "receiverType": {
+          "display": "Repo<T>",
+          "lang": "ts",
+          "source": "annotated"
+        },
+        "returnType": {
+          "display": "T[]",
+          "lang": "ts",
+          "source": "annotated"
+        },
+        "signature": "function|f931f55baf51da09395796f372339b99|all|0||Repo<T>",
+        "tier": "function"
+      },
+      {
+        "asyncness": "sync",
+        "exported": true,
+        "id": "56c4e07b3aec8b224ac7ce5019ceebf3",
+        "kind": "function",
+        "name": "makeUserRepo",
+        "params": [],
+        "parentId": "49cd72f5927904effee40aaa4b3a44b5",
+        "pure": false,
+        "returnType": {
+          "display": "Repo<User>",
+          "lang": "ts",
+          "source": "annotated"
+        },
+        "signature": "function|49cd72f5927904effee40aaa4b3a44b5|makeUserRepo|0|",
+        "tier": "function"
+      },
+      {
+        "id": "b004ae8cafecf199534262ce5799c7ff",
+        "parentId": "56c4e07b3aec8b224ac7ce5019ceebf3",
+        "pure": false,
+        "role": "ctor-call",
+        "signature": "expression|56c4e07b3aec8b224ac7ce5019ceebf3|call|new Repo<User>|0",
+        "tier": "expression",
+        "valueType": {
+          "display": "Repo<User>",
+          "lang": "ts",
+          "source": "annotated",
+          "structural": {
+            "args": [
+              {
+                "kind": "ref",
+                "name": "User"
+              }
+            ],
+            "kind": "generic",
+            "name": "Repo"
+          }
+        }
+      }
+    ]
+  },
+  "schemaVersion": "0.1.0"
+}

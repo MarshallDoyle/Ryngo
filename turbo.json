@@ -1,0 +1,208 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "ui": "tui",
+  "globalDependencies": [
+    "tsconfig.base.json",
+    ".eslintrc.cjs",
+    "pnpm-workspace.yaml",
+    ".env",
+    ".env.local"
+  ],
+  "globalEnv": [
+    "NODE_ENV",
+    "CI"
+  ],
+  "globalPassThroughEnv": [
+    "GITHUB_TOKEN",
+    "GITHUB_REPOSITORY",
+    "GITHUB_SHA",
+    "GITHUB_REF"
+  ],
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "src/**",
+        "tsconfig.json",
+        "tsup.config.ts",
+        "vite.config.ts",
+        "package.json",
+        "$TURBO_DEFAULT$"
+      ],
+      "outputs": [
+        "dist/**",
+        "build/**",
+        "!dist/**/*.test.*",
+        "!dist/**/*.spec.*"
+      ],
+      "outputLogs": "new-only"
+    },
+
+    "@codegraph/core#build": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "src/**",
+        "schema/**",
+        "tsconfig.json",
+        "tsup.config.ts",
+        "package.json"
+      ],
+      "outputs": [
+        "dist/**",
+        "schema/dist/**"
+      ]
+    },
+
+    "@codegraph/cli#build": {
+      "dependsOn": ["@codegraph/core#build"],
+      "inputs": [
+        "src/**",
+        "bin/**",
+        "tsconfig.json",
+        "tsup.config.ts",
+        "package.json"
+      ],
+      "outputs": [
+        "dist/**",
+        "bin/**"
+      ]
+    },
+
+    "@codegraph/viewer#build": {
+      "dependsOn": ["@codegraph/core#build"],
+      "inputs": [
+        "src/**",
+        "public/**",
+        "index.html",
+        "vite.config.ts",
+        "tsconfig.json",
+        "package.json"
+      ],
+      "outputs": [
+        "dist/**"
+      ]
+    },
+
+    "@codegraph/action#build": {
+      "dependsOn": ["@codegraph/cli#build"],
+      "inputs": [
+        "src/**",
+        "action.yml",
+        "tsconfig.json",
+        "package.json"
+      ],
+      "outputs": [
+        "dist/**"
+      ]
+    },
+
+    "@codegraph/adapter-sdk#build": {
+      "dependsOn": ["@codegraph/core#build"],
+      "inputs": [
+        "src/**",
+        "tsconfig.json",
+        "tsup.config.ts",
+        "package.json"
+      ],
+      "outputs": [
+        "dist/**"
+      ]
+    },
+
+    "dev": {
+      "cache": false,
+      "persistent": true,
+      "dependsOn": ["^build"]
+    },
+
+    "@codegraph/viewer#dev": {
+      "cache": false,
+      "persistent": true,
+      "dependsOn": ["@codegraph/core#build"]
+    },
+
+    "test": {
+      "dependsOn": ["^build", "build"],
+      "inputs": [
+        "src/**",
+        "test/**",
+        "__tests__/**",
+        "fixtures/**",
+        "vitest.config.ts",
+        "tsconfig.json",
+        "package.json"
+      ],
+      "outputs": ["coverage/**"],
+      "env": ["VITEST_*"]
+    },
+
+    "test:unit": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "src/**",
+        "vitest.config.ts",
+        "tsconfig.json"
+      ],
+      "outputs": ["coverage/**"]
+    },
+
+    "test:integration": {
+      "dependsOn": ["build", "^build"],
+      "inputs": [
+        "src/**",
+        "test/integration/**",
+        "fixtures/**",
+        "vitest.config.ts",
+        "tsconfig.json"
+      ],
+      "outputs": ["coverage/**"]
+    },
+
+    "test:watch": {
+      "cache": false,
+      "persistent": true,
+      "dependsOn": ["^build"]
+    },
+
+    "lint": {
+      "dependsOn": [],
+      "inputs": [
+        "src/**",
+        ".eslintrc.cjs",
+        "eslint.config.js",
+        "tsconfig.json",
+        "package.json"
+      ],
+      "outputs": []
+    },
+
+    "lint:fix": {
+      "cache": false,
+      "inputs": [
+        "src/**",
+        ".eslintrc.cjs",
+        "eslint.config.js"
+      ]
+    },
+
+    "typecheck": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "src/**",
+        "test/**",
+        "tsconfig.json",
+        "tsconfig.base.json",
+        "package.json"
+      ],
+      "outputs": []
+    },
+
+    "clean": {
+      "cache": false
+    }
+  },
+
+  "remoteCache": {
+    "signature": true
+  }
+}

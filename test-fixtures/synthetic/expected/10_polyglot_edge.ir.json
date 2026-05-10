@@ -1,0 +1,214 @@
+{
+  "ir": {
+    "diagnostics": [
+      {
+        "analyzer": "codegraph-adapter-polyglot-url",
+        "message": "paired TS fetch '/widgets/{id}' with Python route GET /widgets/{widget_id} by URL pattern match.",
+        "severity": "info"
+      }
+    ],
+    "edges": [
+      {
+        "category": "http-route",
+        "framework": "fastapi",
+        "method": "GET",
+        "sourceId": "f5693ac2b77e5d439e949842aa911f2c",
+        "targetId": "924c00c561fd7fd4157d60d1199cc5be",
+        "valueType": {
+          "display": "str",
+          "lang": "py",
+          "source": "inferred"
+        }
+      },
+      {
+        "argIndex": 0,
+        "category": "type-flow",
+        "role": "argument",
+        "sourceId": "93a963f75984b829f5224bec2fb6ba31",
+        "targetId": "b476da7eb27934e9c0f2db9e7e925a1e",
+        "valueType": {
+          "display": "string",
+          "lang": "ts",
+          "source": "inferred"
+        }
+      },
+      {
+        "category": "network",
+        "kind": "http",
+        "method": "GET",
+        "sourceId": "456679b706f4ab89ef030efd2c63016a",
+        "targetId": "b476da7eb27934e9c0f2db9e7e925a1e",
+        "url": "/widgets/{id}",
+        "valueType": {
+          "display": "Promise<Response>",
+          "lang": "ts",
+          "source": "inferred"
+        }
+      },
+      {
+        "callKind": "dynamic",
+        "category": "call",
+        "sourceId": "b476da7eb27934e9c0f2db9e7e925a1e",
+        "tags": [
+          "polyglot",
+          "url-match:/widgets/{widget_id}"
+        ],
+        "targetId": "f5693ac2b77e5d439e949842aa911f2c",
+        "valueType": {
+          "display": "Response",
+          "lang": "none",
+          "source": "inferred"
+        }
+      }
+    ],
+    "metadata": {
+      "commit": "0000000000000000000000000000000000000000",
+      "generatedAt": "2026-05-09T00:00:00.000Z",
+      "generators": [
+        {
+          "name": "codegraph-tree-sitter-py",
+          "version": "0.1.0"
+        },
+        {
+          "name": "codegraph-tree-sitter-ts",
+          "version": "0.1.0"
+        },
+        {
+          "name": "codegraph-adapter-fastapi",
+          "version": "0.1.0"
+        },
+        {
+          "name": "codegraph-adapter-polyglot-url",
+          "version": "0.1.0"
+        }
+      ],
+      "repo": ""
+    },
+    "nodes": [
+      {
+        "id": "003e58053684936600fd5dda16008aac",
+        "lang": "none",
+        "name": "synthetic",
+        "path": "test-fixtures/synthetic",
+        "signature": "service||test-fixtures/synthetic",
+        "tier": "service"
+      },
+      {
+        "id": "7d8b9ccedab46f881373052e342fc5ea",
+        "lang": "py",
+        "name": "api.py",
+        "parentId": "003e58053684936600fd5dda16008aac",
+        "path": "test-fixtures/synthetic/src/10_polyglot_edge/api.py",
+        "signature": "module|003e58053684936600fd5dda16008aac|test-fixtures/synthetic/src/10_polyglot_edge/api.py",
+        "tier": "module"
+      },
+      {
+        "id": "dea289b1c2cc6a3468083ce554756b25",
+        "lang": "ts",
+        "name": "web.ts",
+        "parentId": "003e58053684936600fd5dda16008aac",
+        "path": "test-fixtures/synthetic/src/10_polyglot_edge/web.ts",
+        "signature": "module|003e58053684936600fd5dda16008aac|test-fixtures/synthetic/src/10_polyglot_edge/web.ts",
+        "tier": "module"
+      },
+      {
+        "asyncness": "sync",
+        "exported": true,
+        "id": "f5693ac2b77e5d439e949842aa911f2c",
+        "kind": "function",
+        "name": "get_widget",
+        "params": [
+          {
+            "name": "widget_id",
+            "type": {
+              "display": "int",
+              "lang": "py",
+              "source": "annotated"
+            }
+          }
+        ],
+        "parentId": "7d8b9ccedab46f881373052e342fc5ea",
+        "pure": true,
+        "returnType": {
+          "display": "dict[str, int]",
+          "lang": "py",
+          "source": "annotated"
+        },
+        "signature": "function|7d8b9ccedab46f881373052e342fc5ea|get_widget|1|int",
+        "tier": "function"
+      },
+      {
+        "id": "924c00c561fd7fd4157d60d1199cc5be",
+        "leaf": {
+          "flavor": "literal",
+          "value": "/widgets/{widget_id}",
+          "valueLang": "py"
+        },
+        "parentId": "f5693ac2b77e5d439e949842aa911f2c",
+        "pure": true,
+        "role": "route-literal",
+        "signature": "expression|f5693ac2b77e5d439e949842aa911f2c|http-route|\"/widgets/{widget_id}\"|0",
+        "tier": "expression"
+      },
+      {
+        "asyncness": "async",
+        "exported": true,
+        "id": "456679b706f4ab89ef030efd2c63016a",
+        "kind": "async",
+        "name": "fetchWidget",
+        "params": [
+          {
+            "name": "id",
+            "type": {
+              "display": "string",
+              "lang": "ts",
+              "source": "annotated"
+            }
+          }
+        ],
+        "parentId": "dea289b1c2cc6a3468083ce554756b25",
+        "pure": false,
+        "returnType": {
+          "display": "Promise<unknown>",
+          "lang": "ts",
+          "source": "annotated"
+        },
+        "signature": "function|dea289b1c2cc6a3468083ce554756b25|fetchWidget|1|string",
+        "tier": "function"
+      },
+      {
+        "id": "93a963f75984b829f5224bec2fb6ba31",
+        "leaf": {
+          "flavor": "literal",
+          "value": "/widgets/",
+          "valueLang": "ts"
+        },
+        "parentId": "456679b706f4ab89ef030efd2c63016a",
+        "pure": true,
+        "role": "url-prefix",
+        "signature": "expression|456679b706f4ab89ef030efd2c63016a|literal|\"/widgets/\"|0",
+        "tier": "expression"
+      },
+      {
+        "id": "b476da7eb27934e9c0f2db9e7e925a1e",
+        "leaf": {
+          "flavor": "external-api",
+          "kind": "http",
+          "url": "/widgets/{id}"
+        },
+        "parentId": "456679b706f4ab89ef030efd2c63016a",
+        "pure": false,
+        "role": "fetch-call",
+        "signature": "expression|456679b706f4ab89ef030efd2c63016a|call|fetch|0",
+        "sink": {
+          "flavor": "network",
+          "kind": "http",
+          "method": "GET",
+          "url": "/widgets/{id}"
+        },
+        "tier": "expression"
+      }
+    ]
+  },
+  "schemaVersion": "0.1.0"
+}

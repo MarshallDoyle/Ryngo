@@ -1,0 +1,190 @@
+{
+  "ir": {
+    "diagnostics": [
+      {
+        "analyzer": "codegraph-tree-sitter-ts",
+        "message": "edge from `invoke` to `Handler` is indirect: the callee is a function-typed parameter and cannot be statically resolved.",
+        "nodeId": "07adbdec876210b054f98f76a9d63e61",
+        "severity": "info"
+      },
+      {
+        "analyzer": "codegraph-tree-sitter-ts",
+        "message": "edge from `dispatch` to `Processor` is virtual: the callee is selected at runtime by the concrete `Processor` value.",
+        "nodeId": "b16147ad2d3d46f0c1513494b2469740",
+        "severity": "info"
+      }
+    ],
+    "edges": [
+      {
+        "callKind": "dynamic",
+        "category": "call",
+        "sourceId": "07adbdec876210b054f98f76a9d63e61",
+        "tags": [
+          "function-typed"
+        ],
+        "targetId": "92186e978652b0117398720bc9d9ac45",
+        "valueType": {
+          "display": "string",
+          "lang": "ts",
+          "source": "inferred"
+        }
+      },
+      {
+        "callKind": "virtual",
+        "category": "call",
+        "sourceId": "b16147ad2d3d46f0c1513494b2469740",
+        "targetId": "e21089e46630f982aeb5ec469b2dce3c",
+        "valueType": {
+          "display": "string",
+          "lang": "ts",
+          "source": "inferred"
+        }
+      },
+      {
+        "callKind": "direct",
+        "category": "call",
+        "sourceId": "09d2a71fefd43336b493382241612b48",
+        "targetId": "07adbdec876210b054f98f76a9d63e61",
+        "valueType": {
+          "display": "string",
+          "lang": "ts",
+          "source": "inferred"
+        }
+      }
+    ],
+    "metadata": {
+      "commit": "0000000000000000000000000000000000000000",
+      "generatedAt": "2026-05-09T00:00:00.000Z",
+      "generators": [
+        {
+          "name": "codegraph-tree-sitter-ts",
+          "version": "0.1.0"
+        }
+      ],
+      "repo": ""
+    },
+    "nodes": [
+      {
+        "id": "003e58053684936600fd5dda16008aac",
+        "lang": "none",
+        "name": "synthetic",
+        "path": "test-fixtures/synthetic",
+        "signature": "service||test-fixtures/synthetic",
+        "tier": "service"
+      },
+      {
+        "id": "fe7bac9a8ca84534b06e887748726443",
+        "lang": "ts",
+        "name": "04_dynamic_dispatch.ts",
+        "parentId": "003e58053684936600fd5dda16008aac",
+        "path": "test-fixtures/synthetic/src/04_dynamic_dispatch.ts",
+        "signature": "module|003e58053684936600fd5dda16008aac|test-fixtures/synthetic/src/04_dynamic_dispatch.ts",
+        "tier": "module"
+      },
+      {
+        "exported": false,
+        "id": "92186e978652b0117398720bc9d9ac45",
+        "kind": "type-alias",
+        "name": "Handler",
+        "parentId": "fe7bac9a8ca84534b06e887748726443",
+        "signature": "type|fe7bac9a8ca84534b06e887748726443|Handler",
+        "tier": "type"
+      },
+      {
+        "exported": false,
+        "id": "e21089e46630f982aeb5ec469b2dce3c",
+        "kind": "interface",
+        "name": "Processor",
+        "parentId": "fe7bac9a8ca84534b06e887748726443",
+        "signature": "type|fe7bac9a8ca84534b06e887748726443|Processor",
+        "tier": "type"
+      },
+      {
+        "asyncness": "sync",
+        "exported": true,
+        "id": "07adbdec876210b054f98f76a9d63e61",
+        "kind": "function",
+        "name": "invoke",
+        "params": [
+          {
+            "name": "fn",
+            "type": {
+              "display": "Handler",
+              "lang": "ts",
+              "source": "annotated"
+            }
+          },
+          {
+            "name": "input",
+            "type": {
+              "display": "string",
+              "lang": "ts",
+              "source": "annotated"
+            }
+          }
+        ],
+        "parentId": "fe7bac9a8ca84534b06e887748726443",
+        "pure": false,
+        "returnType": {
+          "display": "string",
+          "lang": "ts",
+          "source": "annotated"
+        },
+        "signature": "function|fe7bac9a8ca84534b06e887748726443|invoke|2|Handler,string",
+        "tier": "function"
+      },
+      {
+        "asyncness": "sync",
+        "exported": true,
+        "id": "b16147ad2d3d46f0c1513494b2469740",
+        "kind": "function",
+        "name": "dispatch",
+        "params": [
+          {
+            "name": "p",
+            "type": {
+              "display": "Processor",
+              "lang": "ts",
+              "source": "annotated"
+            }
+          },
+          {
+            "name": "input",
+            "type": {
+              "display": "string",
+              "lang": "ts",
+              "source": "annotated"
+            }
+          }
+        ],
+        "parentId": "fe7bac9a8ca84534b06e887748726443",
+        "pure": false,
+        "returnType": {
+          "display": "string",
+          "lang": "ts",
+          "source": "annotated"
+        },
+        "signature": "function|fe7bac9a8ca84534b06e887748726443|dispatch|2|Processor,string",
+        "tier": "function"
+      },
+      {
+        "asyncness": "sync",
+        "exported": true,
+        "id": "09d2a71fefd43336b493382241612b48",
+        "kind": "function",
+        "name": "run",
+        "params": [],
+        "parentId": "fe7bac9a8ca84534b06e887748726443",
+        "pure": false,
+        "returnType": {
+          "display": "string",
+          "lang": "ts",
+          "source": "annotated"
+        },
+        "signature": "function|fe7bac9a8ca84534b06e887748726443|run|0|",
+        "tier": "function"
+      }
+    ]
+  },
+  "schemaVersion": "0.1.0"
+}

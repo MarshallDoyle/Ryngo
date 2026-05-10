@@ -1,0 +1,430 @@
+# codegraph GitHub Action
+#
+# Composite action that:
+#   1. installs the codegraph CLI on a Node 20 runner
+#   2. builds the IR for the PR base ref and the PR head ref
+#   3. diffs the two IRs and posts a markdown comment on the PR
+#   4. (optionally) publishes the static viewer to a `gh-pages` branch
+#
+# This action is intended to be used from a workflow triggered by
+# `pull_request` (or `pull_request_target` — see the README for the security
+# trade-off). It is a no-LLM, fully deterministic static-analysis tool: every
+# step is reproducible from the repo's source and its `.codegraph.yml`.
+#
+# Tested against:
+#   - actions/checkout@v4
+#   - actions/setup-node@v4
+#   - actions/cache@v4
+#   - actions/github-script@v7
+#   - peaceiris/actions-gh-pages@v4 (only when viewer-publish: true)
+
+name: codegraph
+description: >-
+  Diff the codegraph IR between a PR's base ref and head ref, post a comment,
+  and (optionally) publish the static viewer to gh-pages.
+author: codegraph
+
+branding:
+  icon: git-branch
+  color: purple
+
+inputs:
+  config-path:
+    description: >-
+      Path to the `.codegraph.yml` config (relative to repo root). If the file
+      does not exist the CLI falls back to its built-in defaults.
+    required: false
+    default: .codegraph.yml
+
+  cache-key:
+    description: >-
+      Cache key suffix for the codegraph incremental cache. The action prefixes
+      this with `codegraph-${{ runner.os }}-` and adds the config + lockfile
+      hashes, so passing a stable string per repo (e.g. `v1`) is enough. Bump
+      this value to invalidate the cache after a CLI/adapter upgrade.
+    required: false
+    default: v1
+
+  viewer-publish:
+    description: >-
+      When `true`, build the static viewer with the diff IR pre-loaded and
+      publish it to the `gh-pages` branch under `pr-<number>/`. Requires
+      `permissions: { contents: write, pages: write }` in the calling workflow.
+    required: false
+    default: 'false'
+
+  comment-mode:
+    description: >-
+      When to post the diff comment. `always` posts even on no-op diffs;
+      `on-change` posts only when the diff is non-empty (default); `never`
+      writes the diff to the step summary but never comments.
+    required: false
+    default: on-change
+
+  severity-threshold:
+    description: >-
+      Forwarded to `codegraph diff --fail-on <level>`. One of
+      `none | info | warning | error`. The action exits non-zero when the diff
+      contains a finding at or above this level. `none` disables the gate.
+    required: false
+    default: warning
+
+  github-token:
+    description: >-
+      Token used to post the PR comment and (optionally) push the viewer to
+      gh-pages. Defaults to the workflow-provided `GITHUB_TOKEN`. For
+      `pull_request_target` workflows reading fork code, prefer a fine-grained
+      PAT or a GitHub App token with explicit `pull-requests: write`.
+    required: false
+    default: ${{ github.token }}
+
+  codegraph-version:
+    description: >-
+      Pinned npm dist-tag or semver of `@codegraph/cli` to install. Pin to a
+      specific version (`0.1.0`) for reproducible CI; `latest` is convenient
+      but tracks releases.
+    required: false
+    default: latest
+
+  working-directory:
+    description: >-
+      Subdirectory to treat as the repo root when indexing. Useful for
+      monorepos where you want to scope codegraph to one package. Defaults to
+      the repo root.
+    required: false
+    default: .
+
+outputs:
+  diff-summary:
+    description: >-
+      Path (relative to the runner workspace) of the markdown diff produced by
+      `codegraph diff --format markdown`. Empty if no diff was produced.
+    value: ${{ steps.diff.outputs.summary-path }}
+
+  viewer-url:
+    description: >-
+      URL of the published static viewer when `viewer-publish: true`, otherwise
+      empty. Only populated after the publish step has succeeded.
+    value: ${{ steps.publish.outputs.viewer-url }}
+
+runs:
+  using: composite
+  steps:
+    # ------------------------------------------------------------------
+    # 0. Sanity: refuse to run on unsupported events early. The action is
+    #    intended for PR workflows; running it on `push` would have nothing
+    #    to diff against. We still produce a friendly error rather than
+    #    failing deep inside `codegraph diff`.
+    # ------------------------------------------------------------------
+    - name: Validate event
+      id: validate
+      shell: bash
+      run: |
+        set -euo pipefail
+        case "${GITHUB_EVENT_NAME}" in
+          pull_request|pull_request_target|merge_group)
+            echo "event=${GITHUB_EVENT_NAME}" >> "$GITHUB_OUTPUT"
+            ;;
+          *)
+            echo "::error::codegraph action only supports pull_request, pull_request_target, or merge_group events (got: ${GITHUB_EVENT_NAME})."
+            exit 1
+            ;;
+        esac
+
+        # Skip draft PRs unless the caller explicitly opted in via the
+        # CODEGRAPH_RUN_ON_DRAFT env var. Saves CI minutes on WIP branches.
+        IS_DRAFT="${{ github.event.pull_request.draft }}"
+        if [ "${IS_DRAFT}" = "true" ] && [ "${CODEGRAPH_RUN_ON_DRAFT:-false}" != "true" ]; then
+          echo "::notice::Skipping codegraph: PR is a draft. Set CODEGRAPH_RUN_ON_DRAFT=true to override."
+          echo "skip=true" >> "$GITHUB_OUTPUT"
+        else
+          echo "skip=false" >> "$GITHUB_OUTPUT"
+        fi
+
+    # ------------------------------------------------------------------
+    # 1. Node 20. The CLI requires Node >= 18.17; we pin 20 for the LTS
+    #    floor that the action is tested against.
+    # ------------------------------------------------------------------
+    - name: Setup Node.js 20
+      if: steps.validate.outputs.skip != 'true'
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    # ------------------------------------------------------------------
+    # 2. Install the CLI globally so subsequent steps can call `codegraph`.
+    #    Pinned via `codegraph-version` for reproducibility.
+    # ------------------------------------------------------------------
+    - name: Install codegraph CLI
+      if: steps.validate.outputs.skip != 'true'
+      shell: bash
+      run: |
+        set -euo pipefail
+        echo "::group::Installing @codegraph/cli@${{ inputs.codegraph-version }}"
+        npm install -g "@codegraph/cli@${{ inputs.codegraph-version }}"
+        codegraph --version
+        echo "::endgroup::"
+
+    # ------------------------------------------------------------------
+    # 3. Restore the incremental-index cache. The key includes config
+    #    + workspace lockfile hashes so a dependency change invalidates
+    #    the cache; the restore-keys provide a soft fallback to the most
+    #    recent cache for this OS/version pair.
+    # ------------------------------------------------------------------
+    - name: Restore codegraph cache
+      if: steps.validate.outputs.skip != 'true'
+      id: cache
+      uses: actions/cache@v4
+      with:
+        path: |
+          ${{ inputs.working-directory }}/.codegraph-cache
+        key: codegraph-${{ runner.os }}-${{ inputs.cache-key }}-${{ hashFiles(format('{0}/{1}', inputs.working-directory, inputs.config-path), '**/package-lock.json', '**/pnpm-lock.yaml', '**/yarn.lock') }}
+        restore-keys: |
+          codegraph-${{ runner.os }}-${{ inputs.cache-key }}-
+
+    # ------------------------------------------------------------------
+    # 4. Resolve refs. We compute base + head SHAs explicitly because
+    #    actions/checkout's HEAD on a `pull_request` event is a synthetic
+    #    merge commit, not the PR head. Force-pushes are handled because
+    #    we always re-resolve from the GitHub event payload.
+    # ------------------------------------------------------------------
+    - name: Resolve base and head refs
+      if: steps.validate.outputs.skip != 'true'
+      id: refs
+      shell: bash
+      env:
+        EVENT_NAME: ${{ github.event_name }}
+      run: |
+        set -euo pipefail
+        if [ "${EVENT_NAME}" = "merge_group" ]; then
+          BASE_SHA="${{ github.event.merge_group.base_sha }}"
+          HEAD_SHA="${{ github.event.merge_group.head_sha }}"
+        else
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+        fi
+        echo "base-sha=${BASE_SHA}" >> "$GITHUB_OUTPUT"
+        echo "head-sha=${HEAD_SHA}" >> "$GITHUB_OUTPUT"
+        echo "Base: ${BASE_SHA}"
+        echo "Head: ${HEAD_SHA}"
+
+    # ------------------------------------------------------------------
+    # 5. Checkout the BASE ref into a sibling directory. We use a separate
+    #    path so the head checkout in step 7 does not clobber it. fetch-depth
+    #    0 is required so codegraph's `--since` heuristics can walk history.
+    #    For monorepos with sparse checkout, set the `working-directory`
+    #    input — the action only indexes that subtree.
+    # ------------------------------------------------------------------
+    - name: Checkout base
+      if: steps.validate.outputs.skip != 'true'
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ steps.refs.outputs.base-sha }}
+        path: __codegraph_base
+        fetch-depth: 0
+        # `pull_request_target` runs in the context of the BASE repo, so
+        # actions/checkout's default ref is already safe (base, not fork
+        # head). For `pull_request`, the default is the merge commit.
+        # We override both with the resolved SHA above.
+
+    - name: Build base IR
+      if: steps.validate.outputs.skip != 'true'
+      id: base-ir
+      shell: bash
+      working-directory: __codegraph_base/${{ inputs.working-directory }}
+      run: |
+        set -euo pipefail
+        # The base may not have a config yet (e.g. first PR introducing it);
+        # fall back to defaults. We don't fail-on at index time because we
+        # want the diff itself to be the gate.
+        CONFIG_FLAG=""
+        if [ -f "${{ inputs.config-path }}" ]; then
+          CONFIG_FLAG="--config ${{ inputs.config-path }}"
+        fi
+        mkdir -p "${GITHUB_WORKSPACE}/__codegraph_artifacts"
+        codegraph index . \
+          ${CONFIG_FLAG} \
+          --cache-dir "${GITHUB_WORKSPACE}/${{ inputs.working-directory }}/.codegraph-cache" \
+          --out "${GITHUB_WORKSPACE}/__codegraph_artifacts/base.ir.json"
+        echo "ir-path=${GITHUB_WORKSPACE}/__codegraph_artifacts/base.ir.json" >> "$GITHUB_OUTPUT"
+
+    # ------------------------------------------------------------------
+    # 7. Checkout the HEAD ref into the workspace root (the conventional
+    #    location callers expect). For `pull_request_target` this checks
+    #    out fork code into a privileged context — see the README's
+    #    "Security: pull_request_target" section.
+    # ------------------------------------------------------------------
+    - name: Checkout head
+      if: steps.validate.outputs.skip != 'true'
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ steps.refs.outputs.head-sha }}
+        # Same repo on `pull_request`, fork repo on `pull_request_target`.
+        repository: ${{ github.event.pull_request.head.repo.full_name }}
+        fetch-depth: 0
+        # Note: deliberately not setting `path:` — head goes to workspace
+        # root so $GITHUB_WORKSPACE matches what users expect.
+        clean: true
+
+    - name: Build head IR
+      if: steps.validate.outputs.skip != 'true'
+      id: head-ir
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        set -euo pipefail
+        CONFIG_FLAG=""
+        if [ -f "${{ inputs.config-path }}" ]; then
+          CONFIG_FLAG="--config ${{ inputs.config-path }}"
+        fi
+        codegraph index . \
+          ${CONFIG_FLAG} \
+          --cache-dir "${GITHUB_WORKSPACE}/${{ inputs.working-directory }}/.codegraph-cache" \
+          --out "${GITHUB_WORKSPACE}/__codegraph_artifacts/head.ir.json"
+        echo "ir-path=${GITHUB_WORKSPACE}/__codegraph_artifacts/head.ir.json" >> "$GITHUB_OUTPUT"
+
+    # ------------------------------------------------------------------
+    # 9. Diff. We produce both markdown (for the comment / job summary)
+    #    and JSON (for downstream tooling and the viewer). The exit code
+    #    is gated by `severity-threshold`: `none` => never fail, anything
+    #    else => `--fail-on <level>` semantics from the CLI.
+    # ------------------------------------------------------------------
+    - name: Diff IR
+      if: steps.validate.outputs.skip != 'true'
+      id: diff
+      shell: bash
+      run: |
+        set -euo pipefail
+        ART="${GITHUB_WORKSPACE}/__codegraph_artifacts"
+        SUMMARY_MD="${ART}/diff.md"
+        SUMMARY_JSON="${ART}/diff.json"
+
+        # Markdown for humans.
+        codegraph diff "${ART}/base.ir.json" "${ART}/head.ir.json" \
+          --format markdown \
+          --out "${SUMMARY_MD}" || DIFF_EXIT=$?
+
+        # JSON for the viewer / outputs / downstream gates.
+        codegraph diff "${ART}/base.ir.json" "${ART}/head.ir.json" \
+          --format json \
+          --out "${SUMMARY_JSON}" || true
+
+        DIFF_EXIT="${DIFF_EXIT:-0}"
+        echo "summary-path=${SUMMARY_MD}" >> "$GITHUB_OUTPUT"
+        echo "json-path=${SUMMARY_JSON}" >> "$GITHUB_OUTPUT"
+
+        # Determine if the diff is non-empty. The CLI emits a known marker
+        # in markdown mode when there are zero changes.
+        if grep -q "No changes detected" "${SUMMARY_MD}" 2>/dev/null; then
+          echo "changed=false" >> "$GITHUB_OUTPUT"
+        else
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+        fi
+
+        # Always copy the markdown into the job summary so it shows up in
+        # the Actions UI even if commenting is disabled.
+        {
+          echo "## codegraph diff"
+          echo
+          cat "${SUMMARY_MD}"
+        } >> "${GITHUB_STEP_SUMMARY}"
+
+        # Honour the severity threshold. `none` means never fail.
+        SEV="${{ inputs.severity-threshold }}"
+        if [ "${SEV}" != "none" ] && [ "${DIFF_EXIT}" != "0" ]; then
+          # Re-run with --fail-on to get a deterministic exit code; this
+          # is cheap because the IR is cached.
+          codegraph diff "${ART}/base.ir.json" "${ART}/head.ir.json" \
+            --format summary \
+            --fail-on "${SEV}" \
+            > /dev/null
+        fi
+
+    # ------------------------------------------------------------------
+    # 10. Post a sticky comment on the PR. We use github-script with a
+    #     marker comment so re-runs update in place rather than spamming
+    #     the conversation. Skipped on `merge_group` (no PR to comment).
+    # ------------------------------------------------------------------
+    - name: Post PR comment
+      if: |
+        steps.validate.outputs.skip != 'true' &&
+        github.event_name != 'merge_group' &&
+        inputs.comment-mode != 'never' &&
+        (inputs.comment-mode == 'always' || steps.diff.outputs.changed == 'true')
+      uses: actions/github-script@v7
+      env:
+        SUMMARY_PATH: ${{ steps.diff.outputs.summary-path }}
+      with:
+        github-token: ${{ inputs.github-token }}
+        script: |
+          const fs = require('fs');
+          const marker = '<!-- codegraph:comment:v1 -->';
+          const body = marker + '\n' + fs.readFileSync(process.env.SUMMARY_PATH, 'utf8');
+
+          const { owner, repo } = context.repo;
+          const issue_number = context.payload.pull_request.number;
+
+          const { data: comments } = await github.rest.issues.listComments({
+            owner, repo, issue_number, per_page: 100,
+          });
+          const existing = comments.find(c => c.body && c.body.includes(marker));
+
+          if (existing) {
+            await github.rest.issues.updateComment({
+              owner, repo, comment_id: existing.id, body,
+            });
+          } else {
+            await github.rest.issues.createComment({
+              owner, repo, issue_number, body,
+            });
+          }
+
+    # ------------------------------------------------------------------
+    # 11. Optionally publish the static viewer with the diff IR baked in
+    #     to a `pr-<number>/` subdirectory of the gh-pages branch. We
+    #     keep this as a separate, opt-in step because it requires
+    #     `contents: write` and not every project wants a public viewer.
+    # ------------------------------------------------------------------
+    - name: Build viewer bundle
+      if: |
+        steps.validate.outputs.skip != 'true' &&
+        inputs.viewer-publish == 'true' &&
+        github.event_name != 'merge_group'
+      shell: bash
+      run: |
+        set -euo pipefail
+        ART="${GITHUB_WORKSPACE}/__codegraph_artifacts"
+        OUT="${GITHUB_WORKSPACE}/__codegraph_viewer"
+        codegraph export viewer "${ART}/head.ir.json" \
+          --diff "${ART}/diff.json" \
+          --out "${OUT}"
+        echo "Built viewer at ${OUT}"
+
+    - name: Publish viewer to gh-pages
+      if: |
+        steps.validate.outputs.skip != 'true' &&
+        inputs.viewer-publish == 'true' &&
+        github.event_name != 'merge_group'
+      id: publish
+      uses: peaceiris/actions-gh-pages@v4
+      with:
+        github_token: ${{ inputs.github-token }}
+        publish_dir: __codegraph_viewer
+        destination_dir: pr-${{ github.event.pull_request.number }}
+        keep_files: true
+        commit_message: 'docs(codegraph): viewer for PR #${{ github.event.pull_request.number }} @ ${{ steps.refs.outputs.head-sha }}'
+
+    - name: Compute viewer URL
+      if: |
+        steps.validate.outputs.skip != 'true' &&
+        inputs.viewer-publish == 'true' &&
+        github.event_name != 'merge_group'
+      shell: bash
+      run: |
+        set -euo pipefail
+        # Best-effort URL; users with custom CNAMEs should consume the
+        # output and rewrite. The format matches the default
+        # github.io/<repo>/ layout.
+        URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/pr-${{ github.event.pull_request.number }}/"
+        echo "viewer-url=${URL}" >> "$GITHUB_OUTPUT"
+        echo "::notice title=codegraph viewer::${URL}"

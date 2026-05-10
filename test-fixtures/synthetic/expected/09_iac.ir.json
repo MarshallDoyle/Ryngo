@@ -1,0 +1,166 @@
+{
+  "ir": {
+    "edges": [
+      {
+        "category": "type-flow",
+        "role": "field-read",
+        "sourceId": "879a981e927935b02653f22b2379ea85",
+        "targetId": "a099fa90717bdbd8e07972cd3bb7d418",
+        "valueType": {
+          "display": "string",
+          "lang": "hcl",
+          "source": "inferred"
+        }
+      },
+      {
+        "category": "type-flow",
+        "role": "field-read",
+        "sourceId": "a099fa90717bdbd8e07972cd3bb7d418",
+        "tags": [
+          "terraform-depends-on",
+          "attribute:name"
+        ],
+        "targetId": "51d90d53adc0d3b6ec6c75b69899ae38",
+        "valueType": {
+          "display": "string",
+          "lang": "hcl",
+          "source": "inferred"
+        }
+      }
+    ],
+    "metadata": {
+      "commit": "0000000000000000000000000000000000000000",
+      "generatedAt": "2026-05-09T00:00:00.000Z",
+      "generators": [
+        {
+          "name": "codegraph-tree-sitter-hcl",
+          "version": "0.1.0"
+        },
+        {
+          "name": "codegraph-adapter-terraform",
+          "version": "0.1.0"
+        }
+      ],
+      "repo": ""
+    },
+    "nodes": [
+      {
+        "id": "003e58053684936600fd5dda16008aac",
+        "lang": "none",
+        "name": "synthetic",
+        "path": "test-fixtures/synthetic",
+        "signature": "service||test-fixtures/synthetic",
+        "tier": "service"
+      },
+      {
+        "id": "df9cf221921260247e4d3aee7dae9e64",
+        "lang": "hcl",
+        "name": "09_iac.tf",
+        "parentId": "003e58053684936600fd5dda16008aac",
+        "path": "test-fixtures/synthetic/src/09_iac.tf",
+        "signature": "module|003e58053684936600fd5dda16008aac|test-fixtures/synthetic/src/09_iac.tf",
+        "tier": "module"
+      },
+      {
+        "exported": true,
+        "fields": [
+          {
+            "name": "name",
+            "type": {
+              "display": "string",
+              "lang": "hcl",
+              "source": "annotated"
+            }
+          },
+          {
+            "name": "billing_mode",
+            "type": {
+              "display": "string",
+              "lang": "hcl",
+              "source": "annotated"
+            }
+          },
+          {
+            "name": "hash_key",
+            "type": {
+              "display": "string",
+              "lang": "hcl",
+              "source": "annotated"
+            }
+          }
+        ],
+        "id": "51d90d53adc0d3b6ec6c75b69899ae38",
+        "kind": "resource",
+        "name": "aws_dynamodb_table.events",
+        "parentId": "df9cf221921260247e4d3aee7dae9e64",
+        "signature": "type|df9cf221921260247e4d3aee7dae9e64|aws_dynamodb_table.events",
+        "tags": [
+          "terraform-resource",
+          "provider:aws"
+        ],
+        "tier": "type"
+      },
+      {
+        "exported": true,
+        "fields": [
+          {
+            "name": "function_name",
+            "type": {
+              "display": "string",
+              "lang": "hcl",
+              "source": "annotated"
+            }
+          },
+          {
+            "name": "role",
+            "type": {
+              "display": "string",
+              "lang": "hcl",
+              "source": "annotated"
+            }
+          },
+          {
+            "name": "handler",
+            "type": {
+              "display": "string",
+              "lang": "hcl",
+              "source": "annotated"
+            }
+          },
+          {
+            "name": "runtime",
+            "type": {
+              "display": "string",
+              "lang": "hcl",
+              "source": "annotated"
+            }
+          }
+        ],
+        "id": "879a981e927935b02653f22b2379ea85",
+        "kind": "resource",
+        "name": "aws_lambda_function.processor",
+        "parentId": "df9cf221921260247e4d3aee7dae9e64",
+        "signature": "type|df9cf221921260247e4d3aee7dae9e64|aws_lambda_function.processor",
+        "tags": [
+          "terraform-resource",
+          "provider:aws"
+        ],
+        "tier": "type"
+      },
+      {
+        "id": "a099fa90717bdbd8e07972cd3bb7d418",
+        "leaf": {
+          "flavor": "literal",
+          "value": "aws_dynamodb_table.events.name",
+          "valueLang": "hcl"
+        },
+        "parentId": "879a981e927935b02653f22b2379ea85",
+        "pure": true,
+        "role": "tf-attr-ref",
+        "signature": "expression|879a981e927935b02653f22b2379ea85|tf-attr-ref|aws_dynamodb_table.events.name|0",
+        "tier": "expression"
+      }
+    ]
+  },
+  "schemaVersion": "0.1.0"
+}

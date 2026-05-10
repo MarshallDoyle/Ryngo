@@ -1,0 +1,715 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://codegraph.dev/schemas/ir/0.1.0/ir.schema.json",
+  "title": "codegraph IR",
+  "description": "Canonical, deterministic, language-agnostic intermediate representation for codegraph. Schema version 0.1.0. Companion design doc: ir-schema.md. Companion TypeScript types: ir.types.ts.",
+  "type": "object",
+  "required": ["schemaVersion", "ir"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "description": "Semver of the IR schema this document conforms to.",
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(?:-[0-9A-Za-z.-]+)?$"
+    },
+    "ir": { "$ref": "#/$defs/IR" }
+  },
+
+  "$defs": {
+
+    "IR": {
+      "type": "object",
+      "required": ["metadata", "nodes", "edges"],
+      "additionalProperties": false,
+      "properties": {
+        "metadata":   { "$ref": "#/$defs/Metadata" },
+        "nodes":      { "type": "array", "items": { "$ref": "#/$defs/Node" } },
+        "edges":      { "type": "array", "items": { "$ref": "#/$defs/Edge" } },
+        "diagnostics":{ "type": "array", "items": { "$ref": "#/$defs/Diagnostic" } }
+      }
+    },
+
+    "Metadata": {
+      "type": "object",
+      "required": ["repo", "commit", "generatedAt", "generators"],
+      "additionalProperties": true,
+      "properties": {
+        "repo":        { "type": "string", "description": "Canonical repo identifier (URL or local path; empty string allowed)." },
+        "commit":      { "type": "string", "description": "Commit SHA or equivalent VCS revision." },
+        "generatedAt": { "type": "string", "format": "date-time" },
+        "generators": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["name", "version"],
+            "additionalProperties": true,
+            "properties": {
+              "name":    { "type": "string" },
+              "version": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+
+    "NodeId": {
+      "type": "string",
+      "description": "BLAKE3-128 hex digest of the node's canonical signature string. 32 hex chars.",
+      "pattern": "^[0-9a-f]{16,64}$"
+    },
+
+    "Tier": {
+      "description": "Open enum: known values plus 'x-*' extensions. Viewers must tolerate unknown tiers.",
+      "type": "string",
+      "anyOf": [
+        { "enum": ["service", "module", "type", "function", "expression"] },
+        { "pattern": "^x-[a-z0-9-]+$" }
+      ]
+    },
+
+    "Lang": {
+      "description": "Source language tag. Open string; conventional values: ts, tsx, js, jsx, py, go, rs, java, kt, rb, php, cs, swift, scala, sql, none.",
+      "type": "string"
+    },
+
+    "TypeRef": {
+      "description": "A reference to a type in some source language's surface type system.",
+      "type": "object",
+      "required": ["lang", "display"],
+      "additionalProperties": false,
+      "properties": {
+        "lang":       { "$ref": "#/$defs/Lang" },
+        "display":    { "type": "string", "description": "Human-readable type form, used as the edge label." },
+        "structural": { "$ref": "#/$defs/StructuralType" },
+        "nullable":   { "type": "boolean" },
+        "source":     { "enum": ["annotated", "inferred", "unknown"] }
+      }
+    },
+
+    "StructuralType": {
+      "description": "Optional structural decomposition of a type. Analyzers that cannot produce one omit it.",
+      "type": "object",
+      "required": ["kind"],
+      "additionalProperties": true,
+      "properties": {
+        "kind": { "enum": ["primitive", "ref", "generic", "union", "intersection", "tuple", "record", "function", "literal", "any", "unknown"] },
+        "name": { "type": "string" },
+        "args": { "type": "array", "items": { "$ref": "#/$defs/StructuralType" } },
+        "fields": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "type"],
+            "additionalProperties": false,
+            "properties": {
+              "name":     { "type": "string" },
+              "type":     { "$ref": "#/$defs/StructuralType" },
+              "optional": { "type": "boolean" }
+            }
+          }
+        },
+        "value": {}
+      }
+    },
+
+    "Node": {
+      "description": "Discriminated by 'tier'.",
+      "oneOf": [
+        { "$ref": "#/$defs/ServiceNode" },
+        { "$ref": "#/$defs/ModuleNode" },
+        { "$ref": "#/$defs/TypeNode" },
+        { "$ref": "#/$defs/FunctionNode" },
+        { "$ref": "#/$defs/ExpressionNode" },
+        { "$ref": "#/$defs/UnknownTierNode" }
+      ]
+    },
+
+    "NodeBase": {
+      "type": "object",
+      "required": ["id", "tier", "signature"],
+      "properties": {
+        "id":        { "$ref": "#/$defs/NodeId" },
+        "tier":      { "$ref": "#/$defs/Tier" },
+        "parentId":  { "$ref": "#/$defs/NodeId" },
+        "name":      { "type": "string" },
+        "signature": { "type": "string", "description": "The canonical signature string the id is derived from. Opaque to viewers." },
+        "lang":      { "$ref": "#/$defs/Lang" },
+        "doc":       { "type": "string" },
+        "loc": {
+          "description": "Optional source location hint for jump-to-source. NEVER part of node identity.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["path"],
+          "properties": {
+            "path":      { "type": "string" },
+            "startLine": { "type": "integer", "minimum": 1 },
+            "startCol":  { "type": "integer", "minimum": 1 },
+            "endLine":   { "type": "integer", "minimum": 1 },
+            "endCol":    { "type": "integer", "minimum": 1 }
+          }
+        },
+        "tags": {
+          "description": "Free-form analyzer-supplied tags (e.g. 'deprecated', 'test-only'). Open vocabulary.",
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+
+    "ServiceNode": {
+      "allOf": [
+        { "$ref": "#/$defs/NodeBase" },
+        {
+          "type": "object",
+          "required": ["tier", "name", "path"],
+          "properties": {
+            "tier": { "const": "service" },
+            "path": { "type": "string", "description": "Repo-relative POSIX path to the service root." },
+            "manifest": {
+              "description": "Optional path to the service's package manifest (package.json, pyproject.toml, Cargo.toml, etc.).",
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+
+    "ModuleNode": {
+      "allOf": [
+        { "$ref": "#/$defs/NodeBase" },
+        {
+          "type": "object",
+          "required": ["tier", "parentId", "name", "path"],
+          "properties": {
+            "tier":     { "const": "module" },
+            "path":     { "type": "string", "description": "Repo-relative POSIX path to the source file." }
+          }
+        }
+      ]
+    },
+
+    "TypeNode": {
+      "allOf": [
+        { "$ref": "#/$defs/NodeBase" },
+        {
+          "type": "object",
+          "required": ["tier", "parentId", "name", "kind"],
+          "properties": {
+            "tier":     { "const": "type" },
+            "kind":     { "type": "string", "description": "Open: class, interface, struct, enum, type-alias, trait, protocol, union, ..." },
+            "exported": { "type": "boolean" },
+            "fields": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["name", "type"],
+                "additionalProperties": false,
+                "properties": {
+                  "name":     { "type": "string" },
+                  "type":     { "$ref": "#/$defs/TypeRef" },
+                  "optional": { "type": "boolean" },
+                  "readonly": { "type": "boolean" }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+
+    "FunctionNode": {
+      "allOf": [
+        { "$ref": "#/$defs/NodeBase" },
+        {
+          "type": "object",
+          "required": ["tier", "parentId", "name", "kind", "pure", "params"],
+          "properties": {
+            "tier":     { "const": "function" },
+            "kind": {
+              "description": "Open enum: function, method, lambda, ctor, dtor, getter, setter, async, generator, component, ...",
+              "type": "string"
+            },
+            "exported": { "type": "boolean" },
+            "pure":     { "type": "boolean", "description": "True iff transitively no sink reachable from this function." },
+            "params": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["name"],
+                "additionalProperties": false,
+                "properties": {
+                  "name":    { "type": "string" },
+                  "type":    { "$ref": "#/$defs/TypeRef" },
+                  "optional":{ "type": "boolean" },
+                  "rest":    { "type": "boolean" }
+                }
+              }
+            },
+            "returnType": { "$ref": "#/$defs/TypeRef" },
+            "receiverType": { "$ref": "#/$defs/TypeRef", "description": "Set on methods; type of `this`/`self`." },
+            "asyncness":   { "enum": ["sync", "async", "generator", "async-generator"] }
+          }
+        }
+      ]
+    },
+
+    "ExpressionNode": {
+      "description": "Leaf and/or sink expression. Both `leaf` and `sink` are independently optional; either, both, or neither may be set.",
+      "allOf": [
+        { "$ref": "#/$defs/NodeBase" },
+        {
+          "type": "object",
+          "required": ["tier", "parentId", "pure"],
+          "properties": {
+            "tier": { "const": "expression" },
+            "role": {
+              "description": "Hint for the analyzer-to-viewer pipeline: what kind of expression slot. Open vocabulary.",
+              "type": "string"
+            },
+            "pure": { "type": "boolean" },
+            "leaf": { "$ref": "#/$defs/Leaf" },
+            "sink": { "$ref": "#/$defs/Sink" },
+            "valueType": { "$ref": "#/$defs/TypeRef" }
+          }
+        }
+      ]
+    },
+
+    "UnknownTierNode": {
+      "description": "Forward-compatibility escape hatch: a node with a tier the current schema doesn't know. Viewers must render it generically.",
+      "type": "object",
+      "required": ["id", "tier", "signature"],
+      "properties": {
+        "id":        { "$ref": "#/$defs/NodeId" },
+        "tier":      { "type": "string", "pattern": "^x-[a-z0-9-]+$" },
+        "signature": { "type": "string" },
+        "parentId":  { "$ref": "#/$defs/NodeId" },
+        "name":      { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+
+    "Leaf": {
+      "description": "A source of value. Discriminated by `flavor`.",
+      "oneOf": [
+        { "$ref": "#/$defs/LeafLiteral" },
+        { "$ref": "#/$defs/LeafEnv" },
+        { "$ref": "#/$defs/LeafConfigFile" },
+        { "$ref": "#/$defs/LeafCliArg" },
+        { "$ref": "#/$defs/LeafHttpInput" },
+        { "$ref": "#/$defs/LeafDbRead" },
+        { "$ref": "#/$defs/LeafExternalApi" },
+        { "$ref": "#/$defs/LeafUnknown" }
+      ]
+    },
+
+    "LeafLiteral": {
+      "type": "object",
+      "required": ["flavor", "value"],
+      "additionalProperties": false,
+      "properties": {
+        "flavor":    { "const": "literal" },
+        "value":     { "description": "Canonicalized literal payload (string, number, boolean, null, array, object)." },
+        "valueLang": { "$ref": "#/$defs/Lang" }
+      }
+    },
+
+    "LeafEnv": {
+      "type": "object",
+      "required": ["flavor", "name"],
+      "additionalProperties": false,
+      "properties": {
+        "flavor":      { "const": "env" },
+        "name":        { "type": "string", "description": "Environment variable name." },
+        "defaultValue":{ "description": "Default value if any (canonicalized)." }
+      }
+    },
+
+    "LeafConfigFile": {
+      "type": "object",
+      "required": ["flavor", "path"],
+      "additionalProperties": false,
+      "properties": {
+        "flavor": { "const": "config-file" },
+        "path":   { "type": "string", "description": "Repo-relative or absolute path; analyzers should normalize." },
+        "format": { "enum": ["json", "yaml", "toml", "env", "ini", "xml", "other"] },
+        "key":    { "type": "string", "description": "Specific key path read, when known (e.g. 'database.host')." }
+      }
+    },
+
+    "LeafCliArg": {
+      "type": "object",
+      "required": ["flavor"],
+      "additionalProperties": false,
+      "properties": {
+        "flavor": { "const": "cli-arg" },
+        "name":   { "type": "string", "description": "Flag name when known (e.g. '--port')." },
+        "index":  { "type": "integer", "description": "Positional index when known." }
+      }
+    },
+
+    "LeafHttpInput": {
+      "type": "object",
+      "required": ["flavor", "from"],
+      "additionalProperties": false,
+      "properties": {
+        "flavor": { "const": "http-input" },
+        "from":   { "enum": ["body", "query", "path", "header", "cookie", "form", "multipart"] },
+        "field":  { "type": "string", "description": "Field/parameter name when known." }
+      }
+    },
+
+    "LeafDbRead": {
+      "type": "object",
+      "required": ["flavor", "store"],
+      "additionalProperties": false,
+      "properties": {
+        "flavor": { "const": "db-read" },
+        "store":  { "type": "string", "description": "Open: postgres, mysql, sqlite, mongo, redis, dynamodb, kv, ..." },
+        "entity": { "type": "string", "description": "Table / collection / model name." },
+        "op":     { "type": "string", "description": "Open: select, find, findUnique, findMany, scan, ..." },
+        "fields": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+
+    "LeafExternalApi": {
+      "type": "object",
+      "required": ["flavor"],
+      "additionalProperties": false,
+      "properties": {
+        "flavor":  { "const": "external-api" },
+        "url":     { "type": "string", "description": "URL or URL pattern when statically derivable." },
+        "service": { "type": "string", "description": "Logical service name when known (e.g. 'stripe', 'api')." },
+        "kind":    { "enum": ["http", "grpc", "graphql", "websocket", "other"] }
+      }
+    },
+
+    "LeafUnknown": {
+      "description": "Forward-compatibility escape hatch for new leaf flavors.",
+      "type": "object",
+      "required": ["flavor"],
+      "properties": {
+        "flavor": { "type": "string", "pattern": "^x-[a-z0-9-]+$" }
+      },
+      "additionalProperties": true
+    },
+
+    "Sink": {
+      "description": "A destination of value. Discriminated by `flavor`.",
+      "oneOf": [
+        { "$ref": "#/$defs/SinkDbWrite" },
+        { "$ref": "#/$defs/SinkNetwork" },
+        { "$ref": "#/$defs/SinkFs" },
+        { "$ref": "#/$defs/SinkExec" },
+        { "$ref": "#/$defs/SinkLog" },
+        { "$ref": "#/$defs/SinkUnknown" }
+      ]
+    },
+
+    "SinkDbWrite": {
+      "type": "object",
+      "required": ["flavor", "store"],
+      "additionalProperties": false,
+      "properties": {
+        "flavor": { "const": "db-write" },
+        "store":  { "type": "string" },
+        "entity": { "type": "string" },
+        "op":     { "type": "string", "description": "Open: insert, update, upsert, delete, create, ..." },
+        "fields": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+
+    "SinkNetwork": {
+      "type": "object",
+      "required": ["flavor"],
+      "additionalProperties": false,
+      "properties": {
+        "flavor": { "const": "network" },
+        "method": { "type": "string", "description": "HTTP verb when applicable: GET, POST, PUT, PATCH, DELETE, ..." },
+        "url":    { "type": "string" },
+        "kind":   { "enum": ["http", "grpc", "graphql", "websocket", "tcp", "udp", "other"] }
+      }
+    },
+
+    "SinkFs": {
+      "type": "object",
+      "required": ["flavor", "op"],
+      "additionalProperties": false,
+      "properties": {
+        "flavor": { "const": "fs" },
+        "op":     { "enum": ["write", "read", "append", "delete", "rename", "chmod", "mkdir", "stat", "other"] },
+        "path":   { "type": "string", "description": "Path or pattern when statically derivable." }
+      }
+    },
+
+    "SinkExec": {
+      "type": "object",
+      "required": ["flavor"],
+      "additionalProperties": false,
+      "properties": {
+        "flavor":  { "const": "exec" },
+        "command": { "type": "string", "description": "Command or argv[0] when known." },
+        "shell":   { "type": "boolean", "description": "True if invoked via a shell (security-relevant)." }
+      }
+    },
+
+    "SinkLog": {
+      "type": "object",
+      "required": ["flavor"],
+      "additionalProperties": false,
+      "properties": {
+        "flavor": { "const": "log" },
+        "level":  { "enum": ["trace", "debug", "info", "warn", "error", "fatal", "other"] },
+        "logger": { "type": "string" }
+      }
+    },
+
+    "SinkUnknown": {
+      "description": "Forward-compatibility escape hatch for new sink flavors.",
+      "type": "object",
+      "required": ["flavor"],
+      "properties": {
+        "flavor": { "type": "string", "pattern": "^x-[a-z0-9-]+$" }
+      },
+      "additionalProperties": true
+    },
+
+    "EdgeCategory": {
+      "description": "Open enum: known values plus 'x-*' extensions.",
+      "type": "string",
+      "anyOf": [
+        { "enum": [
+          "call", "import", "type-flow",
+          "http-route",
+          "db-read", "db-write",
+          "env-read", "fs-read", "fs-write",
+          "network", "exec"
+        ] },
+        { "pattern": "^x-[a-z0-9-]+$" }
+      ]
+    },
+
+    "Edge": {
+      "description": "Discriminated by `category`. Edges are identified by (sourceId, targetId, category, attributes-hash); no opaque id.",
+      "oneOf": [
+        { "$ref": "#/$defs/EdgeCall" },
+        { "$ref": "#/$defs/EdgeImport" },
+        { "$ref": "#/$defs/EdgeTypeFlow" },
+        { "$ref": "#/$defs/EdgeHttpRoute" },
+        { "$ref": "#/$defs/EdgeDbRead" },
+        { "$ref": "#/$defs/EdgeDbWrite" },
+        { "$ref": "#/$defs/EdgeEnvRead" },
+        { "$ref": "#/$defs/EdgeFsRead" },
+        { "$ref": "#/$defs/EdgeFsWrite" },
+        { "$ref": "#/$defs/EdgeNetwork" },
+        { "$ref": "#/$defs/EdgeExec" },
+        { "$ref": "#/$defs/EdgeUnknown" }
+      ]
+    },
+
+    "EdgeBase": {
+      "type": "object",
+      "required": ["sourceId", "targetId", "category"],
+      "properties": {
+        "sourceId":   { "$ref": "#/$defs/NodeId" },
+        "targetId":   { "$ref": "#/$defs/NodeId" },
+        "category":   { "$ref": "#/$defs/EdgeCategory" },
+        "valueType":  { "$ref": "#/$defs/TypeRef" },
+        "conditional":{ "type": "boolean", "description": "True if the edge is only taken on some control-flow paths." },
+        "tags":       { "type": "array", "items": { "type": "string" } }
+      }
+    },
+
+    "EdgeCall": {
+      "allOf": [
+        { "$ref": "#/$defs/EdgeBase" },
+        {
+          "type": "object",
+          "required": ["category"],
+          "properties": {
+            "category": { "const": "call" },
+            "callKind": { "enum": ["direct", "virtual", "dynamic", "constructor", "super", "tail"] },
+            "awaited":  { "type": "boolean" }
+          }
+        }
+      ]
+    },
+
+    "EdgeImport": {
+      "allOf": [
+        { "$ref": "#/$defs/EdgeBase" },
+        {
+          "type": "object",
+          "required": ["category"],
+          "properties": {
+            "category":   { "const": "import" },
+            "specifier":  { "type": "string", "description": "The literal import specifier as written ('react', './foo')." },
+            "symbols":    { "type": "array", "items": { "type": "string" }, "description": "Imported symbol names; empty for namespace/star imports." },
+            "kind":       { "enum": ["static", "dynamic", "type-only", "side-effect"] }
+          }
+        }
+      ]
+    },
+
+    "EdgeTypeFlow": {
+      "allOf": [
+        { "$ref": "#/$defs/EdgeBase" },
+        {
+          "type": "object",
+          "required": ["category"],
+          "properties": {
+            "category": { "const": "type-flow" },
+            "role":     { "enum": ["argument", "return", "assign", "field-read", "field-write", "yield", "throw", "read"] },
+            "argIndex": { "type": "integer", "minimum": 0 }
+          }
+        }
+      ]
+    },
+
+    "EdgeHttpRoute": {
+      "allOf": [
+        { "$ref": "#/$defs/EdgeBase" },
+        {
+          "type": "object",
+          "required": ["category"],
+          "properties": {
+            "category":  { "const": "http-route" },
+            "method":    { "type": "string" },
+            "framework": { "type": "string", "description": "Open: express, fastify, koa, nextjs, fastapi, flask, rails, gin, ..." }
+          }
+        }
+      ]
+    },
+
+    "EdgeDbRead": {
+      "allOf": [
+        { "$ref": "#/$defs/EdgeBase" },
+        {
+          "type": "object",
+          "required": ["category"],
+          "properties": {
+            "category": { "const": "db-read" },
+            "store":    { "type": "string" },
+            "entity":   { "type": "string" }
+          }
+        }
+      ]
+    },
+
+    "EdgeDbWrite": {
+      "allOf": [
+        { "$ref": "#/$defs/EdgeBase" },
+        {
+          "type": "object",
+          "required": ["category"],
+          "properties": {
+            "category": { "const": "db-write" },
+            "store":    { "type": "string" },
+            "entity":   { "type": "string" },
+            "op":       { "type": "string" }
+          }
+        }
+      ]
+    },
+
+    "EdgeEnvRead": {
+      "allOf": [
+        { "$ref": "#/$defs/EdgeBase" },
+        {
+          "type": "object",
+          "required": ["category"],
+          "properties": {
+            "category": { "const": "env-read" },
+            "name":     { "type": "string" }
+          }
+        }
+      ]
+    },
+
+    "EdgeFsRead": {
+      "allOf": [
+        { "$ref": "#/$defs/EdgeBase" },
+        {
+          "type": "object",
+          "required": ["category"],
+          "properties": {
+            "category": { "const": "fs-read" },
+            "path":     { "type": "string" }
+          }
+        }
+      ]
+    },
+
+    "EdgeFsWrite": {
+      "allOf": [
+        { "$ref": "#/$defs/EdgeBase" },
+        {
+          "type": "object",
+          "required": ["category"],
+          "properties": {
+            "category": { "const": "fs-write" },
+            "path":     { "type": "string" },
+            "op":       { "enum": ["write", "append", "delete", "rename", "chmod", "mkdir", "other"] }
+          }
+        }
+      ]
+    },
+
+    "EdgeNetwork": {
+      "allOf": [
+        { "$ref": "#/$defs/EdgeBase" },
+        {
+          "type": "object",
+          "required": ["category"],
+          "properties": {
+            "category": { "const": "network" },
+            "method":   { "type": "string" },
+            "url":      { "type": "string" },
+            "kind":     { "enum": ["http", "grpc", "graphql", "websocket", "tcp", "udp", "other"] }
+          }
+        }
+      ]
+    },
+
+    "EdgeExec": {
+      "allOf": [
+        { "$ref": "#/$defs/EdgeBase" },
+        {
+          "type": "object",
+          "required": ["category"],
+          "properties": {
+            "category": { "const": "exec" },
+            "command":  { "type": "string" },
+            "shell":    { "type": "boolean" }
+          }
+        }
+      ]
+    },
+
+    "EdgeUnknown": {
+      "description": "Forward-compatibility escape hatch for new edge categories.",
+      "type": "object",
+      "required": ["sourceId", "targetId", "category"],
+      "properties": {
+        "sourceId": { "$ref": "#/$defs/NodeId" },
+        "targetId": { "$ref": "#/$defs/NodeId" },
+        "category": { "type": "string", "pattern": "^x-[a-z0-9-]+$" }
+      },
+      "additionalProperties": true
+    },
+
+    "Diagnostic": {
+      "type": "object",
+      "required": ["severity", "analyzer", "message"],
+      "additionalProperties": false,
+      "properties": {
+        "severity": { "enum": ["info", "warn", "error"] },
+        "analyzer": { "type": "string" },
+        "message":  { "type": "string" },
+        "nodeId":   { "$ref": "#/$defs/NodeId" },
+        "code":     { "type": "string", "description": "Stable diagnostic code, analyzer-namespaced (e.g. 'tsc/cannot-resolve-import')." }
+      }
+    }
+  }
+}

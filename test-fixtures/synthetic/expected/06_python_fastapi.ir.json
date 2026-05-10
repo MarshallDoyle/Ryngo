@@ -1,0 +1,161 @@
+{
+  "ir": {
+    "edges": [
+      {
+        "category": "http-route",
+        "framework": "fastapi",
+        "method": "GET",
+        "sourceId": "2ea8a749fc48d9ace7774e4f2a2cddce",
+        "targetId": "a3f92edb2e375c44ff327e2ed283a1ee",
+        "valueType": {
+          "display": "str",
+          "lang": "py",
+          "source": "inferred"
+        }
+      },
+      {
+        "callKind": "direct",
+        "category": "call",
+        "sourceId": "2ea8a749fc48d9ace7774e4f2a2cddce",
+        "tags": [
+          "depends"
+        ],
+        "targetId": "74092ed202edae235b5cfe4afe9a1296",
+        "valueType": {
+          "display": "object",
+          "lang": "py",
+          "source": "inferred"
+        }
+      }
+    ],
+    "metadata": {
+      "commit": "0000000000000000000000000000000000000000",
+      "generatedAt": "2026-05-09T00:00:00.000Z",
+      "generators": [
+        {
+          "name": "codegraph-tree-sitter-py",
+          "version": "0.1.0"
+        },
+        {
+          "name": "codegraph-adapter-fastapi",
+          "version": "0.1.0"
+        }
+      ],
+      "repo": ""
+    },
+    "nodes": [
+      {
+        "id": "003e58053684936600fd5dda16008aac",
+        "lang": "none",
+        "name": "synthetic",
+        "path": "test-fixtures/synthetic",
+        "signature": "service||test-fixtures/synthetic",
+        "tier": "service"
+      },
+      {
+        "id": "e8b28ed900481736b01fdf2fe38cc778",
+        "lang": "py",
+        "name": "06_python_fastapi.py",
+        "parentId": "003e58053684936600fd5dda16008aac",
+        "path": "test-fixtures/synthetic/src/06_python_fastapi.py",
+        "signature": "module|003e58053684936600fd5dda16008aac|test-fixtures/synthetic/src/06_python_fastapi.py",
+        "tier": "module"
+      },
+      {
+        "exported": true,
+        "fields": [
+          {
+            "name": "id",
+            "type": {
+              "display": "int",
+              "lang": "py",
+              "source": "annotated"
+            }
+          },
+          {
+            "name": "name",
+            "type": {
+              "display": "str",
+              "lang": "py",
+              "source": "annotated"
+            }
+          }
+        ],
+        "id": "9f19f6ab5e6dd107dbdc01339a84d122",
+        "kind": "class",
+        "name": "Widget",
+        "parentId": "e8b28ed900481736b01fdf2fe38cc778",
+        "signature": "type|e8b28ed900481736b01fdf2fe38cc778|Widget",
+        "tags": [
+          "pydantic-model"
+        ],
+        "tier": "type"
+      },
+      {
+        "asyncness": "sync",
+        "exported": true,
+        "id": "74092ed202edae235b5cfe4afe9a1296",
+        "kind": "function",
+        "name": "get_db",
+        "params": [],
+        "parentId": "e8b28ed900481736b01fdf2fe38cc778",
+        "pure": false,
+        "returnType": {
+          "display": "object",
+          "lang": "py",
+          "source": "annotated"
+        },
+        "signature": "function|e8b28ed900481736b01fdf2fe38cc778|get_db|0|",
+        "tier": "function"
+      },
+      {
+        "asyncness": "sync",
+        "exported": true,
+        "id": "2ea8a749fc48d9ace7774e4f2a2cddce",
+        "kind": "function",
+        "name": "read_widget",
+        "params": [
+          {
+            "name": "widget_id",
+            "type": {
+              "display": "int",
+              "lang": "py",
+              "source": "annotated"
+            }
+          },
+          {
+            "name": "db",
+            "type": {
+              "display": "object",
+              "lang": "py",
+              "source": "annotated"
+            }
+          }
+        ],
+        "parentId": "e8b28ed900481736b01fdf2fe38cc778",
+        "pure": false,
+        "returnType": {
+          "display": "Widget",
+          "lang": "py",
+          "source": "annotated"
+        },
+        "signature": "function|e8b28ed900481736b01fdf2fe38cc778|read_widget|2|int,object",
+        "tier": "function"
+      },
+      {
+        "id": "a3f92edb2e375c44ff327e2ed283a1ee",
+        "leaf": {
+          "flavor": "literal",
+          "value": "/widgets/{widget_id}",
+          "valueLang": "py"
+        },
+        "parentId": "2ea8a749fc48d9ace7774e4f2a2cddce",
+        "pure": true,
+        "role": "route-literal",
+        "signature": "expression|2ea8a749fc48d9ace7774e4f2a2cddce|http-route|\"/widgets/{widget_id}\"|0",
+        "tier": "expression"
+      }
+    ]
+  },
+  "schemaVersion": "0.1.0"
+}
