@@ -3,6 +3,7 @@
 Per `AGENTS.md` convention: one line per ship. `date · agent · one
 sentence`. Newest at top.
 
+2026-05-10  claude  Phase 4.5.2 — landing page now leads with a live embedded demo iframe of `/app/?repo=karpathy/autoresearch&embed=1`. New `?repo=` URL param auto-analyzes on mount; `?embed=1` toggles `<html data-embed>` so styles.css hides header / view-tabs / banners. Hero widened to 1240 px to fit the demo card; Safari-style traffic-light chrome above the iframe with an "open in new tab" link.
 2026-05-10  claude  Phase 4.3 — keyboard shortcuts + `?` help overlay. New `mvp/src/components/HelpOverlay.jsx`; global keydown router in App.jsx with `Cmd+K` (fuzzy find), `Cmd+/` (theme toggle), `?` (help), `g g/d/h` chord (graph/dashboard/home), `L`/`F` (Layers/Files), Esc to close. New `?` button in the header next to the theme toggle.
 2026-05-10  claude  Three more framework adapters — Spring (`@GetMapping/@PostMapping/...` + `@Entity` → 19 routes on `spring-petclinic`), SQLAlchemy (declarative-base subclasses → 16 models on `tiangolo/sqlmodel`), Terraform (`resource` / `data` / `module` blocks → 121 `infra-resource` nodes on `terraform-aws-vpc`). Three new classifications + sentinel repos with min-expects.
 2026-05-10  claude  Rails adapter — `config/routes.rb` route extraction (verb DSL + `resources` / `resource` expansion to RESTful 7 / 6) + ActiveRecord-style `db-model` nodes from `app/models/**/*.rb`; verified 24 routes + 17 models on `rails/rails`. Adapter scans Ruby as `scanUnparsed` since the Ruby parser is still a stub.

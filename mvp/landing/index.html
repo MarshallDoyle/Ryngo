@@ -34,16 +34,36 @@
       <p class="lede">
         Paste a GitHub URL. Get a typed node-editor of your codebase —
         files, functions, types, routes, db models — grouped into stack
-        layers. Mark intents in markdown your AI agent reads. We are not
-        a coding agent. We are the map your coding agent is missing.
+        layers. Mark intents in markdown your AI agent reads.
       </p>
       <div class="cta-row">
         <a class="cta primary" href="/app">Try it on your repo →</a>
         <a class="cta ghost" href="#mcp">Install the MCP server →</a>
       </div>
+
+      <div class="demo-frame" aria-label="Live Ryngo demo">
+        <div class="demo-chrome">
+          <div class="demo-dots" aria-hidden="true">
+            <span class="demo-dot demo-dot-r"></span>
+            <span class="demo-dot demo-dot-y"></span>
+            <span class="demo-dot demo-dot-g"></span>
+          </div>
+          <div class="demo-url mono">ryngo.ai/app · karpathy/autoresearch</div>
+          <a class="demo-open mono" href="/app/?repo=karpathy/autoresearch" target="_blank" rel="noopener">open in new tab ↗</a>
+        </div>
+        <iframe
+          class="demo-iframe"
+          src="/app/?repo=karpathy/autoresearch&embed=1"
+          title="Live Ryngo demo: karpathy/autoresearch"
+          loading="lazy"
+        ></iframe>
+        <div class="demo-foot mono">
+          Live · clones a real public repo · no LLM inference · same map at ten files and at ten thousand
+        </div>
+      </div>
+
       <p class="hero-foot">
-        Deterministic. No LLM inference on our end. Same map at ten
-        files and at ten thousand.
+        Try a different repo above, or paste your own.
       </p>
     </section>
 

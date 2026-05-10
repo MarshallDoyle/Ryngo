@@ -1545,6 +1545,34 @@ export default function App() {
     [analyze, loading],
   );
 
+  // Phase 4.5.2 — auto-analyze when the URL has a `?repo=...` query
+  // param. Used by the landing page to embed a live demo via iframe
+  // (e.g. `/app/?repo=karpathy/autoresearch&embed=1`). Fires once on
+  // mount; if the user navigates back to / they get the normal
+  // empty-state input. The `embed=1` param is read at render time
+  // and toggles `<body data-embed>` so styles.css can hide chrome.
+  const didAutoLoadRef = useRef(false);
+  useEffect(() => {
+    if (didAutoLoadRef.current) return;
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const repoParam = params.get("repo");
+    const refParam = params.get("ref") || "";
+    const embed = params.get("embed") === "1";
+    if (embed && typeof document !== "undefined") {
+      document.documentElement.dataset.embed = "1";
+    }
+    if (!repoParam) return;
+    const cleaned = /^https?:\/\//.test(repoParam)
+      ? repoParam
+      : `https://github.com/${repoParam.replace(/^\/+|\/+$/g, "")}`;
+    didAutoLoadRef.current = true;
+    setUrl(cleaned);
+    if (refParam) setRef(refParam);
+    analyze({ url: cleaned, ref: refParam });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // ----- node interactions -----
   // Single-click pans + zooms the camera onto a node and shows the
   // inspector. Double-click drills (== Inspect node). Both handlers share

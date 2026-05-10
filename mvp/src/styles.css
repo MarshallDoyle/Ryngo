@@ -2330,3 +2330,24 @@ html.theming *::after {
 .help-footer .help-key {
   margin: 0 1px;
 }
+
+/* ============================================================================
+   Phase 4.5.2 — embed mode (`<html data-embed>` set when ?embed=1).
+   Used by the landing-page iframe so the demo viewer fills the iframe
+   without the URL-paste header / view tabs / footer chrome.
+   ============================================================================ */
+
+html[data-embed] header,
+html[data-embed] .view-tabs,
+html[data-embed] .banner-stats,
+html[data-embed] .narrative {
+  display: none !important;
+}
+html[data-embed] body,
+html[data-embed] #root,
+html[data-embed] .app {
+  background: var(--bg);
+}
+html[data-embed] .app {
+  height: 100vh;
+}
