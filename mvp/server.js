@@ -32,6 +32,7 @@ import {
 } from "./lib/projection-llm.js";
 import { buildViewModel } from "./lib/view-model.js";
 import { handleMcpHttpRequest } from "./lib/mcp.js";
+import { recordAnalysisRun, recordUsageEvent } from "./lib/events.js";
 import * as regionsLib from "./lib/regions.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -179,6 +180,14 @@ app.get("/api/source", async (req, res) => {
         )[0];
         if (oldest) sourceCache.delete(oldest[0]);
       }
+      void recordUsageEvent("source_open", {
+        source: "web",
+        githubUrl: `https://github.com/${repo}`,
+        ref: explicitRef || "HEAD",
+        status: "ok",
+        req,
+        props: { path: filePath, cached: false },
+      });
       return res.json({ source });
     } catch (err) {
       lastStatus = 599;
@@ -214,6 +223,15 @@ app.post("/api/analyze", async (req, res) => {
   try {
     const ir = await analyzeRepo(url, ref);
     const ms = Date.now() - startedAt;
+    void recordAnalysisRun({
+      source: "web",
+      githubUrl: url,
+      ref: ref || ir.ref,
+      status: "ok",
+      durationMs: ms,
+      ir,
+      req,
+    });
     console.log(
       `[analyze ok] ${ir.repo}@${ir.ref}  files=${ir.stats.files} analyzed=${ir.stats.analyzedFiles} edges=${ir.stats.edges} pkg=${ir.stats.packages} ${ms}ms${ir.stats.truncated ? " (truncated)" : ""}`,
     );
@@ -221,6 +239,15 @@ app.post("/api/analyze", async (req, res) => {
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     const ms = Date.now() - startedAt;
+    void recordAnalysisRun({
+      source: "web",
+      githubUrl: url,
+      ref,
+      status: "error",
+      durationMs: ms,
+      error: err,
+      req,
+    });
     console.warn(`[analyze err] ${url}@${ref || "HEAD"}  ${ms}ms  ${message}`);
     res.status(400).json({ error: message });
   } finally {
@@ -269,6 +296,20 @@ app.post("/api/diff", async (req, res) => {
     ]);
     const ir = diffIRs(baseIR, headIR);
     const ms = Date.now() - startedAt;
+    void recordUsageEvent("diff_submit", {
+      source: "web",
+      githubUrl: url,
+      ref: `${base}..${head}`,
+      status: "ok",
+      durationMs: ms,
+      req,
+      props: {
+        base,
+        head,
+        base_nodes: baseIR.nodes.length,
+        head_nodes: headIR.nodes.length,
+      },
+    });
     console.log(
       `[diff ok] ${ir.repo}  ${baseIR.ref}…${headIR.ref}  +${ir.diff.counts.nodes.added}/-${ir.diff.counts.nodes.removed} nodes  +${ir.diff.counts.edges.added}/-${ir.diff.counts.edges.removed} edges  ${ms}ms`,
     );
@@ -276,6 +317,16 @@ app.post("/api/diff", async (req, res) => {
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     const ms = Date.now() - startedAt;
+    void recordUsageEvent("diff_submit", {
+      source: "web",
+      githubUrl: url,
+      ref: `${base}..${head}`,
+      status: "error",
+      durationMs: ms,
+      req,
+      error: err,
+      props: { base, head },
+    });
     console.warn(`[diff err] ${url}  ${base}..${head}  ${ms}ms  ${message}`);
     res.status(400).json({ error: message });
   } finally {
@@ -516,6 +567,13 @@ app.post("/api/annotations", async (req, res) => {
         .json({ error: "Body must include `nodeId` and `text`." });
     }
     const entry = await annotations.append(repo, { nodeId, text, author });
+    void recordUsageEvent("annotation_create", {
+      source: "web",
+      githubUrl: repoUrlFromStorageKey(repo),
+      status: "ok",
+      req,
+      props: { node_id: nodeId, text_length: String(text).length },
+    });
     console.log(`[ryngo annot] ${repo}  ${nodeId}`);
     res.json({ ok: true, entry });
   } catch (err) {
@@ -569,6 +627,18 @@ app.post("/api/intents", async (req, res) => {
         console.warn(`[ryngo intent] snapshot failed: ${e.message}`);
       }
     }
+    void recordUsageEvent("intent_create", {
+      source: "web",
+      githubUrl: repoUrlFromStorageKey(repo),
+      status: "ok",
+      req,
+      props: {
+        intent_id: out.id,
+        kind,
+        node_id: nodeId,
+        has_snapshot: Boolean(ir),
+      },
+    });
     console.log(`[ryngo intent] ${repo}  ${out.id}`);
     res.json({ ok: true, ...out });
   } catch (err) {
@@ -617,6 +687,13 @@ app.post("/api/intents/:id/verify", async (req, res) => {
     if (result.status === "satisfied" && intent.meta.status !== "done") {
       await intents.setStatus(repo, id, "done");
     }
+    void recordUsageEvent("intent_verify", {
+      source: "web",
+      githubUrl: repoUrlFromStorageKey(repo),
+      status: result.status,
+      req,
+      props: { intent_id: id, evidence_count: result.evidence?.length || 0 },
+    });
     console.log(`[ryngo verify] ${repo}  ${id}  → ${result.status}`);
     res.json({
       ok: true,
@@ -794,6 +871,12 @@ function filterAnnotationsTo(annText, ids) {
     if (keep) out.push(line);
   }
   return out.length ? out.join("\n").trim() : "_no annotations on the pinned nodes_";
+}
+
+function repoUrlFromStorageKey(repo) {
+  const parts = String(repo || "").split("__");
+  if (parts.length !== 2 || !parts[0] || !parts[1]) return "";
+  return `https://github.com/${parts[0]}/${parts[1]}`;
 }
 
 // ---------------------------------------------------------------------------

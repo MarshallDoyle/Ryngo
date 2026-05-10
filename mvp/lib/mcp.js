@@ -21,6 +21,7 @@ import {
   slice as sliceProjection,
 } from "./projection-llm.js";
 import { buildViewModel } from "./view-model.js";
+import { recordAnalysisRun, recordMcpToolCall } from "./events.js";
 import * as intentsLib from "./intents.js";
 import * as annotationsLib from "./annotations.js";
 
@@ -252,9 +253,25 @@ export function createRyngoMcpServer({ enableWidgets = false } = {}) {
   }));
   server.setRequestHandler(CallToolRequestSchema, async (req) => {
     const { name, arguments: args = {} } = req.params || {};
+    const startedAt = Date.now();
     try {
-      return await dispatch(name, args, { enableWidgets });
+      const result = await dispatch(name, args, { enableWidgets });
+      void recordMcpToolCall({
+        toolName: name,
+        args,
+        result,
+        status: "ok",
+        durationMs: Date.now() - startedAt,
+      });
+      return result;
     } catch (err) {
+      void recordMcpToolCall({
+        toolName: name,
+        args,
+        status: "error",
+        durationMs: Date.now() - startedAt,
+        error: err,
+      });
       return {
         isError: true,
         content: [
@@ -331,7 +348,16 @@ export async function handleMcpHttpRequest(req, res, { enableWidgets = true } = 
 export async function dispatch(name, args, { enableWidgets = false } = {}) {
   switch (name) {
     case "analyze_repo": {
+      const startedAt = Date.now();
       const ir = await getIR(args.github_url, args.ref);
+      void recordAnalysisRun({
+        source: "mcp",
+        githubUrl: args.github_url,
+        ref: args.ref || ir.ref,
+        status: "ok",
+        durationMs: Date.now() - startedAt,
+        ir,
+      });
       return jsonResult({
         repo: ir.repo,
         ref: ir.ref,
@@ -341,10 +367,19 @@ export async function dispatch(name, args, { enableWidgets = false } = {}) {
       });
     }
     case "get_view_model": {
+      const startedAt = Date.now();
       const ir = await getIR(args.github_url, args.ref);
       const viewModel = buildViewModel(ir, {
         mode: args.mode,
         maxNodes: args.max_nodes,
+      });
+      void recordAnalysisRun({
+        source: "mcp",
+        githubUrl: args.github_url,
+        ref: args.ref || ir.ref,
+        status: "ok",
+        durationMs: Date.now() - startedAt,
+        ir,
       });
       const out = {
         structuredContent: viewModel,

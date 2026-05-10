@@ -63,7 +63,7 @@ plan first.
 | Phase 6.3 — per-repo `expects` | claude | shipped | `mvp/test/corpus.js`, `mvp/scripts/corpus-run.js` |
 | Phase 6.4 — PR-blocking corpus check | claude | shipped | `.github/workflows/corpus.yml` |
 | Phase 7 — hosting (Cloud Run + GH Actions) | unclaimed | not started | `mvp/Dockerfile` (new), `.github/workflows/deploy-*.yml` (new) |
-| Phase 9 — usage database + compiler-quality warehouse | unclaimed | planning | `mvp/docs/DATA_WAREHOUSE.md`, later `mvp/lib/events.js`, `mvp/db/migrations/` |
+| Phase 9 — usage database + compiler-quality warehouse | codex | in progress | `mvp/docs/DATA_WAREHOUSE.md`, `mvp/lib/events.js`, `mvp/scripts/events-smoke.js` |
 | Agent viewer MCP/App contract | codex | in progress | `mvp/lib/view-model.js`, `mvp/lib/mcp.js`, `mvp/server.js`, `mvp/src/App.jsx` |
 | Adapter framework expansion: Django ✓ shipped | claude | shipped | `mvp/lib/adapters/django.js` |
 | Adapter framework expansion: GraphQL ✓ shipped | claude | shipped | `mvp/lib/adapters/graphql.js` |

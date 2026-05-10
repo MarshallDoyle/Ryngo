@@ -1,8 +1,29 @@
 # Ryngo — usage database & compiler-quality warehouse
 
-Plan, not implementation. This is the data spine for learning which repos,
-files, languages, adapters, and code patterns Ryngo compiles well, and which
-ones need better parser / resolver / adapter work.
+Partly implemented. The first slice lives in `mvp/lib/events.js` and is
+enabled only when `DATABASE_URL` is present. Without Postgres configured,
+Ryngo keeps running and event writes become no-ops.
+
+Current shipped tables:
+
+- `repo_submissions`
+- `analysis_runs`
+- `file_outcomes`
+- `compiler_diagnostics`
+- `adapter_outcomes`
+- `usage_events`
+- `mcp_tool_calls`
+
+Current event boundaries:
+
+- MCP tool calls, including `get_view_model` node/edge/truncation counts.
+- Web `/api/analyze` successes and failures.
+- Web `/api/diff` submissions.
+- Source opens, annotations, intent creation, and intent verification.
+
+This is the data spine for learning which repos, files, languages, adapters,
+and code patterns Ryngo compiles well, and which ones need better parser /
+resolver / adapter work.
 
 ## Why this exists
 
