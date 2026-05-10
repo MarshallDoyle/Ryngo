@@ -80,6 +80,16 @@ export function compactJson(ir, opts = {}) {
 function stripNode(n) {
   const out = { id: n.id, kind: n.kind, label: n.label };
   if (n.parentId) out.parent = n.parentId;
+  if (n.source) out.source = n.source;
+  if (n.confidence) out.confidence = n.confidence;
+  if (n.facts?.length) {
+    out.facts = n.facts.slice(0, 6).map((fact) => ({
+      kind: fact.kind,
+      text: fact.text,
+      confidence: fact.confidence || "unknown",
+      source: fact.source || null,
+    }));
+  }
   if (n.data) {
     const d = n.data;
     const compact = {};
@@ -120,6 +130,8 @@ function stripEdge(e) {
     kind: e.kind,
   };
   if (e.resolution && e.resolution !== "lexical") out.resolution = e.resolution;
+  if (e.confidence) out.confidence = e.confidence;
+  if (e.provenance) out.provenance = e.provenance;
   if (e.valueType) out.valueType = e.valueType.display || e.valueType;
   if (e.op) out.op = e.op;
   return out;

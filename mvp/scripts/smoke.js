@@ -50,7 +50,11 @@ async function main() {
     fileNodes.length > 0 &&
     Array.isArray(ir.stats.ranAdapters) &&
     ir.quality &&
-    typeof ir.quality.score === "number";
+    typeof ir.quality.score === "number" &&
+    typeof ir.quality.summary?.sourceAnchorCoverage === "number" &&
+    ir.provenance?.confidence &&
+    fileNodes.every((n) => n.source?.path) &&
+    fnNodes.every((n) => n.source?.path && n.confidence);
 
   console.log(
     `smoke: ${baseOk ? "ok" : "FAIL"}  ${ms}ms  files=${ir.stats.files} analyzed=${ir.stats.analyzedFiles} edges=${ir.stats.edges}`,
@@ -68,6 +72,9 @@ async function main() {
   if (ir.quality) {
     console.log(
       `       quality=${ir.quality.status} score=${Math.round(ir.quality.score * 100)} parsed=${ir.quality.stats.parsedFiles}/${ir.quality.stats.analyzableFiles}`,
+    );
+    console.log(
+      `       provenance=sourceAnchors ${Math.round((ir.quality.summary.sourceAnchorCoverage || 0) * 100)}% confidence=${Object.entries(ir.quality.summary.confidence || {}).map(([k, v]) => `${k}:${v}`).join(", ")}`,
     );
   }
   if (ir.diagnostics?.length) {

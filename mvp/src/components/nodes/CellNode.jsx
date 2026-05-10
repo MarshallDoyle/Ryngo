@@ -10,7 +10,7 @@ const PREVIEW_LINES = 3;
 
 function CellNode({ data }) {
   const [expanded, setExpanded] = useState(true);
-  const sourceLines = String(data?.source || "").split("\n");
+  const sourceLines = String(data?.sourceText || (typeof data?.source === "string" ? data.source : "")).split("\n");
   const visible = sourceLines.slice(0, PREVIEW_LINES);
   return (
     <div

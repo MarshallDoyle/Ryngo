@@ -10,6 +10,7 @@ export function buildCompileReport(ir) {
   const parseStatuses = new Map();
   const flags = new Map();
   const weakFiles = [];
+  const provenance = ir.provenance || provenanceStats(ir.nodes || [], ir.edges || []);
 
   for (const file of fileNodes) {
     const data = file.data || {};
@@ -79,6 +80,12 @@ export function buildCompileReport(ir) {
       definitionFileRatio: ratio(stats.filesWithDefs, stats.analyzableFiles),
       isolatedFileRatio: ratio(stats.isolatedFiles, stats.files),
       diagnosticCount: stats.diagnostics,
+      sourceAnchorCoverage: provenance.sourceAnchorCoverage,
+      factProvenanceCoverage: provenance.factProvenanceCoverage,
+      confidence: provenance.confidence || {},
+      edgesByConfidence: provenance.edgesByConfidence || {},
+      nodesMissingSourceByKind: provenance.missingSourceByKind || {},
+      factsMissingProvenance: provenance.factsMissingProvenance || 0,
       topFlags: topEntries(flags, 8),
     },
     stats,
@@ -92,7 +99,39 @@ export function buildCompileReport(ir) {
     weakFiles: weakFiles
       .sort(compareWeakFiles)
       .slice(0, 20),
+    provenance,
     recommendations: recommendations(stats, flags),
+  };
+}
+
+function provenanceStats(nodes, edges) {
+  const confidence = {};
+  const edgesByConfidence = {};
+  const missingSourceByKind = {};
+  let sourceBackedNodes = 0;
+  let sourceBackedFacts = 0;
+  let factCount = 0;
+  for (const node of nodes) {
+    const c = node.confidence || "unknown";
+    confidence[c] = (confidence[c] || 0) + 1;
+    if (node.source) sourceBackedNodes += 1;
+    else missingSourceByKind[node.kind] = (missingSourceByKind[node.kind] || 0) + 1;
+    for (const fact of node.facts || []) {
+      factCount += 1;
+      if (fact.source) sourceBackedFacts += 1;
+    }
+  }
+  for (const edge of edges) {
+    const c = edge.confidence || "unknown";
+    edgesByConfidence[c] = (edgesByConfidence[c] || 0) + 1;
+  }
+  return {
+    sourceAnchorCoverage: ratio(sourceBackedNodes, nodes.length),
+    factProvenanceCoverage: ratio(sourceBackedFacts, factCount),
+    confidence,
+    edgesByConfidence,
+    missingSourceByKind: entriesObject(new Map(Object.entries(missingSourceByKind))),
+    factsMissingProvenance: Math.max(0, factCount - sourceBackedFacts),
   };
 }
 

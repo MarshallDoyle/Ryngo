@@ -10,6 +10,7 @@ import { emitSourceLine, lineLabel } from "./source-nav.js";
 const HEADER_H = 30;
 const META_H = 18;
 const ROW_H = 18;
+const FACT_H = 28;
 const MAX_VISIBLE_METHODS = 5;
 const MAX_VISIBLE_FIELDS = 4;
 const MAX_VISIBLE_BASES = 3;
@@ -20,7 +21,7 @@ export const classNodeHeight = (members, baseClasses, expanded = true) => {
   const fields = Math.min(members?.fields?.length || 0, MAX_VISIBLE_FIELDS);
   const bases = Math.min(baseClasses?.length || 0, MAX_VISIBLE_BASES);
   const rows = Math.max(methods + fields, bases);
-  return HEADER_H + META_H + Math.max(rows * ROW_H + 8, ROW_H + 8) + 8;
+  return HEADER_H + META_H + FACT_H + Math.max(rows * ROW_H + 8, ROW_H + 8) + 8;
 };
 
 function ClassNode({ data, selected }) {
@@ -31,6 +32,7 @@ function ClassNode({ data, selected }) {
   const bases = (data?.baseClasses || []).slice(0, MAX_VISIBLE_BASES);
   const hiddenMethods = (members.methods?.length || 0) - methods.length;
   const hiddenFields = (members.fields?.length || 0) - fields.length;
+  const facts = (data?.facts || []).filter((fact) => fact.kind !== "methods" && fact.kind !== "fields").slice(0, 3);
 
   return (
     <div
@@ -59,6 +61,11 @@ function ClassNode({ data, selected }) {
             L{data.line}
           </span>
         )}
+        {data?.confidence && (
+          <span className={`rfn-confidence rfn-confidence-${data.confidence}`}>
+            {data.confidence}
+          </span>
+        )}
         {bases.length > 0 && expanded && (
           <span className="rfn-cls-bases mono" title={bases.join(", ")}>
             : {bases.map((b) => b.split(/[<\[]/)[0]).join(", ")}
@@ -80,6 +87,20 @@ function ClassNode({ data, selected }) {
             <span>{members.methods?.length || 0} method{members.methods?.length === 1 ? "" : "s"}</span>
             <span>{members.fields?.length || 0} field{members.fields?.length === 1 ? "" : "s"}</span>
           </div>
+          {facts.length > 0 && (
+            <div className="rfn-node-facts">
+              {facts.map((fact, i) => (
+                <span
+                  key={`${fact.kind}-${i}`}
+                  className="rfn-node-fact"
+                  title={`${fact.text}${fact.source?.path ? ` · ${fact.source.path}:${fact.source.startLine}` : ""}`}
+                  onMouseEnter={() => emitSourceLine(data, { source: fact.source, label: fact.text, kind: fact.kind })}
+                >
+                  {fact.text}
+                </span>
+              ))}
+            </div>
+          )}
           {bases.map((b, i) => (
             <div
               key={`b-${i}`}

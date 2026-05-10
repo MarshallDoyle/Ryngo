@@ -460,6 +460,8 @@ export async function dispatch(name, args, { enableWidgets = false } = {}) {
           label: n.label,
           file: n.data?.file || n.data?.path,
           line: n.data?.line,
+          source: n.source || n.data?.source || null,
+          confidence: n.confidence || n.data?.confidence || "unknown",
         }));
       return jsonResult({ matches: hits, total: hits.length });
     }

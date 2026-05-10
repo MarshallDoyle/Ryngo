@@ -66,6 +66,11 @@ assert.ok(a.nodes.some((n) => n.kind === "http-route"), "route node should be ke
 assert.ok(a.nodes.some((n) => n.kind === "db-model"), "db model node should be kept");
 assert.ok(a.clusters.some((c) => c.layer === "backend"), "backend cluster should exist");
 assert.ok(a.inspector.defaultNodeId, "inspector default should exist");
+assert.ok(a.nodes.every((n) => n.confidence), "nodes should include confidence");
+assert.ok(a.nodes.some((n) => n.source?.path), "nodes should include source spans");
+assert.ok(a.nodes.some((n) => n.facts?.length), "nodes should include source-backed facts");
+assert.ok(a.inspector.facts?.facts?.length, "inspector should include selected-node facts");
+assert.ok(a.limits.omittedNodesByKind, "limits should include omitted node kinds");
 assert.ok(a.prompts.length >= 3, "drill-down prompts should exist");
 
 const capped = buildViewModel(ir, { maxNodes: 3 });
@@ -93,6 +98,9 @@ function file(path, lang) {
     id: `file:${path}`,
     kind: "file",
     label: path,
+    source: { path, startLine: 1, endLine: 1 },
+    confidence: "source-syntax",
+    facts: [{ kind: "language", text: `language: ${lang}`, confidence: "source-syntax", source: { path, startLine: 1, endLine: 1 } }],
     data: { path, file: path, lang, ext: path.slice(path.lastIndexOf(".")) },
   };
 }
@@ -103,6 +111,9 @@ function def(path, name, kind, params) {
     kind,
     label: name,
     parentId: `file:${path}`,
+    source: { path, startLine: 1, endLine: 1 },
+    confidence: "source-syntax",
+    facts: [{ kind: "params", text: `${params.length} parameters`, confidence: "source-syntax", source: { path, startLine: 1, endLine: 1 } }],
     data: { path, file: path, line: 1, params },
   };
 }
@@ -113,5 +124,6 @@ function edge(source, target, kind) {
     source,
     target,
     kind,
+    confidence: kind === "calls" ? "confirmed" : "framework-inferred",
   };
 }

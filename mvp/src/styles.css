@@ -113,6 +113,16 @@ header {
   align-items: center;
   gap: 8px;
 }
+.brand-home {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text);
+  text-decoration: none;
+}
+.brand-home:hover {
+  color: var(--text);
+}
 
 .brand h1 {
   margin: 0;
@@ -1436,6 +1446,25 @@ pre.code::-webkit-scrollbar-thumb:hover {
   line-height: 1;
   opacity: 0.92;
 }
+.rfn-confidence {
+  flex-shrink: 0;
+  max-width: 82px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  border: 1px solid color-mix(in oklab, currentColor 24%, transparent);
+  border-radius: 999px;
+  padding: 1px 5px;
+  font-size: 8.5px;
+  font-weight: 700;
+  line-height: 1;
+  opacity: 0.9;
+}
+.rfn-confidence-framework-inferred,
+.rfn-confidence-heuristic,
+.rfn-confidence-unknown {
+  background: color-mix(in oklab, #fbbf24 18%, transparent);
+}
 .rfn-node-meta-row {
   display: flex;
   align-items: center;
@@ -1465,6 +1494,31 @@ pre.code::-webkit-scrollbar-thumb:hover {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+.rfn-node-facts {
+  display: flex;
+  gap: 4px;
+  min-height: 24px;
+  padding: 2px 8px;
+  overflow: hidden;
+  border-bottom: 1px solid color-mix(in oklab, var(--line) 45%, transparent);
+}
+.rfn-node-fact {
+  display: inline-flex;
+  align-items: center;
+  max-width: 92px;
+  min-width: 0;
+  height: 18px;
+  border: 1px solid color-mix(in oklab, var(--line) 75%, transparent);
+  border-radius: 999px;
+  padding: 0 6px;
+  color: var(--muted);
+  font-size: 9px;
+  line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  background: color-mix(in oklab, var(--panel) 70%, transparent);
+}
 .rfn-fn-ports {
   padding: 3px 0;
 }
@@ -1481,6 +1535,39 @@ pre.code::-webkit-scrollbar-thumb:hover {
   font-size: 10px;
   color: var(--muted);
   padding: 1px 14px;
+}
+
+.rfn-file-header {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+.rfn-file-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rfn-file-lang,
+.rfn-file-status {
+  flex-shrink: 0;
+  border: 1px solid color-mix(in oklab, currentColor 25%, transparent);
+  border-radius: 999px;
+  padding: 1px 6px;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1.15;
+  opacity: 0.85;
+}
+.rfn-file-status-ok {
+  color: #15803d;
+}
+.rfn-file-status-stub,
+.rfn-file-status-unsupported,
+.rfn-file-status-skipped_large,
+.rfn-file-status-error {
+  color: #b45309;
 }
 
 /* -- Class -------------------------------------------------------------- */
@@ -1531,6 +1618,10 @@ pre.code::-webkit-scrollbar-thumb:hover {
 .rfn-cls-body {
   position: relative;
   padding: 4px 8px 6px;
+}
+.rfn-cls-body .rfn-node-facts {
+  margin: 2px -4px 3px;
+  border-top: 1px solid color-mix(in oklab, var(--line) 45%, transparent);
 }
 .rfn-cls-field {
   font-size: 10.5px;

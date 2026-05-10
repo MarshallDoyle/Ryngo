@@ -26,6 +26,7 @@ import { resolveSymbols } from "./resolver.js";
 import { runAdapters } from "./adapters/index.js";
 import { annotateEffects } from "./effects.js";
 import { buildCompileReport } from "./quality.js";
+import { normalizeProvenance } from "./provenance.js";
 import { parse as parseRyngoMd } from "./ryngo-md.js";
 
 // No total-file cap. Compilation is deterministic regex / tree-walk —
@@ -338,6 +339,7 @@ async function buildIR(rootDir, repoName) {
     applySuppressionsToWarnings(ir);
   }
 
+  normalizeProvenance(ir);
   ir.quality = buildCompileReport(ir);
 
   return ir;

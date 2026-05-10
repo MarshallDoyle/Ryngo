@@ -13,12 +13,16 @@ function FileNode({ data }) {
   const lang = data?.lang || "";
   const path = data?.path || data?.label || "";
   const inert = data?.analyzable === false;
+  const status = data?.parseStatus || (data?.analyzable ? "pending" : "unsupported");
   return (
     <div className={`rfn-file ${inert ? "rfn-file-inert" : ""}`}>
       <div className="rfn-file-header">
         <span className="rfn-file-icon" aria-hidden="true">▦</span>
         <span className="rfn-file-name mono">{data?.label || path}</span>
         {lang && <span className="rfn-file-lang">{lang}</span>}
+        <span className={`rfn-file-status rfn-file-status-${status}`}>
+          {status}
+        </span>
       </div>
     </div>
   );

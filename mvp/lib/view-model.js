@@ -104,6 +104,13 @@ export function buildViewModel(ir, opts = {}) {
 
   const viewEdges = aggregateEdges(edges, selectedIds, byId)
     .sort(compareViewEdges);
+  const omittedNodes = nodes.filter((n) => !selectedIds.has(n.id));
+  const selectedEdgeKeys = new Set(viewEdges.map((edge) => `${edge.source}->${edge.target}:${edge.kind}`));
+  const omittedEdges = edges.filter((edge) => {
+    const source = selectedEndpoint(edge.source, selectedIds, byId);
+    const target = selectedEndpoint(edge.target, selectedIds, byId);
+    return !source || !target || source === target || !selectedEdgeKeys.has(`${source}->${target}:${edge.kind}`);
+  });
 
   return {
     version: 1,
@@ -115,7 +122,7 @@ export function buildViewModel(ir, opts = {}) {
     edges: viewEdges,
     clusters: buildClusters(viewNodes, layers),
     highlights: buildHighlights(nodes, edges, degree),
-    inspector: buildInspector(viewNodes),
+    inspector: buildInspector(viewNodes, viewEdges),
     prompts: buildPrompts(ir, viewNodes),
     limits: {
       maxNodes,
@@ -123,6 +130,8 @@ export function buildViewModel(ir, opts = {}) {
       omittedNodes: Math.max(0, nodes.length - viewNodes.length),
       returnedEdges: viewEdges.length,
       omittedEdges: Math.max(0, edges.length - viewEdges.length),
+      omittedNodesByKind: countKinds(omittedNodes),
+      omittedEdgesByKind: countKinds(omittedEdges),
       reason: nodes.length > viewNodes.length ? "max_nodes" : null,
     },
   };
@@ -135,6 +144,9 @@ function clampMaxNodes(value) {
 
 function normalizeMode(mode) {
   const m = String(mode || "overview").toLowerCase();
+  if (m === "architecture") return "layers";
+  if (m === "file-focus") return "files";
+  if (m === "impact") return "overview";
   return ["overview", "layers", "files"].includes(m) ? m : "overview";
 }
 
@@ -183,6 +195,11 @@ function viewNode(node, degree, layers) {
   };
   if (path) out.path = path;
   if (data.line) out.line = data.line;
+  if (node.source || data.source) out.source = node.source || data.source;
+  out.confidence = node.confidence || data.confidence || "unknown";
+  out.facts = compactFacts(node.facts || data.facts || []);
+  out.edgeCounts = node.edgeCounts || data.edgeCounts || null;
+  out.importanceReasons = node.importanceReasons || data.importanceReasons || [];
   if (node.parentId) out.parent = node.parentId;
   return out;
 }
@@ -240,6 +257,8 @@ function aggregateEdges(edges, selectedIds, byId) {
     const prev = aggregate.get(key);
     if (prev) {
       prev.weight += 1;
+      bumpConfidence(prev.confidenceCounts, e.confidence || "unknown");
+      prev.confidence = strongerConfidence(prev.confidence, e.confidence || "unknown");
       continue;
     }
     aggregate.set(key, {
@@ -249,6 +268,9 @@ function aggregateEdges(edges, selectedIds, byId) {
       kind: e.kind,
       label: EDGE_LABEL[e.kind] || e.kind,
       weight: 1,
+      confidence: e.confidence || "unknown",
+      confidenceCounts: { [e.confidence || "unknown"]: 1 },
+      sourceLocation: e.sourceLocation || e.sourceMeta || null,
     });
   }
   return [...aggregate.values()];
@@ -363,8 +385,9 @@ function highlightNode(n) {
   };
 }
 
-function buildInspector(viewNodes) {
+function buildInspector(viewNodes, viewEdges) {
   const defaultNode = viewNodes[0] || null;
+  const byId = new Map(viewNodes.map((node) => [node.id, node]));
   return {
     defaultNodeId: defaultNode?.id || null,
     facts: defaultNode
@@ -374,9 +397,15 @@ function buildInspector(viewNodes) {
           kind: defaultNode.kind,
           layer: defaultNode.layer,
           path: defaultNode.path || null,
+          source: defaultNode.source || null,
+          confidence: defaultNode.confidence || "unknown",
           description: defaultNode.description,
+          facts: defaultNode.facts || [],
+          edgeCounts: defaultNode.edgeCounts || null,
+          importanceReasons: defaultNode.importanceReasons || [],
         }
       : null,
+    related: defaultNode ? relatedFor(defaultNode.id, viewEdges, byId) : null,
     recommendedToolCalls: defaultNode
       ? [
           {
@@ -392,6 +421,59 @@ function buildInspector(viewNodes) {
         ]
       : [],
   };
+}
+
+function relatedFor(id, edges, byId) {
+  const incoming = [];
+  const outgoing = [];
+  for (const edge of edges) {
+    if (edge.target === id) {
+      const node = byId.get(edge.source);
+      incoming.push({ edgeKind: edge.kind, label: node?.label || edge.source, id: edge.source, confidence: edge.confidence });
+    }
+    if (edge.source === id) {
+      const node = byId.get(edge.target);
+      outgoing.push({ edgeKind: edge.kind, label: node?.label || edge.target, id: edge.target, confidence: edge.confidence });
+    }
+  }
+  return {
+    incoming: incoming.slice(0, 12),
+    outgoing: outgoing.slice(0, 12),
+  };
+}
+
+function compactFacts(facts) {
+  return facts.slice(0, 8).map((fact) => ({
+    kind: fact.kind,
+    text: fact.text,
+    confidence: fact.confidence || "unknown",
+    source: fact.source || null,
+    provenance: fact.provenance || null,
+  }));
+}
+
+function countKinds(items) {
+  const out = {};
+  for (const item of items) {
+    const kind = item.kind || "unknown";
+    out[kind] = (out[kind] || 0) + 1;
+  }
+  return sortObject(out);
+}
+
+function bumpConfidence(counts, confidence) {
+  counts[confidence] = (counts[confidence] || 0) + 1;
+}
+
+function strongerConfidence(a = "unknown", b = "unknown") {
+  const order = {
+    confirmed: 5,
+    "source-syntax": 4,
+    "framework-inferred": 3,
+    heuristic: 2,
+    unknown: 1,
+  };
+  return (order[b] || 0) > (order[a] || 0) ? b : a;
 }
 
 function buildPrompts(ir, viewNodes) {

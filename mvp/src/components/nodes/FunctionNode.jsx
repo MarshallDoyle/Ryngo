@@ -16,12 +16,13 @@ const META_H = 18;
 const SIG_H = 18;
 const PORT_H = 18;
 const RETURN_BAND_H = 20;
+const FACT_H = 30;
 
 export const fnNodeHeight = (params, hasReturnType, expanded = true) => {
   if (!expanded) return HEADER_H + 2;
   const visible = Math.min(params?.length || 0, MAX_VISIBLE_PARAMS);
   const portsH = visible > 0 ? visible * PORT_H + 6 : PORT_H + 6;
-  return HEADER_H + META_H + SIG_H + portsH + (hasReturnType ? RETURN_BAND_H : 6) + 8;
+  return HEADER_H + META_H + SIG_H + FACT_H + portsH + (hasReturnType ? RETURN_BAND_H : 6) + 8;
 };
 
 function paramSignature(params) {
@@ -47,6 +48,7 @@ function FunctionNode({ id, data, selected }) {
   const hidden = params.length - visible.length;
   const returnType = data?.returnType?.display || data?.returnType || null;
   const sig = `${paramSignature(params)}${returnType ? ` → ${returnType}` : ""}`;
+  const facts = (data?.facts || []).filter((fact) => fact.kind !== "params").slice(0, 3);
   const allWarnings = data?.warnings || [];
   const warnings = allWarnings.filter((w) => !dismissed.has(w.kind));
   const warningSeverity = warnings.length
@@ -108,6 +110,11 @@ function FunctionNode({ id, data, selected }) {
         {data?.line && (
           <span className="rfn-node-line mono" title={lineLabel(data)}>
             L{data.line}
+          </span>
+        )}
+        {data?.confidence && (
+          <span className={`rfn-confidence rfn-confidence-${data.confidence}`}>
+            {data.confidence}
           </span>
         )}
         {warnings.length > 0 && (
@@ -183,6 +190,20 @@ function FunctionNode({ id, data, selected }) {
           <div className="rfn-fn-sig mono" title={sig}>
             {sig}
           </div>
+          {facts.length > 0 && (
+            <div className="rfn-node-facts">
+              {facts.map((fact, i) => (
+                <span
+                  key={`${fact.kind}-${i}`}
+                  className="rfn-node-fact"
+                  title={`${fact.text}${fact.source?.path ? ` · ${fact.source.path}:${fact.source.startLine}` : ""}`}
+                  onMouseEnter={() => emitSourceLine(data, { source: fact.source, label: fact.text, kind: fact.kind })}
+                >
+                  {fact.text}
+                </span>
+              ))}
+            </div>
+          )}
 
           <div className="rfn-fn-ports rfn-fn-ports-in">
             {visible.length === 0 && (

@@ -149,6 +149,21 @@ function applyRyngoBadges(style, ryngo) {
   return { ...style, boxShadow: prior + parts.join(", ") };
 }
 
+function nodeData(n) {
+  return {
+    ...n.data,
+    label: n.label,
+    kind: n.kind,
+    id: n.id,
+    source: n.source || n.data?.source,
+    confidence: n.confidence || n.data?.confidence,
+    provenance: n.provenance || n.data?.provenance,
+    facts: n.facts || n.data?.facts,
+    edgeCounts: n.edgeCounts || n.data?.edgeCounts,
+    importanceReasons: n.importanceReasons || n.data?.importanceReasons,
+  };
+}
+
 function layoutRepo(rawNodes, rawEdges, ryngoState, pinnedSet, theme = "dark", aspectRatio = 16 / 10) {
   const STYLE = theme === "light" ? STYLE_LIGHT : STYLE_DARK;
   // Repo view shows only files (with their defs/cells inside). Packages
@@ -312,7 +327,7 @@ function layoutRepo(rawNodes, rawEdges, ryngoState, pinnedSet, theme = "dark", a
       rfNodes.push({
         id: n.id,
         type: "group",
-        data: { ...n.data, label: n.label, kind: n.kind },
+        data: nodeData(n),
         position: { x: pos.x - w / 2, y: pos.y - h / 2 },
         style: {
           width: w,
@@ -353,7 +368,7 @@ function layoutRepo(rawNodes, rawEdges, ryngoState, pinnedSet, theme = "dark", a
       rfNodes.push({
         id: n.id,
         type: "rpkg",
-        data: { ...n.data, label: n.label, kind: n.kind },
+        data: nodeData(n),
         position: { x: pos.x - PKG_W / 2, y: pos.y - PKG_H / 2 },
         style: { width: PKG_W, height: PKG_H },
       });
@@ -380,7 +395,7 @@ function layoutRepo(rawNodes, rawEdges, ryngoState, pinnedSet, theme = "dark", a
         parentNode: file.id,
         extent: "parent",
         type,
-        data: { ...c.data, label: c.label, kind: c.kind },
+        data: nodeData(c),
         position: { x: FILE_PAD_X, y },
         style: { width: DEF_W, height: h },
       });
@@ -393,8 +408,8 @@ function layoutRepo(rawNodes, rawEdges, ryngoState, pinnedSet, theme = "dark", a
     source: e.source,
     target: e.target,
     type: "bezier",
-    data: { kind: e.kind, _diff: e._diff },
-    style: edgeStyle(e.kind, false, false, theme),
+    data: { kind: e.kind, _diff: e._diff, confidence: e.confidence },
+    style: edgeStyle(e.kind, false, false, theme, e.confidence),
     zIndex: e.kind === "calls" ? 5 : 1,
   }));
 
@@ -453,7 +468,7 @@ const EDGE_COLORS_LIGHT = {
   calls: "#15803d",
 };
 
-function edgeStyle(kind, highlighted, dimmed, theme = "dark") {
+function edgeStyle(kind, highlighted, dimmed, theme = "dark", confidence = "confirmed") {
   const palette = theme === "light" ? EDGE_COLORS_LIGHT : EDGE_COLORS_DARK;
   const stroke = palette[kind] || palette.calls;
   // Cross-file imports are visually load-bearing — they're the spine of
@@ -464,6 +479,12 @@ function edgeStyle(kind, highlighted, dimmed, theme = "dark") {
     stroke,
     strokeWidth: highlighted ? Math.max(baseWidth, 1.7) : baseWidth,
     opacity: dimmed ? 0.08 : highlighted ? 1 : 0.78,
+    strokeDasharray:
+      confidence === "framework-inferred"
+        ? "2 5"
+        : confidence === "heuristic" || confidence === "unknown"
+          ? "7 6"
+          : undefined,
   };
 }
 
@@ -925,7 +946,7 @@ function layoutFocus(rawNodes, rawEdges, focusId, theme = "dark", aspectRatio = 
     rfNodes.push({
       id: n.id,
       type: satType,
-      data: { ...n.data, label: n.label, kind: n.kind, _diff: n._diff },
+      data: { ...nodeData(n), _diff: n._diff },
       position: { x, y },
       style: applyDiffNode(satStyle, n._diff),
     });
@@ -936,8 +957,8 @@ function layoutFocus(rawNodes, rawEdges, focusId, theme = "dark", aspectRatio = 
     source: e.source,
     target: e.target,
     type: "bezier",
-    data: { kind: e.kind, _diff: e._diff },
-    style: applyDiffEdge(edgeStyle(e.kind, true, false, theme), e._diff),
+    data: { kind: e.kind, _diff: e._diff, confidence: e.confidence },
+    style: applyDiffEdge(edgeStyle(e.kind, true, false, theme, e.confidence), e._diff),
     zIndex: 5,
   }));
   // Synthetic containment edges file → child for the file-focus case.
@@ -1106,6 +1127,7 @@ export default function App() {
   const [ir, setIr] = useState(null);
   const [agentViewModel, setAgentViewModel] = useState(null);
   const [selected, setSelected] = useState(null);
+  const [selectedEdge, setSelectedEdge] = useState(null);
 
   // Ryngo annotation state (annotations / regions / intents) for the
   // current repo. Refreshed from /api/ryngo-state after every write.
@@ -1371,31 +1393,47 @@ export default function App() {
 
   const repoLayout = useMemo(() => {
     if (!repoBase) return null;
-    if (!repoHighlight.nodeSet) return repoBase;
+    if (!repoHighlight.nodeSet && !selectedEdge) return repoBase;
     const { nodeSet, edgeSet } = repoHighlight;
     return {
       nodes: repoBase.nodes.map((n) => {
+        if (!nodeSet) return n;
         const inspectId =
           n.id.endsWith("#header") && n.parentNode ? n.parentNode : n.id;
         const dimmed = !nodeSet.has(inspectId);
         return { ...n, style: { ...n.style, opacity: dimmed ? 0.18 : 1 } };
       }),
       edges: repoBase.edges.map((e) => {
-        const high = edgeSet.has(e.id);
+        const edgeSelected = selectedEdge?.id === e.id;
+        const high = !!edgeSet?.has(e.id) || edgeSelected;
         return {
           ...e,
-          style: edgeStyle(e.data.kind, high, !high, theme),
-          zIndex: high ? 10 : 1,
+          style: edgeStyle(e.data.kind, high, nodeSet ? !high : false, theme, e.data?.confidence),
+          zIndex: edgeSelected ? 20 : high ? 10 : 1,
         };
       }),
     };
-  }, [repoBase, repoHighlight]);
+  }, [repoBase, repoHighlight, selectedEdge, theme]);
 
   // ----- focus view layout -----
   const focusLayout = useMemo(() => {
     if (!ir || !focusedId) return null;
-    return layoutFocus(ir.nodes, ir.edges, focusedId, theme, aspectRatio);
-  }, [ir, focusedId, theme, aspectRatio]);
+    const layout = layoutFocus(ir.nodes, ir.edges, focusedId, theme, aspectRatio);
+    if (!selectedEdge) return layout;
+    return {
+      ...layout,
+      edges: layout.edges.map((edge) => {
+        const edgeSelected = edge.id === selectedEdge.id;
+        return {
+          ...edge,
+          style: edgeSelected
+            ? { ...edge.style, ...edgeStyle(edge.data.kind, true, false, theme, edge.data?.confidence) }
+            : edge.style,
+          zIndex: edgeSelected ? 20 : edge.zIndex,
+        };
+      }),
+    };
+  }, [ir, focusedId, theme, aspectRatio, selectedEdge]);
 
   // ----- branches: fetch per-repo on URL change so the datalist can autofill
   useEffect(() => {
@@ -1589,6 +1627,7 @@ export default function App() {
   // Flow's hit detection during the animation can lose the second click.
   const drillIn = useCallback((nodeId) => {
     setSelected(null);
+    setSelectedEdge(null);
     setFocusStack((stack) => {
       if (stack[stack.length - 1] === nodeId) return stack;
       return [...stack, nodeId];
@@ -1604,9 +1643,10 @@ export default function App() {
       if (!ir) return;
       const irNode = ir.nodes.find((n) => n.id === id);
       if (!irNode) return;
+      setSelectedEdge(null);
       setSelected({
         id,
-        data: { ...irNode.data, label: irNode.label, kind: irNode.kind },
+        data: nodeData(irNode),
       });
       const canShowSource = ["file", "function", "class", "cell"].includes(irNode.kind);
       if (canShowSource) {
@@ -1638,8 +1678,31 @@ export default function App() {
     [drillIn],
   );
 
+  const handleEdgeClick = useCallback(
+    (_view, evt, edge) => {
+      evt?.stopPropagation?.();
+      if (!ir) return;
+      const raw = ir.edges.find((e) => e.id === edge.id);
+      setSelected(null);
+      setSelectedEdge({
+        id: edge.id,
+        source: edge.source,
+        target: edge.target,
+        data: {
+          ...(edge.data || {}),
+          label: edge.label,
+          source: edge.source,
+          target: edge.target,
+        },
+        raw: raw || null,
+      });
+    },
+    [ir],
+  );
+
   const onPaneClick = useCallback(() => {
     setSelected(null);
+    setSelectedEdge(null);
   }, []);
 
   // Inspector → drill. Same target as double-click.
@@ -1842,23 +1905,25 @@ export default function App() {
     <div className="app">
       <header>
         <div className="brand">
-          <div className="logo" aria-hidden="true">
-            <svg width="22" height="22" viewBox="0 0 32 32">
-              <rect width="32" height="32" rx="6" fill="#030712" />
-              {/* Block-letter R: vertical bar + top + bowl returning to bar + diagonal leg. */}
-              <path
-                d="M8 24V8h6a5 5 0 010 10H8 M13 18l5 6"
-                stroke="#c8ff3d"
-                strokeWidth="2"
-                fill="none"
-                strokeLinejoin="round"
-                strokeLinecap="round"
-              />
-            </svg>
-          </div>
-          <h1>
-            Ryngo <span className="tag">MVP</span>
-          </h1>
+          <a className="brand-home" href="/" aria-label="Ryngo home">
+            <div className="logo" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 32 32">
+                <rect width="32" height="32" rx="6" fill="#030712" />
+                {/* Block-letter R: vertical bar + top + bowl returning to bar + diagonal leg. */}
+                <path
+                  d="M8 24V8h6a5 5 0 010 10H8 M13 18l5 6"
+                  stroke="#c8ff3d"
+                  strokeWidth="2"
+                  fill="none"
+                  strokeLinejoin="round"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </div>
+            <h1>
+              Ryngo <span className="tag">MVP</span>
+            </h1>
+          </a>
           <button
             type="button"
             className="theme-toggle"
@@ -2188,6 +2253,7 @@ export default function App() {
               repoFlow.current = inst;
             }}
             onNodeClick={(e, n) => handleNodeClick("repo", e, n)}
+            onEdgeClick={(e, edge) => handleEdgeClick("repo", e, edge)}
             onNodeDoubleClick={(e, n) => handleNodeDoubleClick("repo", e, n)}
             onNodeContextMenu={handleNodeContextMenu}
             onPaneClick={onPaneClick}
@@ -2237,6 +2303,11 @@ export default function App() {
                 <span className="ln ln-import" /> imports
                 <span className="ln ln-call" /> calls
               </div>
+              <div className="legend-row">
+                <span className="ln ln-solid" /> confirmed
+                <span className="ln ln-dotted" /> inferred
+                <span className="ln ln-dashed" /> heuristic
+              </div>
               <div className="legend-row legend-hint">
                 click = open source · hover details = highlight line
               </div>
@@ -2244,15 +2315,21 @@ export default function App() {
                 packages shown only inside drilled views
               </div>
             </Panel>
-            {selected && selected.data?.kind !== "file-header" && (
+            {(selected || selectedEdge) && selected?.data?.kind !== "file-header" && (
               <Panel position="top-right" className="inspector">
-                <div className="inspector-header">
-                  {iconForKind(selected.data?.kind)} {selected.data?.label}
-                </div>
-                <NodeMeta data={selected.data} ir={ir} selectedId={selected.id} />
-                <button className="inspector-drill" onClick={onInspect}>
-                  Inspect node ↳
-                </button>
+                {selectedEdge ? (
+                  <EdgeMeta edgeSelection={selectedEdge} ir={ir} />
+                ) : (
+                  <>
+                    <div className="inspector-header">
+                      {iconForKind(selected.data?.kind)} {selected.data?.label}
+                    </div>
+                    <NodeMeta data={selected.data} ir={ir} selectedId={selected.id} />
+                    <button className="inspector-drill" onClick={onInspect}>
+                      Inspect node ↳
+                    </button>
+                  </>
+                )}
               </Panel>
             )}
           </ReactFlow>
@@ -2547,7 +2624,11 @@ function FocusView({
     setSourceErr(null);
 
     if (node.kind === "cell") {
-      setSource({ text: node.data.source, focusLine: node.data?.line || 1, file: node.data.file });
+      setSource({
+        text: node.data.sourceText || (typeof node.data.source === "string" ? node.data.source : ""),
+        focusLine: node.data?.source?.startLine || node.data?.line || 1,
+        file: node.data?.source?.path || node.data.file,
+      });
       return;
     }
     if (node.kind === "package") {
@@ -2581,7 +2662,7 @@ function FocusView({
         if (cancelled) return;
         setSource({
           text: j.source,
-          focusLine: node.data?.line || 1,
+          focusLine: node.data?.source?.startLine || node.data?.line || 1,
           file: filePath,
         });
       })
@@ -2868,12 +2949,24 @@ function CodeBlock({ text, focusLine, file }) {
 // ============================================================================
 
 function NodeMeta({ data, ir, selectedId }) {
+  const selectedNode = ir.nodes.find((node) => node.id === selectedId);
+  const source = data?.source || selectedNode?.source;
+  const provenance = data?.provenance || selectedNode?.provenance;
+  const facts = data?.facts || selectedNode?.facts || [];
   if (data?.kind === "file") {
     return (
       <dl>
         <Row label="path" mono>{data.path}</Row>
         <Row label="size">{formatBytes(data.size)}</Row>
         <Row label="lang" mono>{data.lang || "—"}</Row>
+        <Row label="status" mono>{data.parseStatus || "unknown"}</Row>
+        <Row label="confidence" mono>{data.confidence || "unknown"}</Row>
+        {source && (
+          <Row label="source" mono onMouseEnter={() => emitSourceLine(data)}>
+            {sourceLabel(source)}
+          </Row>
+        )}
+        {provenance?.extractor && <Row label="extractor" mono>{provenance.extractor}</Row>}
       </dl>
     );
   }
@@ -2905,22 +2998,41 @@ function NodeMeta({ data, ir, selectedId }) {
   const returnType = data?.returnType?.display || data?.returnType || null;
   const callers = ir.edges
     .filter((e) => e.kind === "calls" && e.target === selectedId)
-    .map((e) => idToLabel(ir, e.source));
+    .map((e) => ir.nodes.find((node) => node.id === e.source))
+    .filter(Boolean);
   const callees = ir.edges
     .filter((e) => e.kind === "calls" && e.source === selectedId)
-    .map((e) => idToLabel(ir, e.target));
+    .map((e) => ir.nodes.find((node) => node.id === e.target))
+    .filter(Boolean);
   return (
     <dl>
       <Row label="kind">{data.kind}</Row>
-      {data.file && (
+      <Row label="confidence" mono>{data.confidence || "unknown"}</Row>
+      {provenance?.extractor && <Row label="extractor" mono>{provenance.extractor}</Row>}
+      {provenance?.reason && <Row label="reason">{provenance.reason}</Row>}
+      {(data.file || source) && (
         <Row
           label="source"
           mono
-          title={`${data.file}${data.line ? `:${data.line}` : ""}`}
+          title={source ? sourceLabel(source) : `${data.file}${data.line ? `:${data.line}` : ""}`}
           onMouseEnter={() => emitSourceLine(data)}
         >
-          {data.file}
-          {data.line ? `:${data.line}` : ""}
+          {source ? sourceLabel(source) : `${data.file}${data.line ? `:${data.line}` : ""}`}
+        </Row>
+      )}
+      {facts.length > 0 && (
+        <Row label={`facts (${facts.length})`}>
+          <ul className="ref-list">
+            {facts.slice(0, 10).map((fact, i) => (
+              <li
+                key={`${fact.kind}-${i}`}
+                onMouseEnter={() => emitSourceLine(data, { source: fact.source, label: fact.text, kind: fact.kind })}
+                title={fact.source ? sourceLabel(fact.source) : fact.text}
+              >
+                <span className="mono">{fact.kind}</span> {fact.text}
+              </li>
+            ))}
+          </ul>
         </Row>
       )}
       {data.params && (
@@ -2957,8 +3069,14 @@ function NodeMeta({ data, ir, selectedId }) {
       <Row label={`callers (${callers.length})`}>
         {callers.length ? (
           <ul className="ref-list">
-            {callers.slice(0, 12).map((l, i) => (
-              <li key={i}>{l}</li>
+            {callers.slice(0, 12).map((node, i) => (
+              <li
+                key={i}
+                onMouseEnter={() => emitSourceLine(node.data || node)}
+                title={node.source ? sourceLabel(node.source) : idToLabel(ir, node.id)}
+              >
+                {idToLabel(ir, node.id)}
+              </li>
             ))}
             {callers.length > 12 && <li>…+{callers.length - 12}</li>}
           </ul>
@@ -2969,8 +3087,14 @@ function NodeMeta({ data, ir, selectedId }) {
       <Row label={`callees (${callees.length})`}>
         {callees.length ? (
           <ul className="ref-list">
-            {callees.slice(0, 12).map((l, i) => (
-              <li key={i}>{l}</li>
+            {callees.slice(0, 12).map((node, i) => (
+              <li
+                key={i}
+                onMouseEnter={() => emitSourceLine(node.data || node)}
+                title={node.source ? sourceLabel(node.source) : idToLabel(ir, node.id)}
+              >
+                {idToLabel(ir, node.id)}
+              </li>
             ))}
             {callees.length > 12 && <li>…+{callees.length - 12}</li>}
           </ul>
@@ -3015,6 +3139,14 @@ function Row({ label, children, mono, onMouseEnter, title }) {
       <dd className={mono ? "mono" : ""}>{children}</dd>
     </div>
   );
+}
+
+function sourceLabel(source) {
+  if (!source?.path) return "source unknown";
+  if (source.endLine && source.endLine !== source.startLine) {
+    return `${source.path}:${source.startLine}-${source.endLine}`;
+  }
+  return `${source.path}:${source.startLine || 1}`;
 }
 
 function formatBytes(n) {
