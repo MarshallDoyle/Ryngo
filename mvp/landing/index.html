@@ -221,9 +221,21 @@ npm start          # HTTP server (API + /mcp + landing + /app)</code></pre>
         </dd>
         <dt>How big a repo can I throw at it?</dt>
         <dd>
-          Up to 1500 files in the shallow clone. Beyond that, we
-          truncate honestly. Ryngo is "service-sized," not
-          "monorepo-of-the-quarter."
+          No file cap. Compilation is deterministic regex + tree-walk
+          — even a 50 k-file monorepo finishes in seconds. The wall is
+          your `git clone` time and the per-request timeout, not the
+          analyzer.
+        </dd>
+        <dt>Does it warn me about expensive code?</dt>
+        <dd>
+          Yes — every function is checked against a small set of
+          heuristics: nested loops (potentially O(n²) / O(n³)), I/O
+          calls inside a loop (likely N+1 queries), recursion without
+          memoization, very long functions, too many parameters,
+          deeply nested control flow. Affected nodes get a red /
+          amber ⚠ badge in the Files view; hover the badge for the
+          specific reason. Heuristic, not a real linter — directional
+          signal, not gospel.
         </dd>
         <dt>Can I run it on a private repo?</dt>
         <dd>

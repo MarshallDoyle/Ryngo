@@ -9,6 +9,8 @@
  * declared fields (`name: Type = default`).
  */
 
+import { detectWarnings } from "../warnings.js";
+
 const BACKEND = "regex";
 
 export function parse(text /*, opts */) {
@@ -16,13 +18,35 @@ export function parse(text /*, opts */) {
   // can use either form. Defs/calls need the strings stripped so docstrings
   // and string literals don't false-positive class/def patterns.
   const stripped = stripCommentsAndStrings(text);
+  const defs = extractDefs(stripped);
+  populateWarnings(stripped, defs);
   return {
     lang: "py",
     backend: BACKEND,
     imports: extractImports(stripped),
-    defs: extractDefs(stripped),
+    defs,
     calls: extractCalls(stripped),
   };
+}
+
+/**
+ * Mutate `defs` in place: for every function def, slice its body
+ * (this def's line up to the next def's line) and run heuristic
+ * warning detection. Skips classes.
+ */
+function populateWarnings(src, defs) {
+  if (!defs.length) return;
+  const lines = src.split("\n");
+  for (let i = 0; i < defs.length; i++) {
+    const def = defs[i];
+    if (def.kind !== "function") continue;
+    const next = defs[i + 1];
+    const startLine = def.line;
+    const endLine = next ? next.line - 1 : lines.length;
+    const body = lines.slice(startLine - 1, endLine).join("\n");
+    const w = detectWarnings(body, def.params, def.name, "py");
+    if (w.length) def.warnings = w;
+  }
 }
 
 // ---------------------------------------------------------------------------

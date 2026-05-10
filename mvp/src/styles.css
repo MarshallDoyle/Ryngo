@@ -2351,3 +2351,46 @@ html[data-embed] .app {
 html[data-embed] .app {
   height: 100vh;
 }
+
+/* ============================================================================
+   Warning badges on function nodes (lib/warnings.js)
+   ============================================================================ */
+
+.rfn-warn {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: auto;
+  padding: 1px 6px 1px 5px;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  border-radius: 9px;
+  flex-shrink: 0;
+  cursor: help;
+  white-space: pre-line;
+}
+
+.rfn-warn-high {
+  background: var(--error);
+  color: var(--accent-ink);
+}
+.rfn-warn-medium {
+  background: var(--warn);
+  color: var(--accent-ink);
+}
+.rfn-warn-low {
+  background: color-mix(in oklab, var(--muted) 30%, transparent);
+  color: var(--text);
+}
+
+/* Subtle outer ring on the node itself so high-severity warnings
+   read at a glance without expanding. */
+.rfn-fn-warn-high {
+  outline: 2px solid color-mix(in oklab, var(--error) 60%, transparent);
+  outline-offset: -1px;
+}
+.rfn-fn-warn-medium {
+  outline: 2px solid color-mix(in oklab, var(--warn) 55%, transparent);
+  outline-offset: -1px;
+}

@@ -41,12 +41,20 @@ function FunctionNode({ data, selected }) {
   const hidden = params.length - visible.length;
   const returnType = data?.returnType?.display || data?.returnType || null;
   const sig = `${paramSignature(params)}${returnType ? ` → ${returnType}` : ""}`;
+  const warnings = data?.warnings || [];
+  const warningSeverity = warnings.length
+    ? warnings.some((w) => w.severity === "high")
+      ? "high"
+      : warnings.some((w) => w.severity === "medium")
+        ? "medium"
+        : "low"
+    : null;
 
   return (
     <div
       className={`rfn-fn ${selected ? "rfn-fn-selected" : ""} ${
         expanded ? "rfn-fn-expanded" : "rfn-fn-collapsed"
-      }`}
+      }${warningSeverity ? ` rfn-fn-warn-${warningSeverity}` : ""}`}
     >
       <button
         type="button"
@@ -62,6 +70,15 @@ function FunctionNode({ data, selected }) {
         </span>
         <span className="rfn-fn-icon" aria-hidden="true">ƒ</span>
         <span className="rfn-fn-name mono">{data?.label}</span>
+        {warnings.length > 0 && (
+          <span
+            className={`rfn-warn rfn-warn-${warningSeverity}`}
+            title={warnings.map((w) => `[${w.severity}] ${w.message}`).join("\n")}
+            aria-label={`${warnings.length} warning${warnings.length === 1 ? "" : "s"}`}
+          >
+            ⚠ {warnings.length}
+          </span>
+        )}
       </button>
 
       {/* Always render at least one default-position handle so call edges

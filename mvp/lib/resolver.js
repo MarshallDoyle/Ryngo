@@ -71,6 +71,7 @@ export function resolveSymbols(parsedFiles, fileIndex) {
           returnType: def.returnType || null,
           members: def.members || null,
           baseClasses: def.baseClasses || null,
+          warnings: def.warnings || null,
         },
       });
       if (!defByName.has(def.name)) defByName.set(def.name, []);

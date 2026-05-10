@@ -50,9 +50,14 @@ export function detectAnomalies(results, previous) {
       const value = r.classifications[c.id] || 0;
       const median = medians.get(c.id);
 
-      // Over-emission: > 5× median with absolute floor (avoid noise on
-      // tiny medians like median=1 → trip on any value ≥ 6).
-      if (median > 0 && value > 5 * median && value > 20) {
+      // Over-emission heuristic. The thresholds below were tuned after
+      // we removed the MAX_FILES cap — without it, large repos
+      // legitimately produce 400+ typed-fn / 200+ class counts that
+      // are ~10× the corpus median but not bugs. Hard flags now
+      // require value > 12× median AND > 100; soft requires > 6× and
+      // > 40. This catches the original axios=239 shape (median=0,
+      // value=239) while ignoring "this repo is just big".
+      if (median > 0 && value > 12 * median && value > 100) {
         flags.push({
           severity: "hard",
           url: r.url,
@@ -63,7 +68,7 @@ export function detectAnomalies(results, previous) {
           median,
           reason: `${value} is ${(value / median).toFixed(1)}× the corpus median (${median})`,
         });
-      } else if (median > 0 && value > 3 * median && value > 10) {
+      } else if (median > 0 && value > 6 * median && value > 40) {
         flags.push({
           severity: "soft",
           url: r.url,
@@ -73,6 +78,21 @@ export function detectAnomalies(results, previous) {
           actual: value,
           median,
           reason: `${value} is ${(value / median).toFixed(1)}× the corpus median (${median})`,
+        });
+      }
+      // Tiny-median over-emission (the canonical bug shape: a class of
+      // adapter that should produce 0 starts producing dozens). Flags
+      // a hard anomaly when median = 0 but this repo has > 50.
+      if (median === 0 && value > 50) {
+        flags.push({
+          severity: "hard",
+          url: r.url,
+          lang: r.lang,
+          classification: c.id,
+          label: c.label,
+          actual: value,
+          median: 0,
+          reason: `${value} where corpus median is 0 — likely a false positive`,
         });
       }
     }

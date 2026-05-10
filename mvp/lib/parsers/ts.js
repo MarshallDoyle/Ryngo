@@ -10,6 +10,8 @@
  * per language.
  */
 
+import { detectWarnings } from "../warnings.js";
+
 const BACKEND = "regex";
 
 export function parse(text /*, opts */) {
@@ -18,13 +20,36 @@ export function parse(text /*, opts */) {
   // contents containing the word `function` etc. don't false-positive.
   const commentsStripped = stripCommentsOnly(text);
   const fullyStripped = stripStringsToo(commentsStripped);
+  const defs = extractDefs(fullyStripped);
+  populateWarnings(fullyStripped, defs);
   return {
     lang: "ts",
     backend: BACKEND,
     imports: extractImports(commentsStripped),
-    defs: extractDefs(fullyStripped),
+    defs,
     calls: extractCalls(fullyStripped),
   };
+}
+
+/**
+ * Mutate `defs` in place: for every function def, slice its body
+ * (this def's line up to the next def's line) and run heuristic
+ * warning detection. Skips classes — interface bodies aren't
+ * algorithmic.
+ */
+function populateWarnings(src, defs) {
+  if (!defs.length) return;
+  const lines = src.split("\n");
+  for (let i = 0; i < defs.length; i++) {
+    const def = defs[i];
+    if (def.kind !== "function") continue;
+    const next = defs[i + 1];
+    const startLine = def.line;
+    const endLine = next ? next.line - 1 : lines.length;
+    const body = lines.slice(startLine - 1, endLine).join("\n");
+    const w = detectWarnings(body, def.params, def.name, "ts");
+    if (w.length) def.warnings = w;
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -188,7 +213,11 @@ function extractDefs(src) {
     while ((m = re.exec(src)) !== null) {
       const name = m[1];
       if (seen.has(name)) continue;
-      const line = lineOf(src, m.index);
+      // FN_PATTERNS include `(?:^|\n)` so m.index can land ON a newline
+      // (the line BEFORE the function keyword). Skip past it so lineOf
+      // returns the correct line for downstream body slicing.
+      const realStart = src[m.index] === "\n" ? m.index + 1 : m.index;
+      const line = lineOf(src, realStart);
       const params = parseParamList(m[2]);
       const returnType = parseReturnType(m[3]);
       defs.push({
@@ -209,7 +238,8 @@ function extractDefs(src) {
     const name = cm[2];
     if (seen.has(name)) continue;
     const baseClasses = collectBaseClasses(cm[3], cm[4]);
-    const line = lineOf(src, cm.index);
+    const realStart = src[cm.index] === "\n" ? cm.index + 1 : cm.index;
+    const line = lineOf(src, realStart);
     const bodyStart = cm.index + cm[0].length;
     const body = sliceClassBody(src, bodyStart);
     defs.push({

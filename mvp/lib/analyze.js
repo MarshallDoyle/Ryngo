@@ -27,11 +27,15 @@ import { runAdapters } from "./adapters/index.js";
 import { annotateEffects } from "./effects.js";
 import { buildCompileReport } from "./quality.js";
 
-const MAX_FILES = 1500;
+// No total-file cap. Compilation is deterministic regex / tree-walk —
+// fast even at 100k files. Per-file caps below stay (a single 50 MB
+// generated bundle blows up the parser's memory ceiling, and a file
+// with 5000 def nodes is unrenderable in the viewer regardless).
+const MAX_FILES = Infinity;
 const MAX_FILE_BYTES = 1_000_000;
 const MAX_SOURCE_BYTES_FOR_PARSE = 500_000;
 const MAX_DEFS_PER_FILE = 80;
-const CLONE_TIMEOUT_MS = 60_000;
+const CLONE_TIMEOUT_MS = 180_000;
 
 const SKIP_DIRS = new Set([
   "node_modules", ".git", "dist", "build", ".next", ".nuxt", ".turbo",
