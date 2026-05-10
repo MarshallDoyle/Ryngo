@@ -96,6 +96,32 @@ async function main() {
     const arrow = delta === 0 ? "·" : delta > 0 ? "▲" : "▼";
     console.log(`  ${arrow} ${c.label.padEnd(40)} ${String(v).padStart(7)}  (Δ ${sign})`);
   }
+
+  // ---- expects (Phase 6.3): print + non-zero exit on min violations ----
+  if (summary.violations.length > 0) {
+    console.log(
+      `\n--- ${summary.violations.length} expects violation${summary.violations.length === 1 ? "" : "s"} (${summary.minViolations} hard, ${summary.maxViolations} soft) ---`,
+    );
+    for (const v of summary.violations) {
+      const repo = v.url.replace("https://github.com/", "");
+      const op = v.kind === "min" ? "<" : ">";
+      const sev = v.kind === "min" ? "🔴 min" : "🟡 max";
+      console.log(
+        `  ${sev}  ${repo.padEnd(40)}  ${v.classification.padEnd(28)}  ${v.actual} ${op} ${v.expected}`,
+      );
+    }
+  } else {
+    console.log("\nexpects: all repos within declared bounds.");
+  }
+  // CI gate: hard `min` violations exit non-zero so PR-blocking workflows
+  // (Phase 6.4) can refuse to merge. Soft `max` violations are warnings
+  // only — they're surfaced but don't fail the run.
+  if (summary.minViolations > 0) {
+    console.error(
+      `\nFAIL: ${summary.minViolations} hard min-violation${summary.minViolations === 1 ? "" : "s"} — exiting 1.`,
+    );
+    process.exit(1);
+  }
 }
 
 async function runOne(entry) {
@@ -122,6 +148,7 @@ async function runOne(entry) {
     ]);
     const ms = Date.now() - t0;
     const counts = computeAll(ir);
+    const violations = checkExpects(entry.expects, counts);
     return {
       url: entry.url,
       family: entry.family,
@@ -134,6 +161,8 @@ async function runOne(entry) {
       truncated: !!ir.stats?.truncated,
       diagnostics: (ir.diagnostics || []).slice(0, 5),
       classifications: counts,
+      expects: entry.expects || null,
+      violations,
     };
   } catch (err) {
     const ms = Date.now() - t0;
@@ -147,6 +176,31 @@ async function runOne(entry) {
       error: err.message || String(err),
     };
   }
+}
+
+/**
+ * Validate per-repo expectations from corpus.js. Returns an array of
+ * { kind: 'min' | 'max', classification, expected, actual } violations;
+ * an empty array when the repo passes all its declared bounds.
+ *
+ * `min` violations are hard regressions (parser/adapter dropped a
+ * signal we depend on). `max` violations are soft alarms (an adapter
+ * is over-emitting; usually a false-positive bug like the original
+ * Express axios=239 problem).
+ */
+function checkExpects(expects, classifications) {
+  if (!expects) return [];
+  const out = [];
+  for (const [id, bounds] of Object.entries(expects)) {
+    const actual = classifications[id] ?? 0;
+    if (bounds.min != null && actual < bounds.min) {
+      out.push({ kind: "min", classification: id, expected: bounds.min, actual });
+    }
+    if (bounds.max != null && actual > bounds.max) {
+      out.push({ kind: "max", classification: id, expected: bounds.max, actual });
+    }
+  }
+  return out;
 }
 
 async function runWithConcurrency(items, n, fn) {
@@ -195,6 +249,16 @@ function summarize(results, iso, totalMs) {
       adapterCoverage[a] = (adapterCoverage[a] || 0) + 1;
     }
   }
+  // Phase 6.3: aggregate expects-violations across all repos.
+  const violations = [];
+  for (const r of results) {
+    if (!r.violations?.length) continue;
+    for (const v of r.violations) {
+      violations.push({ url: r.url, ...v });
+    }
+  }
+  const minViolations = violations.filter((v) => v.kind === "min").length;
+  const maxViolations = violations.filter((v) => v.kind === "max").length;
   return {
     iso,
     elapsedMs: totalMs,
@@ -204,6 +268,9 @@ function summarize(results, iso, totalMs) {
     skipped,
     classifications: totals,
     adapterCoverage,
+    violations,
+    minViolations,
+    maxViolations,
   };
 }
 
@@ -233,6 +300,25 @@ function renderLatest(summary, results, previous) {
     const delta = v - prev;
     const sign = delta === 0 ? "—" : delta > 0 ? `+${delta}` : `${delta}`;
     lines.push(`| ${c.group} | ${c.label} | ${v} | ${sign} |`);
+  }
+
+  // -- expects violations (Phase 6.3) ------------------------------------
+  if (summary.violations?.length) {
+    lines.push("");
+    lines.push(
+      `## Expects violations (${summary.minViolations} hard, ${summary.maxViolations} soft)`,
+    );
+    lines.push("");
+    lines.push("| Severity | Repo | Classification | Actual | Bound |");
+    lines.push("|---|---|---|---:|---|");
+    for (const v of summary.violations) {
+      const repo = v.url.replace("https://github.com/", "");
+      const sev = v.kind === "min" ? "🔴 hard" : "🟡 soft";
+      const op = v.kind === "min" ? "≥" : "≤";
+      lines.push(
+        `| ${sev} | ${repo} | ${v.classification} | ${v.actual} | ${op} ${v.expected} |`,
+      );
+    }
   }
 
   // -- adapter coverage ---------------------------------------------------
