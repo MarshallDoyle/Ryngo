@@ -67,6 +67,15 @@ async function main() {
 
   if (jsonOnly) return;
 
+  // Filtered runs are not representative of the corpus; writing them to
+  // history.json would poison delta calculations on the next full run.
+  // The per-run JSON file still gets written above so the filtered output
+  // is recoverable; we just don't treat it as the new baseline.
+  if (filter) {
+    console.log(`(filter active: skipping history.json + latest.md update)`);
+    return;
+  }
+
   // ---- update history.json ----------------------------------------------
   const history = await readJson(HISTORY_PATH, []);
   const previous = history[history.length - 1] || null;
