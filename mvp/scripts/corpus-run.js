@@ -23,6 +23,7 @@ import { fileURLToPath } from "node:url";
 import { analyzeRepo } from "../lib/analyze.js";
 import { CORPUS } from "../test/corpus.js";
 import { CLASSIFICATIONS, computeAll } from "../test/classifications.js";
+import { detectAnomalies } from "../test/anomaly.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const RESULTS_DIR = path.join(__dirname, "..", "test", "results");
@@ -59,6 +60,16 @@ async function main() {
   const totalMs = Date.now() - startedAt;
   const summary = summarize(results, startedIso, totalMs);
 
+  // Phase 6.2 — anomaly detection (over-emission, stub-language emissions).
+  // Reads only the current run; per-repo silent regressions are deferred.
+  const previousFromHistory = await readJson(HISTORY_PATH, []);
+  const previousRow =
+    previousFromHistory[previousFromHistory.length - 1] || null;
+  const anomalies = detectAnomalies(results, previousRow);
+  summary.anomalies = anomalies.flags;
+  summary.anomalyHardCount = anomalies.hardCount;
+  summary.anomalySoftCount = anomalies.softCount;
+
   // ---- write per-run JSON ------------------------------------------------
   const safeIso = startedIso.replace(/[:.]/g, "-");
   const runPath = path.join(RESULTS_DIR, `${safeIso}.json`);
@@ -67,28 +78,26 @@ async function main() {
 
   if (jsonOnly) return;
 
-  // Filtered runs are not representative of the corpus; writing them to
-  // history.json would poison delta calculations on the next full run.
-  // The per-run JSON file still gets written above so the filtered output
-  // is recoverable; we just don't treat it as the new baseline.
-  if (filter) {
-    console.log(`(filter active: skipping history.json + latest.md update)`);
-    return;
-  }
-
-  // ---- update history.json ----------------------------------------------
+  // Read the previous full-corpus row for delta math even when this run
+  // is filtered (so per-classification numbers still display in context).
   const history = await readJson(HISTORY_PATH, []);
   const previous = history[history.length - 1] || null;
-  history.push(summary);
-  // Keep last 200 runs.
-  while (history.length > 200) history.shift();
-  await fs.writeFile(HISTORY_PATH, JSON.stringify(history, null, 2));
-  console.log(`updated ${path.relative(process.cwd(), HISTORY_PATH)}`);
 
-  // ---- render latest.md -------------------------------------------------
-  const md = renderLatest(summary, results, previous);
-  await fs.writeFile(LATEST_PATH, md);
-  console.log(`updated ${path.relative(process.cwd(), LATEST_PATH)}`);
+  if (!filter) {
+    // ---- update history.json --------------------------------------------
+    history.push(summary);
+    // Keep last 200 runs.
+    while (history.length > 200) history.shift();
+    await fs.writeFile(HISTORY_PATH, JSON.stringify(history, null, 2));
+    console.log(`updated ${path.relative(process.cwd(), HISTORY_PATH)}`);
+
+    // ---- render latest.md -----------------------------------------------
+    const md = renderLatest(summary, results, previous);
+    await fs.writeFile(LATEST_PATH, md);
+    console.log(`updated ${path.relative(process.cwd(), LATEST_PATH)}`);
+  } else {
+    console.log(`(filter active: skipping history.json + latest.md update)`);
+  }
 
   // ---- log a short stdout summary --------------------------------------
   console.log("\n--- summary ---");
@@ -122,9 +131,29 @@ async function main() {
   } else {
     console.log("\nexpects: all repos within declared bounds.");
   }
+
+  // ---- anomaly badges (Phase 6.2): print, do not fail the run ----
+  if (summary.anomalies.length > 0) {
+    console.log(
+      `\n--- ${summary.anomalies.length} anomal${summary.anomalies.length === 1 ? "y" : "ies"} flagged (${summary.anomalyHardCount} hard, ${summary.anomalySoftCount} soft) ---`,
+    );
+    for (const a of summary.anomalies.slice(0, 20)) {
+      const repo = a.url.replace("https://github.com/", "");
+      const sev = a.severity === "hard" ? "🔴 hard" : "🟡 soft";
+      console.log(
+        `  ${sev}  ${repo.padEnd(40)}  ${a.classification.padEnd(28)}  ${a.actual.toString().padStart(5)}  — ${a.reason}`,
+      );
+    }
+    if (summary.anomalies.length > 20) {
+      console.log(`  …and ${summary.anomalies.length - 20} more.`);
+    }
+  } else {
+    console.log("anomalies: none above the median × 5 / × 3 thresholds.");
+  }
+
   // CI gate: hard `min` violations exit non-zero so PR-blocking workflows
-  // (Phase 6.4) can refuse to merge. Soft `max` violations are warnings
-  // only — they're surfaced but don't fail the run.
+  // (Phase 6.4) can refuse to merge. Soft `max` violations and anomaly
+  // flags are warnings only — surfaced in the report but don't fail the run.
   if (summary.minViolations > 0) {
     console.error(
       `\nFAIL: ${summary.minViolations} hard min-violation${summary.minViolations === 1 ? "" : "s"} — exiting 1.`,
@@ -326,6 +355,24 @@ function renderLatest(summary, results, previous) {
       const op = v.kind === "min" ? "≥" : "≤";
       lines.push(
         `| ${sev} | ${repo} | ${v.classification} | ${v.actual} | ${op} ${v.expected} |`,
+      );
+    }
+  }
+
+  // -- anomaly badges (Phase 6.2) ----------------------------------------
+  if (summary.anomalies?.length) {
+    lines.push("");
+    lines.push(
+      `## Anomalies (${summary.anomalyHardCount} hard, ${summary.anomalySoftCount} soft)`,
+    );
+    lines.push("");
+    lines.push("| Severity | Repo | Classification | Actual | Reason |");
+    lines.push("|---|---|---|---:|---|");
+    for (const a of summary.anomalies) {
+      const repo = a.url.replace("https://github.com/", "");
+      const sev = a.severity === "hard" ? "🔴 hard" : "🟡 soft";
+      lines.push(
+        `| ${sev} | ${repo} | ${a.classification} | ${a.actual} | ${a.reason} |`,
       );
     }
   }
