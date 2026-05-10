@@ -11,6 +11,7 @@ import dagre from "dagre";
 import ContextMenu from "./components/ContextMenu.jsx";
 import AnnotateModal from "./components/AnnotateModal.jsx";
 import Dashboard from "./components/Dashboard.jsx";
+import HelpOverlay from "./components/HelpOverlay.jsx";
 import { diffNarrative } from "../lib/narrative.js";
 import { nodeTypes, fnNodeHeight, classNodeHeight } from "./components/nodes/index.js";
 import { classifyFiles, LAYER_ORDER, LAYER_LABEL } from "../lib/layers.js";
@@ -1113,6 +1114,9 @@ export default function App() {
   const [annotateFor, setAnnotateFor] = useState(null);
   const [pinnedIds, setPinnedIds] = useState(() => new Set());
 
+  // Phase 4.3 — keyboard help overlay state.
+  const [helpOpen, setHelpOpen] = useState(false);
+
   // Top-level mode: which surface is shown. 'graph' is the React Flow canvas;
   // 'dashboard' is the PM summary cards.
   const [viewMode, setViewMode] = useState("graph");
@@ -1203,6 +1207,109 @@ export default function App() {
     }
     setTheme((t) => (t === "dark" ? "light" : "dark"));
   }, []);
+
+  // Phase 4.3 — global keyboard shortcuts. Skips when the user is typing
+  // in an input / textarea / contentEditable. Two-key chord support
+  // ('g' followed by 'd' / 'h' / 'g') with a 1.2 s window before the
+  // chord state resets.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    let chord = null;
+    let chordTimer = 0;
+    const clearChord = () => {
+      chord = null;
+      window.clearTimeout(chordTimer);
+    };
+    const isTextField = (el) => {
+      if (!el) return false;
+      const tag = (el.tagName || "").toLowerCase();
+      if (tag === "input" || tag === "textarea" || tag === "select") return true;
+      if (el.isContentEditable) return true;
+      return false;
+    };
+    const onKey = (e) => {
+      if (isTextField(e.target)) return;
+      // ⌘+K / Ctrl+K — fuzzy find (placeholder; surfaces a prompt() until
+      // the proper combobox lands; gives a working keyboard path now).
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        const q = window.prompt("Find a node — type a name fragment:");
+        if (q && ir?.nodes) {
+          const hit = ir.nodes.find((n) =>
+            (n.label || "").toLowerCase().includes(q.toLowerCase()),
+          );
+          if (hit) setSelected(hit);
+        }
+        return;
+      }
+      // ⌘+/ — toggle theme
+      if ((e.metaKey || e.ctrlKey) && e.key === "/") {
+        e.preventDefault();
+        toggleTheme();
+        return;
+      }
+      // Modifier-less keys
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      if (e.key === "?") {
+        e.preventDefault();
+        setHelpOpen((v) => !v);
+        return;
+      }
+      if (e.key === "Escape") {
+        if (helpOpen) {
+          setHelpOpen(false);
+          return;
+        }
+        // Otherwise let the existing Esc-back handler run.
+        return;
+      }
+      // Two-key chord: 'g' starts; 'd' / 'g' / 'h' completes.
+      if (chord === "g") {
+        clearChord();
+        if (e.key === "d") {
+          e.preventDefault();
+          setViewMode("dashboard");
+          return;
+        }
+        if (e.key === "g") {
+          e.preventDefault();
+          setViewMode("graph");
+          return;
+        }
+        if (e.key === "h") {
+          e.preventDefault();
+          setFocusStack([]);
+          setViewMode("graph");
+          return;
+        }
+      }
+      if (e.key === "g") {
+        chord = "g";
+        chordTimer = window.setTimeout(clearChord, 1200);
+        return;
+      }
+      // L / F — switch graph layout when in graph mode
+      if (e.key === "l" || e.key === "L") {
+        if (viewMode === "graph") {
+          e.preventDefault();
+          setGraphView("layers");
+        }
+        return;
+      }
+      if (e.key === "f" || e.key === "F") {
+        if (viewMode === "graph") {
+          e.preventDefault();
+          setGraphView("files");
+        }
+        return;
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.clearTimeout(chordTimer);
+    };
+  }, [helpOpen, viewMode, ir, toggleTheme]);
 
   const styleSet = theme === "light" ? STYLE_LIGHT : STYLE_DARK;
 
@@ -1713,12 +1820,21 @@ export default function App() {
             onClick={toggleTheme}
             title={
               theme === "dark"
-                ? "Switch to light mode (currently dark)"
-                : "Switch to dark mode (currently light)"
+                ? "Switch to light mode (currently dark) — ⌘/"
+                : "Switch to dark mode (currently light) — ⌘/"
             }
             aria-label="Toggle color theme"
           >
             {theme === "dark" ? "☀" : "☾"}
+          </button>
+          <button
+            type="button"
+            className="theme-toggle help-toggle"
+            onClick={() => setHelpOpen((v) => !v)}
+            title="Keyboard shortcuts — ?"
+            aria-label="Keyboard shortcuts"
+          >
+            ?
           </button>
         </div>
 
@@ -2145,6 +2261,7 @@ export default function App() {
         onClose={() => setAnnotateFor(null)}
         onSubmit={onAnnotateSubmit}
       />
+      {helpOpen && <HelpOverlay onClose={() => setHelpOpen(false)} />}
     </div>
   );
 }

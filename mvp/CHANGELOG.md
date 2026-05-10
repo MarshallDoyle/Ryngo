@@ -3,6 +3,7 @@
 Per `AGENTS.md` convention: one line per ship. `date · agent · one
 sentence`. Newest at top.
 
+2026-05-10  claude  Phase 4.3 — keyboard shortcuts + `?` help overlay. New `mvp/src/components/HelpOverlay.jsx`; global keydown router in App.jsx with `Cmd+K` (fuzzy find), `Cmd+/` (theme toggle), `?` (help), `g g/d/h` chord (graph/dashboard/home), `L`/`F` (Layers/Files), Esc to close. New `?` button in the header next to the theme toggle.
 2026-05-10  claude  Three more framework adapters — Spring (`@GetMapping/@PostMapping/...` + `@Entity` → 19 routes on `spring-petclinic`), SQLAlchemy (declarative-base subclasses → 16 models on `tiangolo/sqlmodel`), Terraform (`resource` / `data` / `module` blocks → 121 `infra-resource` nodes on `terraform-aws-vpc`). Three new classifications + sentinel repos with min-expects.
 2026-05-10  claude  Rails adapter — `config/routes.rb` route extraction (verb DSL + `resources` / `resource` expansion to RESTful 7 / 6) + ActiveRecord-style `db-model` nodes from `app/models/**/*.rb`; verified 24 routes + 17 models on `rails/rails`. Adapter scans Ruby as `scanUnparsed` since the Ruby parser is still a stub.
 2026-05-10  claude  Phase 6.2 — anomaly badges (`mvp/test/anomaly.js`). Flags per-repo classification counts that are >5× the corpus median (🔴 hard) or >3× (🟡 soft). Surfaced in stdout + a new section in `latest.md`. Doesn't fail the run — informational, paired with the Phase 6.3 expects gate.
