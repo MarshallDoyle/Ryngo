@@ -83,6 +83,10 @@ code {
   border-radius: 3px;
   color: var(--text);
 }
+.mono {
+  font-family:
+    ui-monospace, "JetBrains Mono", "SFMono-Regular", Menlo, Consolas, monospace;
+}
 
 pre {
   background: var(--code-bg);
@@ -162,6 +166,18 @@ pre code {
 .site-nav .cta:hover {
   filter: brightness(1.05);
   border-bottom: 0;
+}
+
+@media (max-width: 860px) {
+  .site {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .site-nav {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 12px 16px;
+  }
 }
 
 /* --------------------------------------------------------------------------
@@ -296,6 +312,152 @@ pre code {
 }
 
 /* --------------------------------------------------------------------------
+   Product proof / evals
+   -------------------------------------------------------------------------- */
+
+.proof-grid {
+  max-width: 1040px;
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(300px, 1.05fr);
+  gap: 32px;
+  align-items: start;
+}
+.proof-grid h2 {
+  margin-bottom: 16px;
+}
+.metric-strip {
+  display: grid;
+  gap: 10px;
+}
+.metric-strip > div {
+  padding: 15px 18px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.metric-strip span,
+.eval-controls span {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.metric-strip strong {
+  display: block;
+  margin-top: 2px;
+  font-size: 24px;
+  line-height: 1.1;
+}
+.metric-strip p {
+  margin: 7px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.eval-card {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 20px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  box-shadow: var(--shadow-soft);
+}
+.eval-controls {
+  margin-bottom: 18px;
+}
+.eval-controls label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 18px;
+  font-weight: 600;
+}
+.eval-controls input {
+  width: 100%;
+  margin-top: 12px;
+  accent-color: var(--accent);
+}
+.eval-bars {
+  display: grid;
+  gap: 11px;
+}
+.eval-bar-row {
+  display: grid;
+  grid-template-columns: 130px minmax(120px, 1fr) 64px;
+  gap: 12px;
+  align-items: center;
+  font-size: 13px;
+}
+.eval-bar-row > span {
+  color: var(--muted);
+}
+.eval-bar-row strong {
+  text-align: right;
+  font-family:
+    ui-monospace, "JetBrains Mono", "SFMono-Regular", Menlo, Consolas, monospace;
+}
+.eval-bar-track {
+  height: 13px;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--line) 70%, transparent);
+  overflow: hidden;
+}
+.eval-bar {
+  display: block;
+  height: 100%;
+  min-width: 2px;
+  border-radius: inherit;
+}
+.eval-bar.raw { background: var(--muted); }
+.eval-bar.compact { background: var(--fn); }
+.eval-bar.topology { background: var(--accent); }
+.eval-bar.subgraph { background: var(--call); }
+.eval-note {
+  margin: 16px 0 0;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 13px;
+}
+.eval-plan {
+  max-width: 880px;
+  margin: 20px auto 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+.eval-plan > div {
+  padding: 16px 18px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.eval-plan h3 {
+  margin-top: 0;
+}
+.eval-plan p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+@media (max-width: 760px) {
+  .proof-grid,
+  .eval-plan {
+    grid-template-columns: 1fr;
+  }
+  .eval-bar-row {
+    grid-template-columns: 1fr;
+    gap: 5px;
+  }
+  .eval-bar-row strong {
+    text-align: left;
+  }
+}
+
+/* --------------------------------------------------------------------------
    How-to-use steps
    -------------------------------------------------------------------------- */
 
@@ -410,15 +572,56 @@ pre code {
 
 .site-foot {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: 14px;
-  padding: 32px 32px 48px;
+  flex-direction: column;
+  gap: 28px;
+  padding: 48px 32px 36px;
   border-top: 1px solid var(--line);
   background: var(--panel);
   font-size: 13px;
   color: var(--muted);
+}
+.site-foot-cols {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 28px;
+  max-width: 1180px;
+  width: 100%;
+  margin: 0 auto;
+}
+.foot-col h4 {
+  margin: 0 0 12px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text);
+}
+.foot-col ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 6px;
+}
+.foot-col a {
+  color: var(--muted);
+  border-bottom: 0;
+}
+.foot-col a:hover {
+  color: var(--text);
+  border-bottom: 1px solid var(--line);
+}
+.site-foot-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+  max-width: 1180px;
+  width: 100%;
+  margin: 0 auto;
 }
 .site-foot .foot-brand {
   display: inline-flex;
@@ -430,18 +633,6 @@ pre code {
 .site-foot .foot-tag {
   font-family:
     ui-monospace, "JetBrains Mono", "SFMono-Regular", Menlo, Consolas, monospace;
-}
-.foot-nav {
-  display: inline-flex;
-  gap: 14px;
-}
-.foot-nav a {
-  border-bottom: 0;
-  color: var(--muted);
-}
-.foot-nav a:hover {
-  color: var(--text);
-  border-bottom: 0;
 }
 
 /* --------------------------------------------------------------------------
@@ -524,4 +715,203 @@ pre code {
 @media (max-width: 720px) {
   .demo-iframe { height: 460px; }
   .demo-frame { margin-top: 32px; }
+}
+
+/* --------------------------------------------------------------------------
+   Tagline companion sentence — sits below the .tagline h1 and names the
+   category, mental model, and integration surface (LiteLLM-density).
+   -------------------------------------------------------------------------- */
+
+.tagline-companion {
+  max-width: 760px;
+  margin: 18px auto 4px;
+  padding: 0 24px;
+  color: var(--muted);
+  font-size: 17px;
+  line-height: 1.55;
+  text-align: center;
+}
+.tagline-companion code {
+  background: var(--code-bg);
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 0.92em;
+  color: var(--text);
+}
+
+/* --------------------------------------------------------------------------
+   #ryngo-md — "Three ways to plug Ryngo.md into your agent" section. Three
+   cards (MCP / copy-paste / commit-to-repo) plus a <details> with the file
+   format. Spec: mvp/docs/LANDING_RYNGO_MD.md.
+   -------------------------------------------------------------------------- */
+
+.ryngo-md-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 18px;
+  margin: 24px 0 16px;
+}
+.ryngo-md-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px 22px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: var(--shadow-soft);
+}
+.ryngo-md-card header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+.ryngo-md-card h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+.ryngo-md-chip {
+  font-family:
+    ui-monospace, "JetBrains Mono", "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--accent-ink);
+  background: var(--accent);
+  border-radius: 999px;
+  padding: 3px 9px;
+}
+.ryngo-md-card p {
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.55;
+  margin: 0;
+}
+.ryngo-md-card .ryngo-md-best {
+  color: var(--muted);
+  font-size: 13px;
+  margin-top: auto;
+  padding-top: 8px;
+  border-top: 1px dashed var(--line);
+}
+.ryngo-md-card .ryngo-md-foot {
+  color: var(--muted);
+  font-size: 12px;
+  font-style: italic;
+}
+.ryngo-md-code {
+  background: var(--code-bg);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 12px;
+  line-height: 1.5;
+  overflow-x: auto;
+  margin: 0;
+  white-space: pre;
+}
+.ryngo-md-code code {
+  background: transparent;
+  padding: 0;
+  font-size: inherit;
+  color: inherit;
+}
+.ryngo-md-list {
+  margin: 0 0 0 18px;
+  padding: 0;
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text);
+}
+.ryngo-md-format {
+  margin-top: 18px;
+  padding: 14px 18px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+.ryngo-md-format summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--text);
+}
+.ryngo-md-format > p {
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.55;
+}
+.ryngo-md-format .ryngo-md-code {
+  margin-top: 10px;
+}
+
+/* --------------------------------------------------------------------------
+   #pricing — single Free tile, centered. No Enterprise tile yet.
+   -------------------------------------------------------------------------- */
+
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 18px;
+  margin-top: 24px;
+}
+.pricing-grid-single {
+  grid-template-columns: minmax(0, 520px);
+  justify-content: center;
+}
+.pricing-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 28px 32px;
+  box-shadow: var(--shadow-soft);
+}
+.pricing-card header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.pricing-card h3 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+}
+.pricing-chip {
+  font-family:
+    ui-monospace, "JetBrains Mono", "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 14px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+.pricing-features {
+  margin: 0 0 22px 18px;
+  padding: 0;
+  font-size: 15px;
+  line-height: 1.7;
+}
+.pricing-features li {
+  color: var(--text);
+}
+.pricing-features code {
+  background: var(--code-bg);
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 0.92em;
+}
+.pricing-card .cta {
+  display: inline-block;
+  margin-top: 6px;
+}
+.pricing-foot {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--line);
 }

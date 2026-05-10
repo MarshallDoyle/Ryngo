@@ -23,7 +23,12 @@
       </a>
       <nav class="site-nav">
         <a href="#how">How to use</a>
+        <a href="#evals">Evals</a>
         <a href="#mcp">Install MCP</a>
+        <a href="#ryngo-md">Ryngo.md</a>
+        <a href="#pricing">Pricing</a>
+        <a href="logos.html">Logo lab</a>
+        <a href="https://github.com/MarshallDoyle/Ryngo" target="_blank" rel="noopener">GitHub</a>
         <a href="#faq">FAQ</a>
         <a class="cta" href="/app">Open the app →</a>
       </nav>
@@ -31,6 +36,12 @@
 
     <section class="hero">
       <h1 class="tagline">The map your coding agent is missing.</h1>
+      <p class="tagline-companion">
+        Ryngo is a deterministic code-to-graph compiler with an MCP server.
+        Paste a GitHub URL, get a typed node-editor. Mark intents in
+        <code>Ryngo.md</code>; Claude Code, Cursor, Codex, and Aider all
+        read the same file.
+      </p>
       <p class="lede">
         Paste a GitHub URL. Get a typed node-editor of your codebase —
         files, functions, types, routes, db models — grouped into stack
@@ -39,6 +50,7 @@
       <div class="cta-row">
         <a class="cta primary" href="/app">Try it on your repo →</a>
         <a class="cta ghost" href="#mcp">Install the MCP server →</a>
+        <a class="cta ghost" href="https://github.com/MarshallDoyle/Ryngo" target="_blank" rel="noopener">View source →</a>
       </div>
 
       <div class="demo-frame" aria-label="Live Ryngo demo">
@@ -63,8 +75,38 @@
       </div>
 
       <p class="hero-foot">
+        Built by <a class="inline-link" href="https://marshall-doyle.com/" target="_blank" rel="noopener">Marshall Doyle</a>.
         Try a different repo above, or paste your own.
       </p>
+    </section>
+
+    <section class="section proof-grid" aria-label="Ryngo evaluation overview">
+      <div>
+        <h2>Compiler signal, not a bigger prompt</h2>
+        <p class="section-lede">
+          Ryngo compresses a repo into deterministic representations: topology,
+          compact IR, view models, subgraphs, and exact source anchors. The point
+          is to feed an agent the map it needs instead of asking it to reread
+          every file on every turn.
+        </p>
+      </div>
+      <div class="metric-strip" aria-label="Representation ladder">
+        <div>
+          <span>Topology</span>
+          <strong>smallest</strong>
+          <p>Bird's-eye repo map for planning and triage.</p>
+        </div>
+        <div>
+          <span>Compact IR</span>
+          <strong>agent-ready</strong>
+          <p>Nodes, edges, signatures, adapters, and warnings.</p>
+        </div>
+        <div>
+          <span>Subgraph</span>
+          <strong>precise</strong>
+          <p>Only the neighborhood around the thing being changed.</p>
+        </div>
+      </div>
     </section>
 
     <section id="how" class="section">
@@ -163,6 +205,67 @@ npm start          # HTTP server (API + /mcp + landing + /app)</code></pre>
       </p>
     </section>
 
+    <section id="evals" class="section section-alt">
+      <h2>Token efficiency evals</h2>
+      <p class="section-lede">
+        This is the benchmark we will publish from the corpus harness: compare
+        raw repo context with Ryngo's compressed representations, broken down by
+        language family and representation type. The chart below is an
+        interactive model of the metric; the next step is wiring it directly to
+        <code>npm run corpus</code> output.
+      </p>
+      <div class="eval-card">
+        <div class="eval-controls">
+          <label for="repoTokens">
+            Raw repo context
+            <span class="mono" id="repoTokensLabel">250k tokens</span>
+          </label>
+          <input id="repoTokens" type="range" min="50000" max="2000000" step="50000" value="250000" />
+        </div>
+        <div class="eval-bars" aria-label="Estimated token budget by representation">
+          <div class="eval-bar-row">
+            <span>Raw files</span>
+            <div class="eval-bar-track"><span class="eval-bar raw" id="barRaw"></span></div>
+            <strong id="rawValue">250k</strong>
+          </div>
+          <div class="eval-bar-row">
+            <span>Compact IR</span>
+            <div class="eval-bar-track"><span class="eval-bar compact" id="barCompact"></span></div>
+            <strong id="compactValue">20k</strong>
+          </div>
+          <div class="eval-bar-row">
+            <span>Topology</span>
+            <div class="eval-bar-track"><span class="eval-bar topology" id="barTopology"></span></div>
+            <strong id="topologyValue">750</strong>
+          </div>
+          <div class="eval-bar-row">
+            <span>Focused subgraph</span>
+            <div class="eval-bar-track"><span class="eval-bar subgraph" id="barSubgraph"></span></div>
+            <strong id="subgraphValue">3.8k</strong>
+          </div>
+        </div>
+        <p class="eval-note">
+          Model defaults: compact IR about 8% of raw context, topology about
+          0.3%, focused subgraph about 1.5%. Corpus-backed landing metrics
+          should replace these assumptions once the run history is stable.
+        </p>
+      </div>
+      <div class="eval-plan">
+        <div>
+          <h3>Language slices</h3>
+          <p>TypeScript/JavaScript, Python/Jupyter, Go, Java/Spring, Ruby/Rails, Rust, C#, and HCL.</p>
+        </div>
+        <div>
+          <h3>Representation slices</h3>
+          <p>Raw files, topology markdown, compact IR, RyngoViewModel, k-hop subgraph, and node signature.</p>
+        </div>
+        <div>
+          <h3>Quality slices</h3>
+          <p>Parse recall, route/model/env extraction, warning precision, and exact source-anchor coverage.</p>
+        </div>
+      </div>
+    </section>
+
     <section class="section">
       <h2>Who Ryngo is for</h2>
       <div class="personas">
@@ -198,6 +301,178 @@ npm start          # HTTP server (API + /mcp + landing + /app)</code></pre>
       </div>
     </section>
 
+    <section id="ryngo-md" class="section">
+      <h2>Three ways to plug <code>Ryngo.md</code> into your agent</h2>
+      <p class="section-lede">
+        Every Ryngo repo gets one file at its root — <code>Ryngo.md</code> —
+        that holds the comments you've left on nodes and the warnings you've
+        dismissed. Plain Markdown, diff-friendly, edited from the viewer OR
+        from your IDE. Pick whichever of these three paths matches how your
+        agent already works; the file is the same on all three.
+      </p>
+
+      <div class="ryngo-md-grid">
+
+        <article class="ryngo-md-card">
+          <header>
+            <span class="ryngo-md-chip">1 · live</span>
+            <h3>Connect via MCP</h3>
+          </header>
+          <p>
+            For agents in an active coding loop — <strong>Claude Code,
+            ChatGPT MCP, Cursor, any MCP-aware harness</strong>. After the
+            one-time install, your agent gets a <code>read_ryngo_md</code>
+            tool. It calls it at the start of a session, sees your comments
+            and suppressions, and respects them on every edit.
+          </p>
+          <pre class="ryngo-md-code mono"><code>$ npx ryngo-mcp install
+# adds Ryngo to your MCP config — restart your agent
+
+# Agent now has these tools:
+#   read_ryngo_md          ← reads the manifest
+#   get_compact_ir         ← reads the typed code map
+#   list_intents           ← reads pending refactor markers</code></pre>
+          <p class="ryngo-md-best">
+            <strong>Best for:</strong> ongoing development, multi-step
+            refactors, anything where the agent is editing on your behalf.
+          </p>
+          <p class="ryngo-md-foot">
+            Full install guide: <a class="inline-link" href="#mcp">↑ Install MCP</a>.
+          </p>
+        </article>
+
+        <article class="ryngo-md-card">
+          <header>
+            <span class="ryngo-md-chip">2 · one-off</span>
+            <h3>Copy &amp; paste</h3>
+          </header>
+          <p>
+            For chat UIs that don't speak MCP — <strong>ChatGPT.com,
+            Claude.ai, Gemini, Perplexity</strong>. Open the Ryngo viewer,
+            click <code>View Ryngo.md</code> in the inspector, copy. Paste
+            at the top of your prompt and ask anything.
+          </p>
+          <pre class="ryngo-md-code mono"><code># your prompt to ChatGPT / Claude.ai
+Here's my repo's Ryngo manifest:
+
+---
+{paste from Ryngo viewer's "Copy" button}
+---
+
+The comments above explain what each function does. The
+suppressions tell you which warnings I've already considered
+and chosen to ignore. With that context: please refactor
+src/auth/login.ts to support refresh tokens.</code></pre>
+          <p class="ryngo-md-best">
+            <strong>Best for:</strong> one-off questions, second opinions,
+            any time you don't want to bring up an agent harness.
+          </p>
+          <p class="ryngo-md-foot">
+            The file is small (typically &lt; 10 KB even for big repos).
+            One paste fits in any model's context.
+          </p>
+        </article>
+
+        <article class="ryngo-md-card">
+          <header>
+            <span class="ryngo-md-chip">3 · persistent</span>
+            <h3>Commit to your repo</h3>
+          </header>
+          <p>
+            For teams and anyone who wants the manifest to follow the code
+            — <strong>vibe coders shipping daily, engineering teams,
+            anyone whose AI sometimes loses context between sessions</strong>.
+            Download <code>Ryngo.md</code> and commit it at repo root.
+            It's auto-discovered by:
+          </p>
+          <ul class="ryngo-md-list">
+            <li><strong>Cursor</strong> — via the <code>.cursorrules</code> Ryngo generates</li>
+            <li><strong>Claude Code</strong> — via the <code>CLAUDE.md</code> Ryngo generates</li>
+            <li><strong>Aider, Continue, Codex</strong> — via the <code>AGENTS.md</code> convention</li>
+            <li><strong>Your own scripts</strong> — it's plain Markdown</li>
+          </ul>
+          <pre class="ryngo-md-code mono"><code># save the manifest at your repo root
+curl -O "https://ryngo.ai/api/ryngo-md/download?repo=you/yourrepo"
+
+# or from the viewer:
+#   inspector → "View Ryngo.md" → "Save .md"
+
+# then commit it like any other file
+git add Ryngo.md
+git commit -m "ryngo: dismiss intentional warnings + auth notes"</code></pre>
+          <p class="ryngo-md-best">
+            <strong>Best for:</strong> teams, code review, anything where
+            a comment or a dismissed warning should outlive a single chat.
+          </p>
+          <p class="ryngo-md-foot">
+            PR-review-friendly. Every dismissed warning is a one-liner diff
+            with the reason attached.
+          </p>
+        </article>
+
+      </div>
+
+      <details class="ryngo-md-format">
+        <summary>What's in <code>Ryngo.md</code> exactly?</summary>
+        <p>
+          Two sections today, both keyed on stable node ids
+          (<code>def:src/foo.ts#bar</code>, <code>file:src/foo.ts</code>,
+          <code>cell:notebook.ipynb#3</code>, …). Forward-compatible
+          <code>## Connections</code> / <code>## Expose</code> /
+          <code>## Flags</code> sections round-trip verbatim so future
+          additions don't break old manifests.
+        </p>
+        <pre class="ryngo-md-code mono"><code># Ryngo
+
+## Comments
+
+### def:src/auth/login.ts#authenticate
+&gt; handles refresh-token rotation; touch carefully
+&gt; — marshall, 2026-05-10
+
+## Suppressions
+
+### def:src/auth/login.ts#authenticate
+- nested-loop · items.length is bounded; intentional brute force
+- recursion · tail-recursive; engine optimizes</code></pre>
+        <p>
+          Stable node ids mean comments survive renames as long as the
+          symbol survives. Round-trip property test in
+          <code>mvp/lib/ryngo-md.js</code>: serialize → parse → equal.
+        </p>
+      </details>
+    </section>
+
+    <section id="pricing" class="section section-alt">
+      <h2>Free, while we're shipping</h2>
+      <p class="section-lede">
+        Ryngo is free to use today — paste any public GitHub URL, get the
+        map. No account, no waitlist, no card. The MCP server is open source.
+      </p>
+
+      <div class="pricing-grid pricing-grid-single">
+        <article class="pricing-card pricing-card-free">
+          <header>
+            <span class="pricing-chip">$0</span>
+            <h3>Free</h3>
+          </header>
+          <ul class="pricing-features">
+            <li>Public GitHub repos, every language we parse</li>
+            <li>Live typed-port node viewer at <code>/app</code></li>
+            <li>Compiler warnings (O(n²), I/O-in-loop, recursion, …)</li>
+            <li><code>Ryngo.md</code> persistence per repo</li>
+            <li>MCP server — install with one command</li>
+            <li>Token-efficiency benchmark you can re-run yourself</li>
+          </ul>
+          <a class="cta primary" href="/app">Try it on your repo →</a>
+          <p class="pricing-foot">
+            A paid tier with private repos + team accounts is on the roadmap.
+            Until then, every feature is free for everyone.
+          </p>
+        </article>
+      </div>
+    </section>
+
     <section id="faq" class="section section-alt">
       <h2>FAQ</h2>
       <dl class="faq">
@@ -205,6 +480,11 @@ npm start          # HTTP server (API + /mcp + landing + /app)</code></pre>
         <dd>
           No. We clone shallow, build the IR, and throw the source
           away. Nothing on our disk after the response is sent.
+        </dd>
+        <dt>Who is building this?</dt>
+        <dd>
+          Ryngo is built by <a class="inline-link" href="https://marshall-doyle.com/" target="_blank" rel="noopener">Marshall Doyle</a>.
+          The public repo is <a class="inline-link" href="https://github.com/MarshallDoyle/Ryngo" target="_blank" rel="noopener">MarshallDoyle/Ryngo</a>.
         </dd>
         <dt>Does Ryngo call an LLM?</dt>
         <dd>
@@ -237,6 +517,26 @@ npm start          # HTTP server (API + /mcp + landing + /app)</code></pre>
           specific reason. Heuristic, not a real linter — directional
           signal, not gospel.
         </dd>
+        <dt>How do you measure token savings?</dt>
+        <dd>
+          The planned eval compares raw source tokens against each Ryngo
+          representation on the same corpus run: topology, compact IR,
+          view model, focused subgraph, and single-node signature. The report
+          should publish ratios by language and repo family, not just one
+          headline number.
+        </dd>
+        <dt>What does "better than pasting the repo into an LLM" mean?</dt>
+        <dd>
+          It means the agent receives stable IDs, graph edges, source lines,
+          signatures, routes, database models, env reads, and warnings directly.
+          Fewer tokens is only half the value; the other half is that the
+          context is structured instead of prose guessed from a file dump.
+        </dd>
+        <dt>Can I see logo directions?</dt>
+        <dd>
+          Yes — open the <a class="inline-link" href="logos.html">Ryngo logo lab</a>
+          for thirty SVG mark directions.
+        </dd>
         <dt>Can I run it on a private repo?</dt>
         <dd>
           Self-host the Docker image and point it at any git URL it
@@ -252,19 +552,72 @@ npm start          # HTTP server (API + /mcp + landing + /app)</code></pre>
     </section>
 
     <footer class="site-foot">
-      <span class="foot-brand">
-        <svg width="16" height="16" viewBox="0 0 32 32" aria-hidden="true">
-          <rect width="32" height="32" rx="6" fill="#030712" />
-          <path d="M8 24V8h6a5 5 0 010 10H8 M13 18l5 6" stroke="#c8ff3d" stroke-width="2" fill="none" stroke-linejoin="round" stroke-linecap="round" />
-        </svg>
-        Ryngo
-      </span>
-      <span class="foot-tag">— the map your coding agent is missing</span>
-      <nav class="foot-nav">
-        <a href="https://github.com/MarshallDoyle/Ryngo">github</a>
-        <a href="/app">app</a>
-        <a href="#mcp">mcp</a>
-      </nav>
+      <div class="site-foot-cols">
+
+        <div class="foot-col">
+          <h4>Talk</h4>
+          <ul>
+            <li><a href="https://cal.com/marshall-doyle/ryngo" target="_blank" rel="noopener">Book 15 min with the founder ↗</a></li>
+            <li><a href="https://discord.gg/ryngo" target="_blank" rel="noopener">Discord ↗</a></li>
+            <li><a href="mailto:hi@ryngo.ai">hi@ryngo.ai</a></li>
+          </ul>
+        </div>
+
+        <div class="foot-col">
+          <h4>Build</h4>
+          <ul>
+            <li><a href="https://github.com/MarshallDoyle/Ryngo" target="_blank" rel="noopener">GitHub</a></li>
+            <li><a href="#mcp">MCP install</a></li>
+            <li><a href="https://github.com/MarshallDoyle/Ryngo/blob/main/mvp/CHANGELOG.md" target="_blank" rel="noopener">Changelog</a></li>
+            <li><a href="/app">Open the app</a></li>
+            <li><a href="logos.html">Logo lab</a></li>
+          </ul>
+        </div>
+
+        <div class="foot-col">
+          <h4>About</h4>
+          <ul>
+            <li><a href="https://marshall-doyle.com/" target="_blank" rel="noopener">Marshall Doyle</a></li>
+            <li><a href="#evals">Evals</a></li>
+            <li><a href="#ryngo-md">Ryngo.md</a></li>
+            <li><a href="#pricing">Pricing</a></li>
+            <li><a href="#faq">FAQ</a></li>
+          </ul>
+        </div>
+
+      </div>
+
+      <div class="site-foot-bar">
+        <span class="foot-brand">
+          <svg width="16" height="16" viewBox="0 0 32 32" aria-hidden="true">
+            <rect width="32" height="32" rx="6" fill="#030712" />
+            <path d="M8 24V8h6a5 5 0 010 10H8 M13 18l5 6" stroke="#c8ff3d" stroke-width="2" fill="none" stroke-linejoin="round" stroke-linecap="round" />
+          </svg>
+          Ryngo
+        </span>
+        <span class="foot-tag">— the map your coding agent is missing</span>
+      </div>
     </footer>
+    <script>
+      const slider = document.getElementById("repoTokens");
+      const fmt = (n) => n >= 1000000 ? `${(n / 1000000).toFixed(1)}m` : n >= 1000 ? `${Math.round(n / 1000)}k` : `${Math.round(n)}`;
+      function updateEval() {
+        const raw = Number(slider.value);
+        const compact = Math.max(900, raw * 0.08);
+        const topology = Math.max(450, raw * 0.003);
+        const subgraph = Math.max(1200, raw * 0.015);
+        document.getElementById("repoTokensLabel").textContent = `${fmt(raw)} tokens`;
+        document.getElementById("rawValue").textContent = fmt(raw);
+        document.getElementById("compactValue").textContent = fmt(compact);
+        document.getElementById("topologyValue").textContent = fmt(topology);
+        document.getElementById("subgraphValue").textContent = fmt(subgraph);
+        document.getElementById("barRaw").style.width = "100%";
+        document.getElementById("barCompact").style.width = `${Math.max(3, (compact / raw) * 100)}%`;
+        document.getElementById("barTopology").style.width = `${Math.max(2, (topology / raw) * 100)}%`;
+        document.getElementById("barSubgraph").style.width = `${Math.max(2.5, (subgraph / raw) * 100)}%`;
+      }
+      slider?.addEventListener("input", updateEval);
+      updateEval();
+    </script>
   </body>
 </html>
