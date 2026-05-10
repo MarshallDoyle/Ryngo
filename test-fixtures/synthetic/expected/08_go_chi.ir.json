@@ -1,0 +1,274 @@
+{
+  "ir": {
+    "edges": [
+      {
+        "category": "http-route",
+        "framework": "chi",
+        "method": "GET",
+        "sourceId": "db8f7365444371bd778a5124eccb3f33",
+        "targetId": "bea53e6a453893ecd0a4c81a61b996c6",
+        "valueType": {
+          "display": "string",
+          "lang": "go",
+          "source": "inferred"
+        }
+      },
+      {
+        "category": "http-route",
+        "framework": "chi",
+        "method": "GET",
+        "sourceId": "ed677f0e8bf95b4df3c2cbc3b0ae7250",
+        "targetId": "04c1ffe3fecfcd9e19b39c9e9f6e0355",
+        "valueType": {
+          "display": "string",
+          "lang": "go",
+          "source": "inferred"
+        }
+      },
+      {
+        "callKind": "direct",
+        "category": "call",
+        "sourceId": "db8f7365444371bd778a5124eccb3f33",
+        "tags": [
+          "middleware"
+        ],
+        "targetId": "f3069e46c2902187b57b6965be576e56"
+      },
+      {
+        "callKind": "direct",
+        "category": "call",
+        "sourceId": "ed677f0e8bf95b4df3c2cbc3b0ae7250",
+        "tags": [
+          "middleware"
+        ],
+        "targetId": "f3069e46c2902187b57b6965be576e56"
+      },
+      {
+        "category": "type-flow",
+        "role": "read",
+        "sourceId": "ed677f0e8bf95b4df3c2cbc3b0ae7250",
+        "targetId": "5dd34547c9be457c256491fa67ce5baf",
+        "valueType": {
+          "display": "string",
+          "lang": "go",
+          "source": "inferred"
+        }
+      },
+      {
+        "callKind": "dynamic",
+        "category": "call",
+        "sourceId": "29511157306d328df9f1198d9b98a41d",
+        "tags": [
+          "route-register"
+        ],
+        "targetId": "db8f7365444371bd778a5124eccb3f33"
+      },
+      {
+        "callKind": "dynamic",
+        "category": "call",
+        "sourceId": "29511157306d328df9f1198d9b98a41d",
+        "tags": [
+          "route-register"
+        ],
+        "targetId": "ed677f0e8bf95b4df3c2cbc3b0ae7250"
+      },
+      {
+        "callKind": "dynamic",
+        "category": "call",
+        "sourceId": "29511157306d328df9f1198d9b98a41d",
+        "tags": [
+          "middleware-register"
+        ],
+        "targetId": "f3069e46c2902187b57b6965be576e56"
+      }
+    ],
+    "metadata": {
+      "commit": "0000000000000000000000000000000000000000",
+      "generatedAt": "2026-05-09T00:00:00.000Z",
+      "generators": [
+        {
+          "name": "codegraph-tree-sitter-go",
+          "version": "0.1.0"
+        },
+        {
+          "name": "codegraph-adapter-chi",
+          "version": "0.1.0"
+        }
+      ],
+      "repo": ""
+    },
+    "nodes": [
+      {
+        "id": "003e58053684936600fd5dda16008aac",
+        "lang": "none",
+        "name": "synthetic",
+        "path": "test-fixtures/synthetic",
+        "signature": "service||test-fixtures/synthetic",
+        "tier": "service"
+      },
+      {
+        "id": "a96f30736ba3f6f77b9a7fb8cf42ddb8",
+        "lang": "go",
+        "name": "08_go_chi.go",
+        "parentId": "003e58053684936600fd5dda16008aac",
+        "path": "test-fixtures/synthetic/src/08_go_chi.go",
+        "signature": "module|003e58053684936600fd5dda16008aac|test-fixtures/synthetic/src/08_go_chi.go",
+        "tier": "module"
+      },
+      {
+        "asyncness": "sync",
+        "exported": false,
+        "id": "f3069e46c2902187b57b6965be576e56",
+        "kind": "function",
+        "name": "logger",
+        "params": [
+          {
+            "name": "next",
+            "type": {
+              "display": "http.Handler",
+              "lang": "go",
+              "source": "annotated"
+            }
+          }
+        ],
+        "parentId": "a96f30736ba3f6f77b9a7fb8cf42ddb8",
+        "pure": false,
+        "returnType": {
+          "display": "http.Handler",
+          "lang": "go",
+          "source": "annotated"
+        },
+        "signature": "function|a96f30736ba3f6f77b9a7fb8cf42ddb8|logger|1|http.Handler",
+        "tags": [
+          "middleware"
+        ],
+        "tier": "function"
+      },
+      {
+        "asyncness": "sync",
+        "exported": false,
+        "id": "db8f7365444371bd778a5124eccb3f33",
+        "kind": "function",
+        "name": "health",
+        "params": [
+          {
+            "name": "w",
+            "type": {
+              "display": "http.ResponseWriter",
+              "lang": "go",
+              "source": "annotated"
+            }
+          },
+          {
+            "name": "_",
+            "type": {
+              "display": "*http.Request",
+              "lang": "go",
+              "source": "annotated"
+            }
+          }
+        ],
+        "parentId": "a96f30736ba3f6f77b9a7fb8cf42ddb8",
+        "pure": false,
+        "returnType": {
+          "display": "()",
+          "lang": "go",
+          "source": "annotated"
+        },
+        "signature": "function|a96f30736ba3f6f77b9a7fb8cf42ddb8|health|2|http.ResponseWriter,*http.Request",
+        "tier": "function"
+      },
+      {
+        "asyncness": "sync",
+        "exported": false,
+        "id": "ed677f0e8bf95b4df3c2cbc3b0ae7250",
+        "kind": "function",
+        "name": "getWidget",
+        "params": [
+          {
+            "name": "w",
+            "type": {
+              "display": "http.ResponseWriter",
+              "lang": "go",
+              "source": "annotated"
+            }
+          },
+          {
+            "name": "r",
+            "type": {
+              "display": "*http.Request",
+              "lang": "go",
+              "source": "annotated"
+            }
+          }
+        ],
+        "parentId": "a96f30736ba3f6f77b9a7fb8cf42ddb8",
+        "pure": false,
+        "returnType": {
+          "display": "()",
+          "lang": "go",
+          "source": "annotated"
+        },
+        "signature": "function|a96f30736ba3f6f77b9a7fb8cf42ddb8|getWidget|2|http.ResponseWriter,*http.Request",
+        "tier": "function"
+      },
+      {
+        "asyncness": "sync",
+        "exported": true,
+        "id": "29511157306d328df9f1198d9b98a41d",
+        "kind": "function",
+        "name": "NewRouter",
+        "params": [],
+        "parentId": "a96f30736ba3f6f77b9a7fb8cf42ddb8",
+        "pure": false,
+        "returnType": {
+          "display": "*chi.Mux",
+          "lang": "go",
+          "source": "annotated"
+        },
+        "signature": "function|a96f30736ba3f6f77b9a7fb8cf42ddb8|NewRouter|0|",
+        "tier": "function"
+      },
+      {
+        "id": "bea53e6a453893ecd0a4c81a61b996c6",
+        "leaf": {
+          "flavor": "literal",
+          "value": "/api/health",
+          "valueLang": "go"
+        },
+        "parentId": "db8f7365444371bd778a5124eccb3f33",
+        "pure": true,
+        "role": "route-literal",
+        "signature": "expression|db8f7365444371bd778a5124eccb3f33|http-route|\"/api/health\"|0",
+        "tier": "expression"
+      },
+      {
+        "id": "04c1ffe3fecfcd9e19b39c9e9f6e0355",
+        "leaf": {
+          "flavor": "literal",
+          "value": "/api/widgets/{id}",
+          "valueLang": "go"
+        },
+        "parentId": "ed677f0e8bf95b4df3c2cbc3b0ae7250",
+        "pure": true,
+        "role": "route-literal",
+        "signature": "expression|ed677f0e8bf95b4df3c2cbc3b0ae7250|http-route|\"/api/widgets/{id}\"|0",
+        "tier": "expression"
+      },
+      {
+        "id": "5dd34547c9be457c256491fa67ce5baf",
+        "leaf": {
+          "field": "id",
+          "flavor": "http-input",
+          "from": "path"
+        },
+        "parentId": "ed677f0e8bf95b4df3c2cbc3b0ae7250",
+        "pure": true,
+        "role": "http-input",
+        "signature": "expression|ed677f0e8bf95b4df3c2cbc3b0ae7250|http-input|chi.URLParam.id|0",
+        "tier": "expression"
+      }
+    ]
+  },
+  "schemaVersion": "0.1.0"
+}

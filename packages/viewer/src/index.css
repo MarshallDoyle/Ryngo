@@ -1,0 +1,44 @@
+@import "tailwindcss";
+
+/* Tailwind v4 inline theme. Keep this minimal — the viewer leans on default
+   Tailwind palette tokens; the @theme block is here only for things we
+   genuinely customize. */
+@theme {
+  --color-canvas-bg: #fafaf9;
+  --color-canvas-bg-dark: #0a0a0a;
+}
+
+/* Make root + body fill the viewport so the flex layout in App.tsx has
+   something to stretch into. */
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    "Helvetica Neue",
+    Arial,
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* React Flow's default attribution is hidden via `proOptions`; ensure its
+   container fills the available space. */
+.react-flow {
+  background: var(--color-canvas-bg);
+}
+
+@media (prefers-color-scheme: dark) {
+  .react-flow {
+    background: var(--color-canvas-bg-dark);
+  }
+}

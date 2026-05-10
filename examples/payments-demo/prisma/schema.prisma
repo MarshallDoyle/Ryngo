@@ -1,0 +1,52 @@
+// Prisma schema shared by both sides of payments-demo.
+// codegraph's Prisma adapter lifts each `model` block into an entity node
+// and matches `db.<model>.<op>(...)` calls in TypeScript and Python.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+generator pyclient {
+  provider = "prisma-client-py"
+  recursive_type_depth = 5
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Customer {
+  id                String   @id
+  email             String   @unique
+  country           String   @default("US")
+  ageDays           Int      @default(0)
+  priorChargebacks  Int      @default(0)
+  velocityPerHour   Int      @default(0)
+  verified          Boolean  @default(false)
+  createdAt         DateTime @default(now())
+
+  charges Charge[]
+}
+
+model Charge {
+  id         String   @id
+  customerId String
+  amount     Int
+  currency   String
+  status     String
+  riskScore  Int      @default(0)
+  createdAt  DateTime @default(now())
+
+  customer Customer @relation(fields: [customerId], references: [id])
+  refunds  Refund[]
+}
+
+model Refund {
+  id        String   @id
+  chargeId  String
+  reason    String
+  createdAt DateTime @default(now())
+
+  charge Charge @relation(fields: [chargeId], references: [id])
+}

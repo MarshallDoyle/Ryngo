@@ -1,0 +1,309 @@
+# codegraph CI.
+#
+# Two tiers, per design/test-strategy.md §6:
+#
+#   1. PR fast tier (every push)         — single cell, < 5 minutes wall time.
+#                                          Goal: first-signal feedback.
+#   2. Pre-merge full matrix             — required for merge.
+#                                          OS x Node x (TS for the TS adapter).
+#
+# Plus a perf gate (test-strategy §1.8) that runs in parallel with the fast
+# tier, and a determinism job (§4.2) that runs every PR — determinism is
+# cheap and catches the long tail of "missing sort" bugs.
+#
+# Caching is per design/incremental.md §10: pnpm store keyed on the
+# lockfile, the codegraph fragment cache layered on top.
+
+name: ci
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  merge_group: {}
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  CI: 'true'
+  NO_COLOR: '1'
+  # Bump CACHE_PREFIX when something cache-shaped changes (a CLI version
+  # bump that invalidates the IR fragment cache, an adapter ABI change).
+  CACHE_PREFIX: 'v1'
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # PR FAST TIER (test-strategy §6.1)
+  # ---------------------------------------------------------------------------
+  # Single cell, runs on every push. Goal: first signal in < 5 minutes.
+  # Lint + typecheck + unit + IR snapshot diff + property tests.
+
+  fast:
+    name: fast (lint + typecheck + unit)
+    runs-on: ubuntu-22.04
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft != true
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Unit + snapshot + property tests
+        run: pnpm test:unit
+        env:
+          # Fixed seed in PR CI so failures reproduce locally (test-strategy §11).
+          FC_SEED: '42'
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-fast
+          path: |
+            packages/*/coverage/
+            coverage/
+          if-no-files-found: ignore
+          retention-days: 7
+
+  # ---------------------------------------------------------------------------
+  # DETERMINISM (test-strategy §4.2)
+  # ---------------------------------------------------------------------------
+  # Double-build every fixture under test-fixtures/ and assert byte equality.
+  # Linux only on PR — cross-OS determinism is checked in the matrix job.
+
+  determinism:
+    name: determinism (double-build)
+    runs-on: ubuntu-22.04
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft != true
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build CLI
+        run: pnpm --filter @codegraph/cli build
+
+      # Per design/incremental.md §10 — cache the codegraph fragment cache so
+      # the second double-build run's CI ladder benefits even though the
+      # check itself runs the indexer twice within a single job (which it
+      # has to, to compare).
+      - name: Restore codegraph cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            .codegraph/cache
+          key: codegraph-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml', 'codegraph.config.*', '**/tsconfig*.json', '.codegraph/version') }}-${{ env.CACHE_PREFIX }}-${{ github.run_attempt }}
+          restore-keys: |
+            codegraph-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml', 'codegraph.config.*', '**/tsconfig*.json', '.codegraph/version') }}-${{ env.CACHE_PREFIX }}-
+            codegraph-${{ runner.os }}-${{ env.CACHE_PREFIX }}-
+
+      - name: Run determinism check
+        run: pnpm test:determinism
+
+  # ---------------------------------------------------------------------------
+  # PERFORMANCE GATE (test-strategy §1.8)
+  # ---------------------------------------------------------------------------
+  # Runs in parallel with `fast`. Bench files dynamic-import core exports
+  # that may not exist yet — they log-and-skip rather than error, so the
+  # gate is safe to wire in before the indexer/diff land.
+  #
+  # Pinned to ubuntu-22.04 (not ubuntu-latest): per the bench README, the
+  # ±20% per-bench gate is calibrated against a specific runner CPU and
+  # silent runner-image bumps would break the gate.
+
+  bench-gate:
+    name: bench gate (perf regression)
+    runs-on: ubuntu-22.04
+    if: github.event_name == 'pull_request' && github.event.pull_request.draft != true
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build core (bench dependency)
+        run: pnpm --filter @codegraph/core build
+
+      - name: Restore bench baseline
+        uses: actions/cache@v4
+        with:
+          path: bench/baseline.json
+          key: bench-baseline-${{ runner.os }}-${{ env.CACHE_PREFIX }}
+          restore-keys: |
+            bench-baseline-${{ runner.os }}-
+
+      - name: Run perf gate
+        run: pnpm bench:gate
+
+      - name: Upload bench results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bench-results
+          path: |
+            bench/results/
+            bench/baseline.json
+          if-no-files-found: ignore
+          retention-days: 14
+
+  # ---------------------------------------------------------------------------
+  # PRE-MERGE MATRIX (test-strategy §6.2)
+  # ---------------------------------------------------------------------------
+  # OS x Node, plus a TS axis for the TS adapter. Required for merge.
+  #
+  # GitHub `merge_group` events run this on the merge-queue head before
+  # landing on main; pull_request events run it once the PR is marked
+  # ready-for-review (so draft PRs don't pay the matrix cost).
+
+  matrix:
+    name: matrix (${{ matrix.os }}, node ${{ matrix.node }}, ts ${{ matrix.typescript }})
+    if: |
+      github.event_name == 'merge_group' ||
+      (github.event_name == 'pull_request' && github.event.pull_request.draft != true) ||
+      github.event_name == 'push'
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, macos-14, windows-2022]
+        node: ['20', '22']
+        typescript: ['5.4', '5.5', '5.6']
+        # Trim: only run the full TS axis on linux. macOS and Windows verify
+        # cross-OS determinism (§4.3); they don't need the full TS matrix
+        # to do that.
+        exclude:
+          - os: macos-14
+            typescript: '5.4'
+          - os: macos-14
+            typescript: '5.5'
+          - os: windows-2022
+            typescript: '5.4'
+          - os: windows-2022
+            typescript: '5.5'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: 'pnpm'
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Override TypeScript version
+        # The `typescript` axis is consumed by the TS adapter; we override
+        # the catalog pin per cell. catalog: rewrites resolve at install
+        # time, so we install the exact TS we want and let pnpm hoist.
+        run: pnpm add -w -D typescript@${{ matrix.typescript }}
+
+      - name: Build
+        run: pnpm build
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Test
+        run: pnpm test
+        env:
+          # Same fixed seed across the matrix: a property failure on macOS
+          # but not linux is much easier to reason about with the seed
+          # held constant.
+          FC_SEED: '42'
+
+      # Cross-OS determinism (test-strategy §4.3): run the determinism check
+      # on all three OSes; the linux output is the canonical reference.
+      - name: Cross-OS determinism check
+        run: pnpm test:determinism
+
+      - name: Upload matrix coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-matrix-${{ matrix.os }}-node${{ matrix.node }}-ts${{ matrix.typescript }}
+          path: |
+            packages/*/coverage/
+            coverage/
+          if-no-files-found: ignore
+          retention-days: 7
+
+  # ---------------------------------------------------------------------------
+  # AGGREGATION
+  # ---------------------------------------------------------------------------
+  # A single required check that fans in. Branch protection points at this
+  # job, so we don't have to maintain a long required-checks list as we
+  # add matrix cells.
+
+  required:
+    name: required
+    if: always()
+    needs: [fast, determinism, matrix]
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Verify all required jobs succeeded
+        run: |
+          if [ "${{ needs.fast.result }}" != "success" ] || \
+             [ "${{ needs.determinism.result }}" != "success" ] || \
+             [ "${{ needs.matrix.result }}" != "success" ]; then
+            echo "fast=${{ needs.fast.result }}"
+            echo "determinism=${{ needs.determinism.result }}"
+            echo "matrix=${{ needs.matrix.result }}"
+            exit 1
+          fi
+          echo "All required jobs passed."

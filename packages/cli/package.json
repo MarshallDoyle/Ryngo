@@ -1,0 +1,64 @@
+{
+  "name": "@codegraph/cli",
+  "version": "0.1.0",
+  "description": "Deterministic, no-LLM static-analysis CLI: compile a codebase to a typed graph IR, view it, diff it, export it.",
+  "license": "MIT",
+  "homepage": "https://github.com/codegraph/codegraph#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/codegraph/codegraph.git",
+    "directory": "packages/cli"
+  },
+  "bugs": {
+    "url": "https://github.com/codegraph/codegraph/issues"
+  },
+  "keywords": [
+    "static-analysis",
+    "code-graph",
+    "ir",
+    "react-flow",
+    "mermaid",
+    "d2",
+    "graphviz",
+    "diff",
+    "cli"
+  ],
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "codegraph": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18.17"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsc -p tsconfig.json --watch",
+    "clean": "rm -rf dist",
+    "lint": "eslint src --ext .ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run clean && npm run build"
+  },
+  "dependencies": {
+    "@codegraph/core": "workspace:*",
+    "@codegraph/viewer": "workspace:*",
+    "commander": "^12.1.0",
+    "picocolors": "^1.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "typescript": "^5.5.0",
+    "vitest": "^2.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

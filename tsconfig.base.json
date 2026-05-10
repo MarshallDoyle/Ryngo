@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "display": "codegraph base config",
+  "compilerOptions": {
+    // ---- Language target -------------------------------------------------
+    // Node 20 is the runtime floor (see root engines field). ES2022 keeps
+    // top-level await, error.cause, and class fields without polyfills.
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+
+    // ---- Output ----------------------------------------------------------
+    // Each leaf package overrides outDir/rootDir. The base config does NOT
+    // set rootDir so library packages and the Vite app can both extend it.
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "inlineSources": false,
+    "removeComments": false,
+    "newLine": "lf",
+    "preserveConstEnums": true,
+
+    // ---- Module behaviour -----------------------------------------------
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "moduleDetection": "force",
+    "allowImportingTsExtensions": false,
+
+    // ---- Strictness ------------------------------------------------------
+    // codegraph is a static-analysis tool: correctness of the IR is the
+    // entire product. Every strict flag is turned on, plus the `noUnchecked`
+    // and `exactOptionalPropertyTypes` extras most projects skip.
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "alwaysStrict": true,
+    "useUnknownInCatchVariables": true,
+    "noImplicitThis": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "noPropertyAccessFromIndexSignature": false,
+    "exactOptionalPropertyTypes": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "allowUnreachableCode": false,
+    "allowUnusedLabels": false,
+    "forceConsistentCasingInFileNames": true,
+
+    // ---- Interop & ergonomics -------------------------------------------
+    "skipLibCheck": true,
+    "incremental": true,
+    "composite": false,
+    "tsBuildInfoFile": "./.tsbuildinfo",
+    "pretty": true,
+
+    // ---- Path mapping for typed cross-package imports during dev --------
+    // tsup/vite resolve via package.json "exports" at build time; these
+    // paths only help editor TS server jump to source rather than .d.ts.
+    "baseUrl": ".",
+    "paths": {
+      "@codegraph/core": ["packages/core/src/index.ts"],
+      "@codegraph/core/*": ["packages/core/src/*"],
+      "@codegraph/cli": ["packages/cli/src/index.ts"],
+      "@codegraph/cli/*": ["packages/cli/src/*"],
+      "@codegraph/viewer": ["packages/viewer/src/index.ts"],
+      "@codegraph/viewer/*": ["packages/viewer/src/*"],
+      "@codegraph/adapter-sdk": ["packages/adapter-sdk/src/index.ts"],
+      "@codegraph/adapter-sdk/*": ["packages/adapter-sdk/src/*"],
+      "@codegraph/adapter-*": ["adapters/*/src/index.ts"]
+    }
+  },
+  "exclude": [
+    "**/node_modules",
+    "**/dist",
+    "**/build",
+    "**/.turbo",
+    "**/coverage",
+    "**/*.test.ts",
+    "**/*.spec.ts"
+  ]
+}

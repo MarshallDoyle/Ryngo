@@ -1,0 +1,46 @@
+{
+  "name": "ryngo-mvp",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "description": "Ryngo MVP — paste a GitHub repo URL, get a node editor of its import graph.",
+  "scripts": {
+    "dev": "concurrently -n api,web -c blue,green \"node --watch server.js\" \"vite\"",
+    "dev:api": "node --watch server.js",
+    "dev:web": "vite",
+    "build": "vite build",
+    "start": "NODE_ENV=production node server.js",
+    "smoke": "node scripts/smoke.js",
+    "smoke:mcp": "node scripts/mcp-smoke.js",
+    "smoke:view-model": "node scripts/view-model-smoke.js",
+    "mcp:map": "node scripts/mcp-map.js",
+    "mcp:config": "node scripts/print-mcp-config.js",
+    "corpus": "node scripts/corpus-run.js",
+    "corpus:watch": "node scripts/corpus-watch.js",
+    "mcp": "node mcp-server.js",
+    "db:up": "docker compose up -d db",
+    "db:down": "docker compose down",
+    "db:logs": "docker compose logs -f db",
+    "db:reset": "docker compose down -v",
+    "docker:up": "docker compose --profile app up --build"
+  },
+  "bin": {
+    "ryngo-mcp": "./mcp-server.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "express": "^4.21.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "concurrently": "^9.1.0",
+    "dagre": "^0.8.5",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "reactflow": "^11.11.4",
+    "vite": "^5.4.11"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

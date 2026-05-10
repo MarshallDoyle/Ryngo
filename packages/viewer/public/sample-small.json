@@ -1,0 +1,2464 @@
+{
+  "ir": {
+    "edges": [
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "2eb6b30dcbc6a41bf5310d24d4592d53",
+        "specifier": "./forms",
+        "targetId": "b373d8120eb17866fec542058fa5501d"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "2eb6b30dcbc6a41bf5310d24d4592d53",
+        "specifier": "./theme",
+        "targetId": "ed54ffd18c119abf8ae3d70b16960b5e"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "2eb6b30dcbc6a41bf5310d24d4592d53",
+        "specifier": "./hooks",
+        "targetId": "6eea637ea580c74f7c2e47bffdb12a72"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "87a7e248241b0e4fb177452139152b73",
+        "specifier": "./router",
+        "targetId": "3eebe3cd022b00f2b5e8cacfbf4c6c9d"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "87a7e248241b0e4fb177452139152b73",
+        "specifier": "./theme",
+        "targetId": "ed54ffd18c119abf8ae3d70b16960b5e"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "87a7e248241b0e4fb177452139152b73",
+        "specifier": "./analytics",
+        "targetId": "3a4e2e48c298b9f7169acea50644bd02"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "dedc1d41d10f1de6c8b77062fc1b3c4f",
+        "specifier": "./theme",
+        "targetId": "ed54ffd18c119abf8ae3d70b16960b5e"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "087872659687e1e58b1c121b7e762a5d",
+        "specifier": "./hooks",
+        "targetId": "6eea637ea580c74f7c2e47bffdb12a72"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "6eea637ea580c74f7c2e47bffdb12a72",
+        "specifier": "./api-client",
+        "targetId": "dedc1d41d10f1de6c8b77062fc1b3c4f"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "6eea637ea580c74f7c2e47bffdb12a72",
+        "specifier": "./pages",
+        "targetId": "2eb6b30dcbc6a41bf5310d24d4592d53"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "3eebe3cd022b00f2b5e8cacfbf4c6c9d",
+        "specifier": "./forms",
+        "targetId": "b373d8120eb17866fec542058fa5501d"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "3eebe3cd022b00f2b5e8cacfbf4c6c9d",
+        "specifier": "./api-client",
+        "targetId": "dedc1d41d10f1de6c8b77062fc1b3c4f"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "3eebe3cd022b00f2b5e8cacfbf4c6c9d",
+        "specifier": "./hooks",
+        "targetId": "6eea637ea580c74f7c2e47bffdb12a72"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "942345526b0017ab155ca6017d0facaa",
+        "specifier": "./forms",
+        "targetId": "b373d8120eb17866fec542058fa5501d"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "b373d8120eb17866fec542058fa5501d",
+        "specifier": "./api-client",
+        "targetId": "dedc1d41d10f1de6c8b77062fc1b3c4f"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "b373d8120eb17866fec542058fa5501d",
+        "specifier": "./analytics",
+        "targetId": "3a4e2e48c298b9f7169acea50644bd02"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "b373d8120eb17866fec542058fa5501d",
+        "specifier": "./theme",
+        "targetId": "ed54ffd18c119abf8ae3d70b16960b5e"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "b373d8120eb17866fec542058fa5501d",
+        "specifier": "./auth",
+        "targetId": "942345526b0017ab155ca6017d0facaa"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "290b9beb1e35b2bb8c69e67af26be4a2",
+        "specifier": "./forms",
+        "targetId": "b373d8120eb17866fec542058fa5501d"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "290b9beb1e35b2bb8c69e67af26be4a2",
+        "specifier": "./analytics",
+        "targetId": "3a4e2e48c298b9f7169acea50644bd02"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "ed54ffd18c119abf8ae3d70b16960b5e",
+        "specifier": "./forms",
+        "targetId": "b373d8120eb17866fec542058fa5501d"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "ed54ffd18c119abf8ae3d70b16960b5e",
+        "specifier": "./analytics",
+        "targetId": "3a4e2e48c298b9f7169acea50644bd02"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "ed54ffd18c119abf8ae3d70b16960b5e",
+        "specifier": "./utils",
+        "targetId": "1366551110102a8d0be396229f84c77f"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "ed54ffd18c119abf8ae3d70b16960b5e",
+        "specifier": "./components",
+        "targetId": "87a7e248241b0e4fb177452139152b73"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "1366551110102a8d0be396229f84c77f",
+        "specifier": "./pages",
+        "targetId": "2eb6b30dcbc6a41bf5310d24d4592d53"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "3a4e2e48c298b9f7169acea50644bd02",
+        "specifier": "./state",
+        "targetId": "087872659687e1e58b1c121b7e762a5d"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "3a4e2e48c298b9f7169acea50644bd02",
+        "specifier": "./theme",
+        "targetId": "ed54ffd18c119abf8ae3d70b16960b5e"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "3a4e2e48c298b9f7169acea50644bd02",
+        "specifier": "./auth",
+        "targetId": "942345526b0017ab155ca6017d0facaa"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "3a4e2e48c298b9f7169acea50644bd02",
+        "specifier": "./utils",
+        "targetId": "1366551110102a8d0be396229f84c77f"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "4b0053bf73ea7371d3eb430e34fb120d",
+        "specifier": "./models",
+        "targetId": "3bcc669ebf36c1d9e450ffe05aaa725c"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "4b0053bf73ea7371d3eb430e34fb120d",
+        "specifier": "./errors",
+        "targetId": "88d8a3e5aac2e39f80446b589010a8b4"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "4b0053bf73ea7371d3eb430e34fb120d",
+        "specifier": "./utils",
+        "targetId": "99dd676f43f2ba26794eba581be69e51"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "779c8b41d5628d172ec0a1fc54e59ccc",
+        "specifier": "./utils",
+        "targetId": "99dd676f43f2ba26794eba581be69e51"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "98115317eb811195c247192a332018fe",
+        "specifier": "./config",
+        "targetId": "ab1a8b1fa035d44260b1601099a8bd1d"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "3bcc669ebf36c1d9e450ffe05aaa725c",
+        "specifier": "./config",
+        "targetId": "ab1a8b1fa035d44260b1601099a8bd1d"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "d82d8f9537376d42fd372518af11e33f",
+        "specifier": "./errors",
+        "targetId": "88d8a3e5aac2e39f80446b589010a8b4"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "d82d8f9537376d42fd372518af11e33f",
+        "specifier": "./queue",
+        "targetId": "550cd2d411bb60cf38a79e459bc19f08"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "7f054df1349f18456af028b45f244443",
+        "specifier": "./services",
+        "targetId": "779c8b41d5628d172ec0a1fc54e59ccc"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "7f054df1349f18456af028b45f244443",
+        "specifier": "./jobs",
+        "targetId": "f7f01883a10c93565ae524cd01a75432"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "7f054df1349f18456af028b45f244443",
+        "specifier": "./db",
+        "targetId": "1a6063351942bf66d7f362970d196818"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "ab1a8b1fa035d44260b1601099a8bd1d",
+        "specifier": "./repositories",
+        "targetId": "98115317eb811195c247192a332018fe"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "ab1a8b1fa035d44260b1601099a8bd1d",
+        "specifier": "./middleware",
+        "targetId": "d82d8f9537376d42fd372518af11e33f"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "b23aa5255cb22a25fd6dfa4377e7ad35",
+        "specifier": "./middleware",
+        "targetId": "d82d8f9537376d42fd372518af11e33f"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "b23aa5255cb22a25fd6dfa4377e7ad35",
+        "specifier": "./repositories",
+        "targetId": "98115317eb811195c247192a332018fe"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "b23aa5255cb22a25fd6dfa4377e7ad35",
+        "specifier": "./errors",
+        "targetId": "88d8a3e5aac2e39f80446b589010a8b4"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "b23aa5255cb22a25fd6dfa4377e7ad35",
+        "specifier": "./services",
+        "targetId": "779c8b41d5628d172ec0a1fc54e59ccc"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "550cd2d411bb60cf38a79e459bc19f08",
+        "specifier": "./services",
+        "targetId": "779c8b41d5628d172ec0a1fc54e59ccc"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "550cd2d411bb60cf38a79e459bc19f08",
+        "specifier": "./repositories",
+        "targetId": "98115317eb811195c247192a332018fe"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "d857d98df70b192ee6212c966fb74d2f",
+        "specifier": "./middleware",
+        "targetId": "d82d8f9537376d42fd372518af11e33f"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "88d8a3e5aac2e39f80446b589010a8b4",
+        "specifier": "./mailer",
+        "targetId": "d857d98df70b192ee6212c966fb74d2f"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "88d8a3e5aac2e39f80446b589010a8b4",
+        "specifier": "./repositories",
+        "targetId": "98115317eb811195c247192a332018fe"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "88d8a3e5aac2e39f80446b589010a8b4",
+        "specifier": "./queue",
+        "targetId": "550cd2d411bb60cf38a79e459bc19f08"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "5264777dc744197a1ed024c570a9d1d5",
+        "specifier": "./repositories",
+        "targetId": "98115317eb811195c247192a332018fe"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "5264777dc744197a1ed024c570a9d1d5",
+        "specifier": "./jobs",
+        "targetId": "f7f01883a10c93565ae524cd01a75432"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "5264777dc744197a1ed024c570a9d1d5",
+        "specifier": "./auth",
+        "targetId": "7f054df1349f18456af028b45f244443"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "f7f01883a10c93565ae524cd01a75432",
+        "specifier": "./utils",
+        "targetId": "99dd676f43f2ba26794eba581be69e51"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "f7f01883a10c93565ae524cd01a75432",
+        "specifier": "./db",
+        "targetId": "1a6063351942bf66d7f362970d196818"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "f7f01883a10c93565ae524cd01a75432",
+        "specifier": "./repositories",
+        "targetId": "98115317eb811195c247192a332018fe"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "f7f01883a10c93565ae524cd01a75432",
+        "specifier": "./auth",
+        "targetId": "7f054df1349f18456af028b45f244443"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "1a6063351942bf66d7f362970d196818",
+        "specifier": "./utils",
+        "targetId": "99dd676f43f2ba26794eba581be69e51"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "99dd676f43f2ba26794eba581be69e51",
+        "specifier": "./errors",
+        "targetId": "88d8a3e5aac2e39f80446b589010a8b4"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "99dd676f43f2ba26794eba581be69e51",
+        "specifier": "./jobs",
+        "targetId": "f7f01883a10c93565ae524cd01a75432"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "bf0a71e560e530d5edcea004c32da575",
+        "specifier": "./tasks",
+        "targetId": "d1e601ba4980f10bf0f72ec43550817f"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "57cc7981d9435f0506eefc0d821880fc",
+        "specifier": "./main",
+        "targetId": "bf0a71e560e530d5edcea004c32da575"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "57cc7981d9435f0506eefc0d821880fc",
+        "specifier": "./tasks",
+        "targetId": "d1e601ba4980f10bf0f72ec43550817f"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "57cc7981d9435f0506eefc0d821880fc",
+        "specifier": "./retry",
+        "targetId": "32e8bb3da9fbebe1639cf0a7efadbca3"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "57cc7981d9435f0506eefc0d821880fc",
+        "specifier": "./metrics",
+        "targetId": "31c7ade02975b9a8cd7bc3e516e99024"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "d1e601ba4980f10bf0f72ec43550817f",
+        "specifier": "./main",
+        "targetId": "bf0a71e560e530d5edcea004c32da575"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "d1e601ba4980f10bf0f72ec43550817f",
+        "specifier": "./consumers",
+        "targetId": "57cc7981d9435f0506eefc0d821880fc"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "d1e601ba4980f10bf0f72ec43550817f",
+        "specifier": "./retry",
+        "targetId": "32e8bb3da9fbebe1639cf0a7efadbca3"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "d1e601ba4980f10bf0f72ec43550817f",
+        "specifier": "./metrics",
+        "targetId": "31c7ade02975b9a8cd7bc3e516e99024"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "32e8bb3da9fbebe1639cf0a7efadbca3",
+        "specifier": "./main",
+        "targetId": "bf0a71e560e530d5edcea004c32da575"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "32e8bb3da9fbebe1639cf0a7efadbca3",
+        "specifier": "./consumers",
+        "targetId": "57cc7981d9435f0506eefc0d821880fc"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "32e8bb3da9fbebe1639cf0a7efadbca3",
+        "specifier": "./tasks",
+        "targetId": "d1e601ba4980f10bf0f72ec43550817f"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "32e8bb3da9fbebe1639cf0a7efadbca3",
+        "specifier": "./metrics",
+        "targetId": "31c7ade02975b9a8cd7bc3e516e99024"
+      },
+      {
+        "category": "import",
+        "kind": "static",
+        "sourceId": "31c7ade02975b9a8cd7bc3e516e99024",
+        "specifier": "./main",
+        "targetId": "bf0a71e560e530d5edcea004c32da575"
+      },
+      {
+        "callKind": "direct",
+        "category": "call",
+        "sourceId": "50ecba9bb47f6fea43d1a2b2eda9ae4c",
+        "targetId": "eff486e3b762e49f8a65b8c114289adf"
+      },
+      {
+        "callKind": "direct",
+        "category": "call",
+        "sourceId": "a576b5fa22ad48a65db59052b8ccaaf1",
+        "targetId": "b11f94489dae55be61b923e9f80c847c"
+      },
+      {
+        "callKind": "direct",
+        "category": "call",
+        "sourceId": "a576b5fa22ad48a65db59052b8ccaaf1",
+        "targetId": "8c3e44c87d35ed2b2274ced7f128a94b"
+      },
+      {
+        "callKind": "direct",
+        "category": "call",
+        "sourceId": "a576b5fa22ad48a65db59052b8ccaaf1",
+        "targetId": "e214373723bcc5867136960c9ae5b104"
+      },
+      {
+        "callKind": "direct",
+        "category": "call",
+        "sourceId": "beb4ce801fc51055db4bf46bff712e14",
+        "targetId": "2e6f033211c38ac36686d18019d53d64"
+      },
+      {
+        "callKind": "direct",
+        "category": "call",
+        "sourceId": "e214373723bcc5867136960c9ae5b104",
+        "targetId": "1fa427cdcd3e62594a4a5056a34263f9"
+      },
+      {
+        "callKind": "dynamic",
+        "category": "call",
+        "sourceId": "2e6f033211c38ac36686d18019d53d64",
+        "targetId": "50ecba9bb47f6fea43d1a2b2eda9ae4c"
+      },
+      {
+        "callKind": "direct",
+        "category": "call",
+        "sourceId": "b11f94489dae55be61b923e9f80c847c",
+        "targetId": "ec7e0499890643d8f660b3933a57ba56"
+      },
+      {
+        "callKind": "direct",
+        "category": "call",
+        "sourceId": "b11f94489dae55be61b923e9f80c847c",
+        "targetId": "e214373723bcc5867136960c9ae5b104"
+      },
+      {
+        "callKind": "direct",
+        "category": "call",
+        "sourceId": "b11f94489dae55be61b923e9f80c847c",
+        "targetId": "beb4ce801fc51055db4bf46bff712e14"
+      },
+      {
+        "callKind": "direct",
+        "category": "call",
+        "sourceId": "f256a089f697ae4aa76f2d18af893847",
+        "targetId": "2e6f033211c38ac36686d18019d53d64"
+      },
+      {
+        "callKind": "direct",
+        "category": "call",
+        "sourceId": "f256a089f697ae4aa76f2d18af893847",
+        "targetId": "6eb4117aec7a4835c3f678383e3ad0e6"
+      },
+      {
+        "callKind": "dynamic",
+        "category": "call",
+        "sourceId": "15ea84e1a33354386d145c21e2cf54cd",
+        "targetId": "d4932c55133f837dcd0eb59cebcf4bf3"
+      },
+      {
+        "callKind": "direct",
+        "category": "call",
+        "sourceId": "15ea84e1a33354386d145c21e2cf54cd",
+        "targetId": "386207dbef58a921f76d54136d36c04a"
+      },
+      {
+        "callKind": "direct",
+        "category": "call",
+        "sourceId": "eff486e3b762e49f8a65b8c114289adf",
+        "targetId": "15ea84e1a33354386d145c21e2cf54cd"
+      },
+      {
+        "callKind": "direct",
+        "category": "call",
+        "sourceId": "eff486e3b762e49f8a65b8c114289adf",
+        "targetId": "50ecba9bb47f6fea43d1a2b2eda9ae4c"
+      },
+      {
+        "callKind": "direct",
+        "category": "call",
+        "sourceId": "6eb4117aec7a4835c3f678383e3ad0e6",
+        "targetId": "15ea84e1a33354386d145c21e2cf54cd"
+      },
+      {
+        "callKind": "dynamic",
+        "category": "call",
+        "sourceId": "6eb4117aec7a4835c3f678383e3ad0e6",
+        "targetId": "2e6f033211c38ac36686d18019d53d64"
+      },
+      {
+        "callKind": "direct",
+        "category": "call",
+        "sourceId": "6eb4117aec7a4835c3f678383e3ad0e6",
+        "targetId": "50ecba9bb47f6fea43d1a2b2eda9ae4c"
+      },
+      {
+        "callKind": "direct",
+        "category": "call",
+        "sourceId": "d4932c55133f837dcd0eb59cebcf4bf3",
+        "targetId": "f256a089f697ae4aa76f2d18af893847"
+      },
+      {
+        "callKind": "dynamic",
+        "category": "call",
+        "sourceId": "d4932c55133f837dcd0eb59cebcf4bf3",
+        "targetId": "15ea84e1a33354386d145c21e2cf54cd"
+      },
+      {
+        "callKind": "direct",
+        "category": "call",
+        "sourceId": "386207dbef58a921f76d54136d36c04a",
+        "targetId": "a576b5fa22ad48a65db59052b8ccaaf1"
+      },
+      {
+        "callKind": "direct",
+        "category": "call",
+        "sourceId": "386207dbef58a921f76d54136d36c04a",
+        "targetId": "eff486e3b762e49f8a65b8c114289adf"
+      },
+      {
+        "callKind": "direct",
+        "category": "call",
+        "sourceId": "386207dbef58a921f76d54136d36c04a",
+        "targetId": "ec7e0499890643d8f660b3933a57ba56"
+      },
+      {
+        "callKind": "direct",
+        "category": "call",
+        "sourceId": "8c3e44c87d35ed2b2274ced7f128a94b",
+        "targetId": "50ecba9bb47f6fea43d1a2b2eda9ae4c"
+      },
+      {
+        "callKind": "dynamic",
+        "category": "call",
+        "sourceId": "8c3e44c87d35ed2b2274ced7f128a94b",
+        "targetId": "a576b5fa22ad48a65db59052b8ccaaf1"
+      },
+      {
+        "callKind": "direct",
+        "category": "call",
+        "sourceId": "8c3e44c87d35ed2b2274ced7f128a94b",
+        "targetId": "e214373723bcc5867136960c9ae5b104"
+      },
+      {
+        "callKind": "direct",
+        "category": "call",
+        "sourceId": "1fa427cdcd3e62594a4a5056a34263f9",
+        "targetId": "6eb4117aec7a4835c3f678383e3ad0e6"
+      },
+      {
+        "callKind": "direct",
+        "category": "call",
+        "sourceId": "d34351776d355c725312f35a4ae79d9c",
+        "targetId": "052b5d76e1e16bcfd37f2d079ab15910"
+      },
+      {
+        "callKind": "direct",
+        "category": "call",
+        "sourceId": "d34351776d355c725312f35a4ae79d9c",
+        "targetId": "8fafa57fbdfefedc087dd733e4b7ad32"
+      },
+      {
+        "callKind": "direct",
+        "category": "call",
+        "sourceId": "d34351776d355c725312f35a4ae79d9c",
+        "targetId": "835f698e0d5ce8d4d6bfa4b2282ddd87"
+      },
+      {
+        "callKind": "direct",
+        "category": "call",
+        "sourceId": "00a4d93b3d91ecee386ecac8616062d2",
+        "targetId": "effc4f58bde13dd817777664c27aff6b"
+      },
+      {
+        "callKind": "direct",
+        "category": "call",
+        "sourceId": "00a4d93b3d91ecee386ecac8616062d2",
+        "targetId": "dc440183d594fb8060aa039e9381deb9"
+      },
+      {
+        "callKind": "direct",
+        "category": "call",
+        "sourceId": "19844c6068f9780b11c675d81498af06",
+        "targetId": "52392d3b02b9f08a3b593d7c1892d93c"
+      },
+      {
+        "callKind": "direct",
+        "category": "call",
+        "sourceId": "19844c6068f9780b11c675d81498af06",
+        "targetId": "8ada6a8b1638f0c641903c1f19fe48bb"
+      },
+      {
+        "callKind": "direct",
+        "category": "call",
+        "sourceId": "19844c6068f9780b11c675d81498af06",
+        "targetId": "00a4d93b3d91ecee386ecac8616062d2"
+      },
+      {
+        "callKind": "dynamic",
+        "category": "call",
+        "sourceId": "3fba35308e21700070e5d7f4b2b76aa3",
+        "targetId": "52392d3b02b9f08a3b593d7c1892d93c"
+      },
+      {
+        "callKind": "dynamic",
+        "category": "call",
+        "sourceId": "3fba35308e21700070e5d7f4b2b76aa3",
+        "targetId": "d34351776d355c725312f35a4ae79d9c"
+      },
+      {
+        "callKind": "direct",
+        "category": "call",
+        "sourceId": "d154c5de36be2c47133aed6cc37b1341",
+        "targetId": "f031d5054d91e2acbbcfdf1567d70783"
+      },
+      {
+        "callKind": "dynamic",
+        "category": "call",
+        "sourceId": "14c2699b0c29fe9e65f2100eb3982c40",
+        "targetId": "52392d3b02b9f08a3b593d7c1892d93c"
+      },
+      {
+        "callKind": "direct",
+        "category": "call",
+        "sourceId": "14c2699b0c29fe9e65f2100eb3982c40",
+        "targetId": "f031d5054d91e2acbbcfdf1567d70783"
+      },
+      {
+        "callKind": "direct",
+        "category": "call",
+        "sourceId": "14c2699b0c29fe9e65f2100eb3982c40",
+        "targetId": "052b5d76e1e16bcfd37f2d079ab15910"
+      },
+      {
+        "callKind": "direct",
+        "category": "call",
+        "sourceId": "effc4f58bde13dd817777664c27aff6b",
+        "targetId": "052126226d8fdd3aa5c735189bc4a510"
+      },
+      {
+        "callKind": "direct",
+        "category": "call",
+        "sourceId": "effc4f58bde13dd817777664c27aff6b",
+        "targetId": "22926b7b33775be12768fd592a79821f"
+      },
+      {
+        "callKind": "direct",
+        "category": "call",
+        "sourceId": "effc4f58bde13dd817777664c27aff6b",
+        "targetId": "14c2699b0c29fe9e65f2100eb3982c40"
+      },
+      {
+        "callKind": "direct",
+        "category": "call",
+        "sourceId": "052126226d8fdd3aa5c735189bc4a510",
+        "targetId": "8ada6a8b1638f0c641903c1f19fe48bb"
+      },
+      {
+        "callKind": "direct",
+        "category": "call",
+        "sourceId": "22926b7b33775be12768fd592a79821f",
+        "targetId": "f031d5054d91e2acbbcfdf1567d70783"
+      },
+      {
+        "callKind": "direct",
+        "category": "call",
+        "sourceId": "22926b7b33775be12768fd592a79821f",
+        "targetId": "1282fb497416c433ff96ffed29af57f4"
+      },
+      {
+        "callKind": "direct",
+        "category": "call",
+        "sourceId": "f031d5054d91e2acbbcfdf1567d70783",
+        "targetId": "dc440183d594fb8060aa039e9381deb9"
+      },
+      {
+        "callKind": "direct",
+        "category": "call",
+        "sourceId": "dc440183d594fb8060aa039e9381deb9",
+        "targetId": "bf5304f9fb23c7766cb3521ee7ac495b"
+      },
+      {
+        "callKind": "dynamic",
+        "category": "call",
+        "sourceId": "dc440183d594fb8060aa039e9381deb9",
+        "targetId": "00a4d93b3d91ecee386ecac8616062d2"
+      },
+      {
+        "callKind": "direct",
+        "category": "call",
+        "sourceId": "dc440183d594fb8060aa039e9381deb9",
+        "targetId": "8fafa57fbdfefedc087dd733e4b7ad32"
+      },
+      {
+        "callKind": "direct",
+        "category": "call",
+        "sourceId": "bf5304f9fb23c7766cb3521ee7ac495b",
+        "targetId": "d154c5de36be2c47133aed6cc37b1341"
+      },
+      {
+        "callKind": "direct",
+        "category": "call",
+        "sourceId": "bf5304f9fb23c7766cb3521ee7ac495b",
+        "targetId": "835f698e0d5ce8d4d6bfa4b2282ddd87"
+      },
+      {
+        "callKind": "direct",
+        "category": "call",
+        "sourceId": "bf5304f9fb23c7766cb3521ee7ac495b",
+        "targetId": "1282fb497416c433ff96ffed29af57f4"
+      },
+      {
+        "callKind": "direct",
+        "category": "call",
+        "sourceId": "1282fb497416c433ff96ffed29af57f4",
+        "targetId": "19844c6068f9780b11c675d81498af06"
+      },
+      {
+        "callKind": "direct",
+        "category": "call",
+        "sourceId": "835f698e0d5ce8d4d6bfa4b2282ddd87",
+        "targetId": "22926b7b33775be12768fd592a79821f"
+      },
+      {
+        "callKind": "direct",
+        "category": "call",
+        "sourceId": "835f698e0d5ce8d4d6bfa4b2282ddd87",
+        "targetId": "d34351776d355c725312f35a4ae79d9c"
+      },
+      {
+        "callKind": "direct",
+        "category": "call",
+        "sourceId": "835f698e0d5ce8d4d6bfa4b2282ddd87",
+        "targetId": "8ada6a8b1638f0c641903c1f19fe48bb"
+      },
+      {
+        "callKind": "direct",
+        "category": "call",
+        "sourceId": "052b5d76e1e16bcfd37f2d079ab15910",
+        "targetId": "8fafa57fbdfefedc087dd733e4b7ad32"
+      },
+      {
+        "callKind": "direct",
+        "category": "call",
+        "sourceId": "052b5d76e1e16bcfd37f2d079ab15910",
+        "targetId": "d34351776d355c725312f35a4ae79d9c"
+      },
+      {
+        "callKind": "direct",
+        "category": "call",
+        "sourceId": "052b5d76e1e16bcfd37f2d079ab15910",
+        "targetId": "effc4f58bde13dd817777664c27aff6b"
+      },
+      {
+        "callKind": "direct",
+        "category": "call",
+        "sourceId": "d302678fa8967adb502aa7676bef96d2",
+        "targetId": "95ecb6a7f1ea025e28ad64f8c84755fd"
+      },
+      {
+        "callKind": "direct",
+        "category": "call",
+        "sourceId": "d169c19578273f944c21d2f4089bf075",
+        "targetId": "96d0d169e6938ddc59ae2bc91042f1f9"
+      },
+      {
+        "callKind": "direct",
+        "category": "call",
+        "sourceId": "d169c19578273f944c21d2f4089bf075",
+        "targetId": "95ecb6a7f1ea025e28ad64f8c84755fd"
+      },
+      {
+        "callKind": "direct",
+        "category": "call",
+        "sourceId": "d169c19578273f944c21d2f4089bf075",
+        "targetId": "d302678fa8967adb502aa7676bef96d2"
+      },
+      {
+        "callKind": "direct",
+        "category": "call",
+        "sourceId": "b6ae7a368ba6438c346a38f1154647e4",
+        "targetId": "d169c19578273f944c21d2f4089bf075"
+      },
+      {
+        "callKind": "direct",
+        "category": "call",
+        "sourceId": "96d0d169e6938ddc59ae2bc91042f1f9",
+        "targetId": "b6ae7a368ba6438c346a38f1154647e4"
+      },
+      {
+        "callKind": "direct",
+        "category": "call",
+        "sourceId": "96d0d169e6938ddc59ae2bc91042f1f9",
+        "targetId": "d169c19578273f944c21d2f4089bf075"
+      },
+      {
+        "callKind": "direct",
+        "category": "call",
+        "sourceId": "96d0d169e6938ddc59ae2bc91042f1f9",
+        "targetId": "d302678fa8967adb502aa7676bef96d2"
+      },
+      {
+        "category": "network",
+        "kind": "http",
+        "method": "GET",
+        "sourceId": "2e6f033211c38ac36686d18019d53d64",
+        "targetId": "00a4d93b3d91ecee386ecac8616062d2"
+      },
+      {
+        "category": "db-read",
+        "entity": "order_items",
+        "sourceId": "d154c5de36be2c47133aed6cc37b1341",
+        "store": "postgres",
+        "targetId": "ccda93a47e306382343c3d9468b1a967"
+      },
+      {
+        "category": "db-write",
+        "entity": "audit_log",
+        "op": "insert",
+        "sourceId": "d169c19578273f944c21d2f4089bf075",
+        "store": "postgres",
+        "targetId": "49b600c2f8edaab864b0861161d2f3e9"
+      }
+    ],
+    "metadata": {
+      "commit": "cac10cc35b0304e56a2aca716e7ef93a99e5e073",
+      "generatedAt": "2026-05-08T00:00:00.000Z",
+      "generators": [
+        {
+          "edgeCount": 149,
+          "name": "@codegraph/core sample",
+          "nodeCount": 84,
+          "seed": 1,
+          "size": "small",
+          "version": "0.1.0"
+        }
+      ],
+      "repo": "codegraph/sample-app"
+    },
+    "nodes": [
+      {
+        "id": "48cc5b08c939401a1baa46db314f254c",
+        "lang": "ts",
+        "manifest": "apps/web/package.json",
+        "name": "web",
+        "path": "apps/web",
+        "signature": "service|codegraph/sample-app|apps/web",
+        "tier": "service"
+      },
+      {
+        "id": "2eb6b30dcbc6a41bf5310d24d4592d53",
+        "lang": "ts",
+        "name": "pages",
+        "parentId": "48cc5b08c939401a1baa46db314f254c",
+        "path": "apps/web/src/pages/index.ts",
+        "signature": "module|48cc5b08c939401a1baa46db314f254c|apps/web/src/pages/index.ts",
+        "tier": "module"
+      },
+      {
+        "id": "87a7e248241b0e4fb177452139152b73",
+        "lang": "ts",
+        "name": "components",
+        "parentId": "48cc5b08c939401a1baa46db314f254c",
+        "path": "apps/web/src/components/index.ts",
+        "signature": "module|48cc5b08c939401a1baa46db314f254c|apps/web/src/components/index.ts",
+        "tier": "module"
+      },
+      {
+        "id": "dedc1d41d10f1de6c8b77062fc1b3c4f",
+        "lang": "ts",
+        "name": "api-client",
+        "parentId": "48cc5b08c939401a1baa46db314f254c",
+        "path": "apps/web/src/api-client/index.ts",
+        "signature": "module|48cc5b08c939401a1baa46db314f254c|apps/web/src/api-client/index.ts",
+        "tier": "module"
+      },
+      {
+        "id": "087872659687e1e58b1c121b7e762a5d",
+        "lang": "ts",
+        "name": "state",
+        "parentId": "48cc5b08c939401a1baa46db314f254c",
+        "path": "apps/web/src/state/index.ts",
+        "signature": "module|48cc5b08c939401a1baa46db314f254c|apps/web/src/state/index.ts",
+        "tier": "module"
+      },
+      {
+        "id": "6eea637ea580c74f7c2e47bffdb12a72",
+        "lang": "ts",
+        "name": "hooks",
+        "parentId": "48cc5b08c939401a1baa46db314f254c",
+        "path": "apps/web/src/hooks/index.ts",
+        "signature": "module|48cc5b08c939401a1baa46db314f254c|apps/web/src/hooks/index.ts",
+        "tier": "module"
+      },
+      {
+        "id": "3eebe3cd022b00f2b5e8cacfbf4c6c9d",
+        "lang": "ts",
+        "name": "router",
+        "parentId": "48cc5b08c939401a1baa46db314f254c",
+        "path": "apps/web/src/router/index.ts",
+        "signature": "module|48cc5b08c939401a1baa46db314f254c|apps/web/src/router/index.ts",
+        "tier": "module"
+      },
+      {
+        "id": "942345526b0017ab155ca6017d0facaa",
+        "lang": "ts",
+        "name": "auth",
+        "parentId": "48cc5b08c939401a1baa46db314f254c",
+        "path": "apps/web/src/auth/index.ts",
+        "signature": "module|48cc5b08c939401a1baa46db314f254c|apps/web/src/auth/index.ts",
+        "tier": "module"
+      },
+      {
+        "id": "b373d8120eb17866fec542058fa5501d",
+        "lang": "ts",
+        "name": "forms",
+        "parentId": "48cc5b08c939401a1baa46db314f254c",
+        "path": "apps/web/src/forms/index.ts",
+        "signature": "module|48cc5b08c939401a1baa46db314f254c|apps/web/src/forms/index.ts",
+        "tier": "module"
+      },
+      {
+        "id": "290b9beb1e35b2bb8c69e67af26be4a2",
+        "lang": "ts",
+        "name": "icons",
+        "parentId": "48cc5b08c939401a1baa46db314f254c",
+        "path": "apps/web/src/icons/index.ts",
+        "signature": "module|48cc5b08c939401a1baa46db314f254c|apps/web/src/icons/index.ts",
+        "tier": "module"
+      },
+      {
+        "id": "ed54ffd18c119abf8ae3d70b16960b5e",
+        "lang": "ts",
+        "name": "theme",
+        "parentId": "48cc5b08c939401a1baa46db314f254c",
+        "path": "apps/web/src/theme/index.ts",
+        "signature": "module|48cc5b08c939401a1baa46db314f254c|apps/web/src/theme/index.ts",
+        "tier": "module"
+      },
+      {
+        "id": "1366551110102a8d0be396229f84c77f",
+        "lang": "ts",
+        "name": "utils",
+        "parentId": "48cc5b08c939401a1baa46db314f254c",
+        "path": "apps/web/src/utils/index.ts",
+        "signature": "module|48cc5b08c939401a1baa46db314f254c|apps/web/src/utils/index.ts",
+        "tier": "module"
+      },
+      {
+        "id": "3a4e2e48c298b9f7169acea50644bd02",
+        "lang": "ts",
+        "name": "analytics",
+        "parentId": "48cc5b08c939401a1baa46db314f254c",
+        "path": "apps/web/src/analytics/index.ts",
+        "signature": "module|48cc5b08c939401a1baa46db314f254c|apps/web/src/analytics/index.ts",
+        "tier": "module"
+      },
+      {
+        "id": "5471c43219c01c801c7769fc08f0ec92",
+        "lang": "ts",
+        "manifest": "apps/api/package.json",
+        "name": "api",
+        "path": "apps/api",
+        "signature": "service|codegraph/sample-app|apps/api",
+        "tier": "service"
+      },
+      {
+        "id": "4b0053bf73ea7371d3eb430e34fb120d",
+        "lang": "ts",
+        "name": "routes",
+        "parentId": "5471c43219c01c801c7769fc08f0ec92",
+        "path": "apps/api/src/routes/index.ts",
+        "signature": "module|5471c43219c01c801c7769fc08f0ec92|apps/api/src/routes/index.ts",
+        "tier": "module"
+      },
+      {
+        "id": "779c8b41d5628d172ec0a1fc54e59ccc",
+        "lang": "ts",
+        "name": "services",
+        "parentId": "5471c43219c01c801c7769fc08f0ec92",
+        "path": "apps/api/src/services/index.ts",
+        "signature": "module|5471c43219c01c801c7769fc08f0ec92|apps/api/src/services/index.ts",
+        "tier": "module"
+      },
+      {
+        "id": "98115317eb811195c247192a332018fe",
+        "lang": "ts",
+        "name": "repositories",
+        "parentId": "5471c43219c01c801c7769fc08f0ec92",
+        "path": "apps/api/src/repositories/index.ts",
+        "signature": "module|5471c43219c01c801c7769fc08f0ec92|apps/api/src/repositories/index.ts",
+        "tier": "module"
+      },
+      {
+        "id": "3bcc669ebf36c1d9e450ffe05aaa725c",
+        "lang": "ts",
+        "name": "models",
+        "parentId": "5471c43219c01c801c7769fc08f0ec92",
+        "path": "apps/api/src/models/index.ts",
+        "signature": "module|5471c43219c01c801c7769fc08f0ec92|apps/api/src/models/index.ts",
+        "tier": "module"
+      },
+      {
+        "id": "d82d8f9537376d42fd372518af11e33f",
+        "lang": "ts",
+        "name": "middleware",
+        "parentId": "5471c43219c01c801c7769fc08f0ec92",
+        "path": "apps/api/src/middleware/index.ts",
+        "signature": "module|5471c43219c01c801c7769fc08f0ec92|apps/api/src/middleware/index.ts",
+        "tier": "module"
+      },
+      {
+        "id": "7f054df1349f18456af028b45f244443",
+        "lang": "ts",
+        "name": "auth",
+        "parentId": "5471c43219c01c801c7769fc08f0ec92",
+        "path": "apps/api/src/auth/index.ts",
+        "signature": "module|5471c43219c01c801c7769fc08f0ec92|apps/api/src/auth/index.ts",
+        "tier": "module"
+      },
+      {
+        "id": "ab1a8b1fa035d44260b1601099a8bd1d",
+        "lang": "ts",
+        "name": "config",
+        "parentId": "5471c43219c01c801c7769fc08f0ec92",
+        "path": "apps/api/src/config/index.ts",
+        "signature": "module|5471c43219c01c801c7769fc08f0ec92|apps/api/src/config/index.ts",
+        "tier": "module"
+      },
+      {
+        "id": "b23aa5255cb22a25fd6dfa4377e7ad35",
+        "lang": "ts",
+        "name": "logger",
+        "parentId": "5471c43219c01c801c7769fc08f0ec92",
+        "path": "apps/api/src/logger/index.ts",
+        "signature": "module|5471c43219c01c801c7769fc08f0ec92|apps/api/src/logger/index.ts",
+        "tier": "module"
+      },
+      {
+        "id": "550cd2d411bb60cf38a79e459bc19f08",
+        "lang": "ts",
+        "name": "queue",
+        "parentId": "5471c43219c01c801c7769fc08f0ec92",
+        "path": "apps/api/src/queue/index.ts",
+        "signature": "module|5471c43219c01c801c7769fc08f0ec92|apps/api/src/queue/index.ts",
+        "tier": "module"
+      },
+      {
+        "id": "d857d98df70b192ee6212c966fb74d2f",
+        "lang": "ts",
+        "name": "mailer",
+        "parentId": "5471c43219c01c801c7769fc08f0ec92",
+        "path": "apps/api/src/mailer/index.ts",
+        "signature": "module|5471c43219c01c801c7769fc08f0ec92|apps/api/src/mailer/index.ts",
+        "tier": "module"
+      },
+      {
+        "id": "88d8a3e5aac2e39f80446b589010a8b4",
+        "lang": "ts",
+        "name": "errors",
+        "parentId": "5471c43219c01c801c7769fc08f0ec92",
+        "path": "apps/api/src/errors/index.ts",
+        "signature": "module|5471c43219c01c801c7769fc08f0ec92|apps/api/src/errors/index.ts",
+        "tier": "module"
+      },
+      {
+        "id": "5264777dc744197a1ed024c570a9d1d5",
+        "lang": "ts",
+        "name": "validators",
+        "parentId": "5471c43219c01c801c7769fc08f0ec92",
+        "path": "apps/api/src/validators/index.ts",
+        "signature": "module|5471c43219c01c801c7769fc08f0ec92|apps/api/src/validators/index.ts",
+        "tier": "module"
+      },
+      {
+        "id": "f7f01883a10c93565ae524cd01a75432",
+        "lang": "ts",
+        "name": "jobs",
+        "parentId": "5471c43219c01c801c7769fc08f0ec92",
+        "path": "apps/api/src/jobs/index.ts",
+        "signature": "module|5471c43219c01c801c7769fc08f0ec92|apps/api/src/jobs/index.ts",
+        "tier": "module"
+      },
+      {
+        "id": "1a6063351942bf66d7f362970d196818",
+        "lang": "ts",
+        "name": "db",
+        "parentId": "5471c43219c01c801c7769fc08f0ec92",
+        "path": "apps/api/src/db/index.ts",
+        "signature": "module|5471c43219c01c801c7769fc08f0ec92|apps/api/src/db/index.ts",
+        "tier": "module"
+      },
+      {
+        "id": "99dd676f43f2ba26794eba581be69e51",
+        "lang": "ts",
+        "name": "utils",
+        "parentId": "5471c43219c01c801c7769fc08f0ec92",
+        "path": "apps/api/src/utils/index.ts",
+        "signature": "module|5471c43219c01c801c7769fc08f0ec92|apps/api/src/utils/index.ts",
+        "tier": "module"
+      },
+      {
+        "id": "72558454f4829c8a3d4e7fa888b20456",
+        "lang": "ts",
+        "manifest": "apps/worker/package.json",
+        "name": "worker",
+        "path": "apps/worker",
+        "signature": "service|codegraph/sample-app|apps/worker",
+        "tier": "service"
+      },
+      {
+        "id": "bf0a71e560e530d5edcea004c32da575",
+        "lang": "ts",
+        "name": "main",
+        "parentId": "72558454f4829c8a3d4e7fa888b20456",
+        "path": "apps/worker/src/main/index.ts",
+        "signature": "module|72558454f4829c8a3d4e7fa888b20456|apps/worker/src/main/index.ts",
+        "tier": "module"
+      },
+      {
+        "id": "57cc7981d9435f0506eefc0d821880fc",
+        "lang": "ts",
+        "name": "consumers",
+        "parentId": "72558454f4829c8a3d4e7fa888b20456",
+        "path": "apps/worker/src/consumers/index.ts",
+        "signature": "module|72558454f4829c8a3d4e7fa888b20456|apps/worker/src/consumers/index.ts",
+        "tier": "module"
+      },
+      {
+        "id": "d1e601ba4980f10bf0f72ec43550817f",
+        "lang": "ts",
+        "name": "tasks",
+        "parentId": "72558454f4829c8a3d4e7fa888b20456",
+        "path": "apps/worker/src/tasks/index.ts",
+        "signature": "module|72558454f4829c8a3d4e7fa888b20456|apps/worker/src/tasks/index.ts",
+        "tier": "module"
+      },
+      {
+        "id": "32e8bb3da9fbebe1639cf0a7efadbca3",
+        "lang": "ts",
+        "name": "retry",
+        "parentId": "72558454f4829c8a3d4e7fa888b20456",
+        "path": "apps/worker/src/retry/index.ts",
+        "signature": "module|72558454f4829c8a3d4e7fa888b20456|apps/worker/src/retry/index.ts",
+        "tier": "module"
+      },
+      {
+        "id": "31c7ade02975b9a8cd7bc3e516e99024",
+        "lang": "ts",
+        "name": "metrics",
+        "parentId": "72558454f4829c8a3d4e7fa888b20456",
+        "path": "apps/worker/src/metrics/index.ts",
+        "signature": "module|72558454f4829c8a3d4e7fa888b20456|apps/worker/src/metrics/index.ts",
+        "tier": "module"
+      },
+      {
+        "id": "1e5a5ffb6ef40490ea1cd89f6f176d54",
+        "lang": "sql",
+        "manifest": "db/package.json",
+        "name": "db",
+        "path": "db",
+        "signature": "service|codegraph/sample-app|db",
+        "tier": "service"
+      },
+      {
+        "id": "42123703abe5d84a431bb4afaa28f557",
+        "kind": "class",
+        "loc": {
+          "path": "db/migrations/users.sql",
+          "startLine": 1
+        },
+        "name": "users",
+        "parentId": "1e5a5ffb6ef40490ea1cd89f6f176d54",
+        "signature": "type|1e5a5ffb6ef40490ea1cd89f6f176d54|users",
+        "tier": "type"
+      },
+      {
+        "id": "54a7e89d400c9a4c5de04bba37e23758",
+        "kind": "class",
+        "loc": {
+          "path": "db/migrations/sessions.sql",
+          "startLine": 1
+        },
+        "name": "sessions",
+        "parentId": "1e5a5ffb6ef40490ea1cd89f6f176d54",
+        "signature": "type|1e5a5ffb6ef40490ea1cd89f6f176d54|sessions",
+        "tier": "type"
+      },
+      {
+        "id": "abd38ab309ab7070f5366229528e4fc3",
+        "kind": "class",
+        "loc": {
+          "path": "db/migrations/orders.sql",
+          "startLine": 1
+        },
+        "name": "orders",
+        "parentId": "1e5a5ffb6ef40490ea1cd89f6f176d54",
+        "signature": "type|1e5a5ffb6ef40490ea1cd89f6f176d54|orders",
+        "tier": "type"
+      },
+      {
+        "id": "ccda93a47e306382343c3d9468b1a967",
+        "kind": "class",
+        "loc": {
+          "path": "db/migrations/order_items.sql",
+          "startLine": 1
+        },
+        "name": "order_items",
+        "parentId": "1e5a5ffb6ef40490ea1cd89f6f176d54",
+        "signature": "type|1e5a5ffb6ef40490ea1cd89f6f176d54|order_items",
+        "tier": "type"
+      },
+      {
+        "id": "3c5816ced45f8a7f633e9746505acfdb",
+        "kind": "class",
+        "loc": {
+          "path": "db/migrations/products.sql",
+          "startLine": 1
+        },
+        "name": "products",
+        "parentId": "1e5a5ffb6ef40490ea1cd89f6f176d54",
+        "signature": "type|1e5a5ffb6ef40490ea1cd89f6f176d54|products",
+        "tier": "type"
+      },
+      {
+        "id": "62c91ad4bcb2d46289b03e544e1d2c39",
+        "kind": "class",
+        "loc": {
+          "path": "db/migrations/invoices.sql",
+          "startLine": 1
+        },
+        "name": "invoices",
+        "parentId": "1e5a5ffb6ef40490ea1cd89f6f176d54",
+        "signature": "type|1e5a5ffb6ef40490ea1cd89f6f176d54|invoices",
+        "tier": "type"
+      },
+      {
+        "id": "49b600c2f8edaab864b0861161d2f3e9",
+        "kind": "class",
+        "loc": {
+          "path": "db/migrations/audit_log.sql",
+          "startLine": 1
+        },
+        "name": "audit_log",
+        "parentId": "1e5a5ffb6ef40490ea1cd89f6f176d54",
+        "signature": "type|1e5a5ffb6ef40490ea1cd89f6f176d54|audit_log",
+        "tier": "type"
+      },
+      {
+        "id": "9d0ee099e777121df48fb7e9ff4e7cea",
+        "kind": "class",
+        "loc": {
+          "path": "db/migrations/jobs.sql",
+          "startLine": 1
+        },
+        "name": "jobs",
+        "parentId": "1e5a5ffb6ef40490ea1cd89f6f176d54",
+        "signature": "type|1e5a5ffb6ef40490ea1cd89f6f176d54|jobs",
+        "tier": "type"
+      },
+      {
+        "asyncness": "async",
+        "exported": true,
+        "id": "c72976ee5f9634db725a49ac8514a9b9",
+        "kind": "async",
+        "name": "getUser",
+        "params": [
+          {
+            "name": "user",
+            "type": {
+              "display": "User",
+              "lang": "ts",
+              "source": "annotated"
+            }
+          }
+        ],
+        "parentId": "2eb6b30dcbc6a41bf5310d24d4592d53",
+        "pure": false,
+        "returnType": {
+          "display": "Promise<User>",
+          "lang": "ts",
+          "source": "annotated"
+        },
+        "signature": "function|2eb6b30dcbc6a41bf5310d24d4592d53|getUser|1|User",
+        "tier": "function"
+      },
+      {
+        "asyncness": "async",
+        "exported": false,
+        "id": "50ecba9bb47f6fea43d1a2b2eda9ae4c",
+        "kind": "async",
+        "name": "listUser1",
+        "params": [
+          {
+            "name": "user",
+            "type": {
+              "display": "User",
+              "lang": "ts",
+              "source": "annotated"
+            }
+          }
+        ],
+        "parentId": "2eb6b30dcbc6a41bf5310d24d4592d53",
+        "pure": false,
+        "returnType": {
+          "display": "Promise<User>",
+          "lang": "ts",
+          "source": "annotated"
+        },
+        "signature": "function|2eb6b30dcbc6a41bf5310d24d4592d53|listUser1|1|User",
+        "tier": "function"
+      },
+      {
+        "asyncness": "async",
+        "exported": false,
+        "id": "a576b5fa22ad48a65db59052b8ccaaf1",
+        "kind": "async",
+        "name": "createUser2",
+        "params": [
+          {
+            "name": "user",
+            "type": {
+              "display": "User",
+              "lang": "ts",
+              "source": "annotated"
+            }
+          }
+        ],
+        "parentId": "2eb6b30dcbc6a41bf5310d24d4592d53",
+        "pure": false,
+        "returnType": {
+          "display": "Promise<User>",
+          "lang": "ts",
+          "source": "annotated"
+        },
+        "signature": "function|2eb6b30dcbc6a41bf5310d24d4592d53|createUser2|1|User",
+        "tier": "function"
+      },
+      {
+        "asyncness": "async",
+        "exported": true,
+        "id": "beb4ce801fc51055db4bf46bff712e14",
+        "kind": "async",
+        "name": "getUser",
+        "params": [
+          {
+            "name": "user",
+            "type": {
+              "display": "User",
+              "lang": "ts",
+              "source": "annotated"
+            }
+          }
+        ],
+        "parentId": "87a7e248241b0e4fb177452139152b73",
+        "pure": false,
+        "returnType": {
+          "display": "Promise<User>",
+          "lang": "ts",
+          "source": "annotated"
+        },
+        "signature": "function|87a7e248241b0e4fb177452139152b73|getUser|1|User",
+        "tier": "function"
+      },
+      {
+        "asyncness": "async",
+        "exported": false,
+        "id": "e214373723bcc5867136960c9ae5b104",
+        "kind": "async",
+        "name": "listUser1",
+        "params": [
+          {
+            "name": "user",
+            "type": {
+              "display": "User",
+              "lang": "ts",
+              "source": "annotated"
+            }
+          }
+        ],
+        "parentId": "87a7e248241b0e4fb177452139152b73",
+        "pure": false,
+        "returnType": {
+          "display": "Promise<User>",
+          "lang": "ts",
+          "source": "annotated"
+        },
+        "signature": "function|87a7e248241b0e4fb177452139152b73|listUser1|1|User",
+        "tier": "function"
+      },
+      {
+        "asyncness": "async",
+        "exported": false,
+        "id": "ec7e0499890643d8f660b3933a57ba56",
+        "kind": "async",
+        "name": "createUser2",
+        "params": [
+          {
+            "name": "user",
+            "type": {
+              "display": "User",
+              "lang": "ts",
+              "source": "annotated"
+            }
+          }
+        ],
+        "parentId": "87a7e248241b0e4fb177452139152b73",
+        "pure": false,
+        "returnType": {
+          "display": "Promise<User>",
+          "lang": "ts",
+          "source": "annotated"
+        },
+        "signature": "function|87a7e248241b0e4fb177452139152b73|createUser2|1|User",
+        "tier": "function"
+      },
+      {
+        "asyncness": "async",
+        "exported": true,
+        "id": "2e6f033211c38ac36686d18019d53d64",
+        "kind": "async",
+        "name": "getUser",
+        "params": [
+          {
+            "name": "user",
+            "type": {
+              "display": "User",
+              "lang": "ts",
+              "source": "annotated"
+            }
+          }
+        ],
+        "parentId": "dedc1d41d10f1de6c8b77062fc1b3c4f",
+        "pure": false,
+        "returnType": {
+          "display": "Promise<User>",
+          "lang": "ts",
+          "source": "annotated"
+        },
+        "signature": "function|dedc1d41d10f1de6c8b77062fc1b3c4f|getUser|1|User",
+        "tier": "function"
+      },
+      {
+        "asyncness": "sync",
+        "exported": true,
+        "id": "b11f94489dae55be61b923e9f80c847c",
+        "kind": "function",
+        "name": "getUser",
+        "params": [
+          {
+            "name": "user",
+            "type": {
+              "display": "User",
+              "lang": "ts",
+              "source": "annotated"
+            }
+          }
+        ],
+        "parentId": "087872659687e1e58b1c121b7e762a5d",
+        "pure": true,
+        "returnType": {
+          "display": "User",
+          "lang": "ts",
+          "source": "annotated"
+        },
+        "signature": "function|087872659687e1e58b1c121b7e762a5d|getUser|1|User",
+        "tier": "function"
+      },
+      {
+        "asyncness": "async",
+        "exported": true,
+        "id": "f256a089f697ae4aa76f2d18af893847",
+        "kind": "async",
+        "name": "getUser",
+        "params": [
+          {
+            "name": "user",
+            "type": {
+              "display": "User",
+              "lang": "ts",
+              "source": "annotated"
+            }
+          }
+        ],
+        "parentId": "6eea637ea580c74f7c2e47bffdb12a72",
+        "pure": false,
+        "returnType": {
+          "display": "Promise<User>",
+          "lang": "ts",
+          "source": "annotated"
+        },
+        "signature": "function|6eea637ea580c74f7c2e47bffdb12a72|getUser|1|User",
+        "tier": "function"
+      },
+      {
+        "asyncness": "async",
+        "exported": true,
+        "id": "15ea84e1a33354386d145c21e2cf54cd",
+        "kind": "async",
+        "name": "getUser",
+        "params": [
+          {
+            "name": "user",
+            "type": {
+              "display": "User",
+              "lang": "ts",
+              "source": "annotated"
+            }
+          }
+        ],
+        "parentId": "3eebe3cd022b00f2b5e8cacfbf4c6c9d",
+        "pure": false,
+        "returnType": {
+          "display": "Promise<User>",
+          "lang": "ts",
+          "source": "annotated"
+        },
+        "signature": "function|3eebe3cd022b00f2b5e8cacfbf4c6c9d|getUser|1|User",
+        "tier": "function"
+      },
+      {
+        "asyncness": "async",
+        "exported": true,
+        "id": "eff486e3b762e49f8a65b8c114289adf",
+        "kind": "async",
+        "name": "getUser",
+        "params": [
+          {
+            "name": "user",
+            "type": {
+              "display": "User",
+              "lang": "ts",
+              "source": "annotated"
+            }
+          }
+        ],
+        "parentId": "942345526b0017ab155ca6017d0facaa",
+        "pure": false,
+        "returnType": {
+          "display": "Promise<User>",
+          "lang": "ts",
+          "source": "annotated"
+        },
+        "signature": "function|942345526b0017ab155ca6017d0facaa|getUser|1|User",
+        "tags": [
+          "dead"
+        ],
+        "tier": "function"
+      },
+      {
+        "asyncness": "sync",
+        "exported": true,
+        "id": "6eb4117aec7a4835c3f678383e3ad0e6",
+        "kind": "function",
+        "name": "getUser",
+        "params": [
+          {
+            "name": "user",
+            "type": {
+              "display": "User",
+              "lang": "ts",
+              "source": "annotated"
+            }
+          }
+        ],
+        "parentId": "b373d8120eb17866fec542058fa5501d",
+        "pure": true,
+        "returnType": {
+          "display": "User",
+          "lang": "ts",
+          "source": "annotated"
+        },
+        "signature": "function|b373d8120eb17866fec542058fa5501d|getUser|1|User",
+        "tier": "function"
+      },
+      {
+        "asyncness": "async",
+        "exported": true,
+        "id": "d4932c55133f837dcd0eb59cebcf4bf3",
+        "kind": "async",
+        "name": "getUser",
+        "params": [
+          {
+            "name": "user",
+            "type": {
+              "display": "User",
+              "lang": "ts",
+              "source": "annotated"
+            }
+          }
+        ],
+        "parentId": "290b9beb1e35b2bb8c69e67af26be4a2",
+        "pure": false,
+        "returnType": {
+          "display": "Promise<User>",
+          "lang": "ts",
+          "source": "annotated"
+        },
+        "signature": "function|290b9beb1e35b2bb8c69e67af26be4a2|getUser|1|User",
+        "tier": "function"
+      },
+      {
+        "asyncness": "async",
+        "exported": true,
+        "id": "386207dbef58a921f76d54136d36c04a",
+        "kind": "async",
+        "name": "getUser",
+        "params": [
+          {
+            "name": "user",
+            "type": {
+              "display": "User",
+              "lang": "ts",
+              "source": "annotated"
+            }
+          }
+        ],
+        "parentId": "ed54ffd18c119abf8ae3d70b16960b5e",
+        "pure": false,
+        "returnType": {
+          "display": "Promise<User>",
+          "lang": "ts",
+          "source": "annotated"
+        },
+        "signature": "function|ed54ffd18c119abf8ae3d70b16960b5e|getUser|1|User",
+        "tier": "function"
+      },
+      {
+        "asyncness": "sync",
+        "exported": true,
+        "id": "8c3e44c87d35ed2b2274ced7f128a94b",
+        "kind": "function",
+        "name": "getUser",
+        "params": [
+          {
+            "name": "user",
+            "type": {
+              "display": "User",
+              "lang": "ts",
+              "source": "annotated"
+            }
+          }
+        ],
+        "parentId": "1366551110102a8d0be396229f84c77f",
+        "pure": true,
+        "returnType": {
+          "display": "User",
+          "lang": "ts",
+          "source": "annotated"
+        },
+        "signature": "function|1366551110102a8d0be396229f84c77f|getUser|1|User",
+        "tier": "function"
+      },
+      {
+        "asyncness": "async",
+        "exported": true,
+        "id": "1fa427cdcd3e62594a4a5056a34263f9",
+        "kind": "async",
+        "name": "getUser",
+        "params": [
+          {
+            "name": "user",
+            "type": {
+              "display": "User",
+              "lang": "ts",
+              "source": "annotated"
+            }
+          }
+        ],
+        "parentId": "3a4e2e48c298b9f7169acea50644bd02",
+        "pure": false,
+        "returnType": {
+          "display": "Promise<User>",
+          "lang": "ts",
+          "source": "annotated"
+        },
+        "signature": "function|3a4e2e48c298b9f7169acea50644bd02|getUser|1|User",
+        "tier": "function"
+      },
+      {
+        "asyncness": "async",
+        "exported": true,
+        "id": "8ada6a8b1638f0c641903c1f19fe48bb",
+        "kind": "async",
+        "name": "getUser",
+        "params": [
+          {
+            "name": "user",
+            "type": {
+              "display": "User",
+              "lang": "ts",
+              "source": "annotated"
+            }
+          }
+        ],
+        "parentId": "4b0053bf73ea7371d3eb430e34fb120d",
+        "pure": false,
+        "returnType": {
+          "display": "Promise<User>",
+          "lang": "ts",
+          "source": "annotated"
+        },
+        "signature": "function|4b0053bf73ea7371d3eb430e34fb120d|getUser|1|User",
+        "tier": "function"
+      },
+      {
+        "asyncness": "async",
+        "exported": false,
+        "id": "d34351776d355c725312f35a4ae79d9c",
+        "kind": "async",
+        "name": "listUser1",
+        "params": [
+          {
+            "name": "user",
+            "type": {
+              "display": "User",
+              "lang": "ts",
+              "source": "annotated"
+            }
+          }
+        ],
+        "parentId": "4b0053bf73ea7371d3eb430e34fb120d",
+        "pure": false,
+        "returnType": {
+          "display": "Promise<User>",
+          "lang": "ts",
+          "source": "annotated"
+        },
+        "signature": "function|4b0053bf73ea7371d3eb430e34fb120d|listUser1|1|User",
+        "tier": "function"
+      },
+      {
+        "asyncness": "async",
+        "exported": false,
+        "id": "00a4d93b3d91ecee386ecac8616062d2",
+        "kind": "async",
+        "name": "createUser2",
+        "params": [
+          {
+            "name": "user",
+            "type": {
+              "display": "User",
+              "lang": "ts",
+              "source": "annotated"
+            }
+          }
+        ],
+        "parentId": "4b0053bf73ea7371d3eb430e34fb120d",
+        "pure": false,
+        "returnType": {
+          "display": "Promise<User>",
+          "lang": "ts",
+          "source": "annotated"
+        },
+        "signature": "function|4b0053bf73ea7371d3eb430e34fb120d|createUser2|1|User",
+        "tier": "function"
+      },
+      {
+        "asyncness": "async",
+        "exported": true,
+        "id": "19844c6068f9780b11c675d81498af06",
+        "kind": "async",
+        "name": "getUser",
+        "params": [
+          {
+            "name": "user",
+            "type": {
+              "display": "User",
+              "lang": "ts",
+              "source": "annotated"
+            }
+          }
+        ],
+        "parentId": "779c8b41d5628d172ec0a1fc54e59ccc",
+        "pure": false,
+        "returnType": {
+          "display": "Promise<User>",
+          "lang": "ts",
+          "source": "annotated"
+        },
+        "signature": "function|779c8b41d5628d172ec0a1fc54e59ccc|getUser|1|User",
+        "tier": "function"
+      },
+      {
+        "asyncness": "async",
+        "exported": false,
+        "id": "8fafa57fbdfefedc087dd733e4b7ad32",
+        "kind": "async",
+        "name": "listUser1",
+        "params": [
+          {
+            "name": "user",
+            "type": {
+              "display": "User",
+              "lang": "ts",
+              "source": "annotated"
+            }
+          }
+        ],
+        "parentId": "779c8b41d5628d172ec0a1fc54e59ccc",
+        "pure": false,
+        "returnType": {
+          "display": "Promise<User>",
+          "lang": "ts",
+          "source": "annotated"
+        },
+        "signature": "function|779c8b41d5628d172ec0a1fc54e59ccc|listUser1|1|User",
+        "tier": "function"
+      },
+      {
+        "asyncness": "async",
+        "exported": false,
+        "id": "3fba35308e21700070e5d7f4b2b76aa3",
+        "kind": "async",
+        "name": "createUser2",
+        "params": [
+          {
+            "name": "user",
+            "type": {
+              "display": "User",
+              "lang": "ts",
+              "source": "annotated"
+            }
+          }
+        ],
+        "parentId": "779c8b41d5628d172ec0a1fc54e59ccc",
+        "pure": false,
+        "returnType": {
+          "display": "Promise<User>",
+          "lang": "ts",
+          "source": "annotated"
+        },
+        "signature": "function|779c8b41d5628d172ec0a1fc54e59ccc|createUser2|1|User",
+        "tier": "function"
+      },
+      {
+        "asyncness": "async",
+        "exported": true,
+        "id": "d154c5de36be2c47133aed6cc37b1341",
+        "kind": "async",
+        "name": "getUser",
+        "params": [
+          {
+            "name": "user",
+            "type": {
+              "display": "User",
+              "lang": "ts",
+              "source": "annotated"
+            }
+          }
+        ],
+        "parentId": "98115317eb811195c247192a332018fe",
+        "pure": false,
+        "returnType": {
+          "display": "Promise<User>",
+          "lang": "ts",
+          "source": "annotated"
+        },
+        "signature": "function|98115317eb811195c247192a332018fe|getUser|1|User",
+        "tier": "function"
+      },
+      {
+        "asyncness": "async",
+        "exported": true,
+        "id": "14c2699b0c29fe9e65f2100eb3982c40",
+        "kind": "async",
+        "name": "getUser",
+        "params": [
+          {
+            "name": "user",
+            "type": {
+              "display": "User",
+              "lang": "ts",
+              "source": "annotated"
+            }
+          }
+        ],
+        "parentId": "3bcc669ebf36c1d9e450ffe05aaa725c",
+        "pure": false,
+        "returnType": {
+          "display": "Promise<User>",
+          "lang": "ts",
+          "source": "annotated"
+        },
+        "signature": "function|3bcc669ebf36c1d9e450ffe05aaa725c|getUser|1|User",
+        "tier": "function"
+      },
+      {
+        "asyncness": "sync",
+        "exported": true,
+        "id": "e142f688935cb636b357ded174cb4b42",
+        "kind": "function",
+        "name": "getUser",
+        "params": [
+          {
+            "name": "user",
+            "type": {
+              "display": "User",
+              "lang": "ts",
+              "source": "annotated"
+            }
+          }
+        ],
+        "parentId": "d82d8f9537376d42fd372518af11e33f",
+        "pure": true,
+        "returnType": {
+          "display": "User",
+          "lang": "ts",
+          "source": "annotated"
+        },
+        "signature": "function|d82d8f9537376d42fd372518af11e33f|getUser|1|User",
+        "tags": [
+          "dead"
+        ],
+        "tier": "function"
+      },
+      {
+        "asyncness": "sync",
+        "exported": true,
+        "id": "effc4f58bde13dd817777664c27aff6b",
+        "kind": "function",
+        "name": "getUser",
+        "params": [
+          {
+            "name": "user",
+            "type": {
+              "display": "User",
+              "lang": "ts",
+              "source": "annotated"
+            }
+          }
+        ],
+        "parentId": "7f054df1349f18456af028b45f244443",
+        "pure": true,
+        "returnType": {
+          "display": "User",
+          "lang": "ts",
+          "source": "annotated"
+        },
+        "signature": "function|7f054df1349f18456af028b45f244443|getUser|1|User",
+        "tier": "function"
+      },
+      {
+        "asyncness": "sync",
+        "exported": true,
+        "id": "052126226d8fdd3aa5c735189bc4a510",
+        "kind": "function",
+        "name": "getUser",
+        "params": [
+          {
+            "name": "user",
+            "type": {
+              "display": "User",
+              "lang": "ts",
+              "source": "annotated"
+            }
+          }
+        ],
+        "parentId": "ab1a8b1fa035d44260b1601099a8bd1d",
+        "pure": true,
+        "returnType": {
+          "display": "User",
+          "lang": "ts",
+          "source": "annotated"
+        },
+        "signature": "function|ab1a8b1fa035d44260b1601099a8bd1d|getUser|1|User",
+        "tier": "function"
+      },
+      {
+        "asyncness": "sync",
+        "exported": true,
+        "id": "22926b7b33775be12768fd592a79821f",
+        "kind": "function",
+        "name": "getUser",
+        "params": [
+          {
+            "name": "user",
+            "type": {
+              "display": "User",
+              "lang": "ts",
+              "source": "annotated"
+            }
+          }
+        ],
+        "parentId": "b23aa5255cb22a25fd6dfa4377e7ad35",
+        "pure": true,
+        "returnType": {
+          "display": "User",
+          "lang": "ts",
+          "source": "annotated"
+        },
+        "signature": "function|b23aa5255cb22a25fd6dfa4377e7ad35|getUser|1|User",
+        "tier": "function"
+      },
+      {
+        "asyncness": "async",
+        "exported": true,
+        "id": "52392d3b02b9f08a3b593d7c1892d93c",
+        "kind": "async",
+        "name": "getUser",
+        "params": [
+          {
+            "name": "user",
+            "type": {
+              "display": "User",
+              "lang": "ts",
+              "source": "annotated"
+            }
+          }
+        ],
+        "parentId": "550cd2d411bb60cf38a79e459bc19f08",
+        "pure": false,
+        "returnType": {
+          "display": "Promise<User>",
+          "lang": "ts",
+          "source": "annotated"
+        },
+        "signature": "function|550cd2d411bb60cf38a79e459bc19f08|getUser|1|User",
+        "tier": "function"
+      },
+      {
+        "asyncness": "sync",
+        "exported": true,
+        "id": "f031d5054d91e2acbbcfdf1567d70783",
+        "kind": "function",
+        "name": "getUser",
+        "params": [
+          {
+            "name": "user",
+            "type": {
+              "display": "User",
+              "lang": "ts",
+              "source": "annotated"
+            }
+          }
+        ],
+        "parentId": "d857d98df70b192ee6212c966fb74d2f",
+        "pure": true,
+        "returnType": {
+          "display": "User",
+          "lang": "ts",
+          "source": "annotated"
+        },
+        "signature": "function|d857d98df70b192ee6212c966fb74d2f|getUser|1|User",
+        "tier": "function"
+      },
+      {
+        "asyncness": "sync",
+        "exported": true,
+        "id": "dc440183d594fb8060aa039e9381deb9",
+        "kind": "function",
+        "name": "getUser",
+        "params": [
+          {
+            "name": "user",
+            "type": {
+              "display": "User",
+              "lang": "ts",
+              "source": "annotated"
+            }
+          }
+        ],
+        "parentId": "88d8a3e5aac2e39f80446b589010a8b4",
+        "pure": true,
+        "returnType": {
+          "display": "User",
+          "lang": "ts",
+          "source": "annotated"
+        },
+        "signature": "function|88d8a3e5aac2e39f80446b589010a8b4|getUser|1|User",
+        "tier": "function"
+      },
+      {
+        "asyncness": "async",
+        "exported": true,
+        "id": "bf5304f9fb23c7766cb3521ee7ac495b",
+        "kind": "async",
+        "name": "getUser",
+        "params": [
+          {
+            "name": "user",
+            "type": {
+              "display": "User",
+              "lang": "ts",
+              "source": "annotated"
+            }
+          }
+        ],
+        "parentId": "5264777dc744197a1ed024c570a9d1d5",
+        "pure": false,
+        "returnType": {
+          "display": "Promise<User>",
+          "lang": "ts",
+          "source": "annotated"
+        },
+        "signature": "function|5264777dc744197a1ed024c570a9d1d5|getUser|1|User",
+        "tier": "function"
+      },
+      {
+        "asyncness": "sync",
+        "exported": true,
+        "id": "1282fb497416c433ff96ffed29af57f4",
+        "kind": "function",
+        "name": "getUser",
+        "params": [
+          {
+            "name": "user",
+            "type": {
+              "display": "User",
+              "lang": "ts",
+              "source": "annotated"
+            }
+          }
+        ],
+        "parentId": "f7f01883a10c93565ae524cd01a75432",
+        "pure": true,
+        "returnType": {
+          "display": "User",
+          "lang": "ts",
+          "source": "annotated"
+        },
+        "signature": "function|f7f01883a10c93565ae524cd01a75432|getUser|1|User",
+        "tier": "function"
+      },
+      {
+        "asyncness": "sync",
+        "exported": true,
+        "id": "835f698e0d5ce8d4d6bfa4b2282ddd87",
+        "kind": "function",
+        "name": "getUser",
+        "params": [
+          {
+            "name": "user",
+            "type": {
+              "display": "User",
+              "lang": "ts",
+              "source": "annotated"
+            }
+          }
+        ],
+        "parentId": "1a6063351942bf66d7f362970d196818",
+        "pure": true,
+        "returnType": {
+          "display": "User",
+          "lang": "ts",
+          "source": "annotated"
+        },
+        "signature": "function|1a6063351942bf66d7f362970d196818|getUser|1|User",
+        "tier": "function"
+      },
+      {
+        "asyncness": "sync",
+        "exported": true,
+        "id": "052b5d76e1e16bcfd37f2d079ab15910",
+        "kind": "function",
+        "name": "getUser",
+        "params": [
+          {
+            "name": "user",
+            "type": {
+              "display": "User",
+              "lang": "ts",
+              "source": "annotated"
+            }
+          }
+        ],
+        "parentId": "99dd676f43f2ba26794eba581be69e51",
+        "pure": true,
+        "returnType": {
+          "display": "User",
+          "lang": "ts",
+          "source": "annotated"
+        },
+        "signature": "function|99dd676f43f2ba26794eba581be69e51|getUser|1|User",
+        "tier": "function"
+      },
+      {
+        "asyncness": "sync",
+        "exported": true,
+        "id": "d302678fa8967adb502aa7676bef96d2",
+        "kind": "function",
+        "name": "getUser",
+        "params": [
+          {
+            "name": "user",
+            "type": {
+              "display": "User",
+              "lang": "ts",
+              "source": "annotated"
+            }
+          }
+        ],
+        "parentId": "bf0a71e560e530d5edcea004c32da575",
+        "pure": true,
+        "returnType": {
+          "display": "User",
+          "lang": "ts",
+          "source": "annotated"
+        },
+        "signature": "function|bf0a71e560e530d5edcea004c32da575|getUser|1|User",
+        "tier": "function"
+      },
+      {
+        "asyncness": "async",
+        "exported": true,
+        "id": "95ecb6a7f1ea025e28ad64f8c84755fd",
+        "kind": "async",
+        "name": "getUser",
+        "params": [
+          {
+            "name": "user",
+            "type": {
+              "display": "User",
+              "lang": "ts",
+              "source": "annotated"
+            }
+          }
+        ],
+        "parentId": "57cc7981d9435f0506eefc0d821880fc",
+        "pure": false,
+        "returnType": {
+          "display": "Promise<User>",
+          "lang": "ts",
+          "source": "annotated"
+        },
+        "signature": "function|57cc7981d9435f0506eefc0d821880fc|getUser|1|User",
+        "tier": "function"
+      },
+      {
+        "asyncness": "async",
+        "exported": true,
+        "id": "d169c19578273f944c21d2f4089bf075",
+        "kind": "async",
+        "name": "getUser",
+        "params": [
+          {
+            "name": "user",
+            "type": {
+              "display": "User",
+              "lang": "ts",
+              "source": "annotated"
+            }
+          }
+        ],
+        "parentId": "d1e601ba4980f10bf0f72ec43550817f",
+        "pure": false,
+        "returnType": {
+          "display": "Promise<User>",
+          "lang": "ts",
+          "source": "annotated"
+        },
+        "signature": "function|d1e601ba4980f10bf0f72ec43550817f|getUser|1|User",
+        "tier": "function"
+      },
+      {
+        "asyncness": "sync",
+        "exported": true,
+        "id": "b6ae7a368ba6438c346a38f1154647e4",
+        "kind": "function",
+        "name": "getUser",
+        "params": [
+          {
+            "name": "user",
+            "type": {
+              "display": "User",
+              "lang": "ts",
+              "source": "annotated"
+            }
+          }
+        ],
+        "parentId": "32e8bb3da9fbebe1639cf0a7efadbca3",
+        "pure": true,
+        "returnType": {
+          "display": "User",
+          "lang": "ts",
+          "source": "annotated"
+        },
+        "signature": "function|32e8bb3da9fbebe1639cf0a7efadbca3|getUser|1|User",
+        "tier": "function"
+      },
+      {
+        "asyncness": "sync",
+        "exported": true,
+        "id": "96d0d169e6938ddc59ae2bc91042f1f9",
+        "kind": "function",
+        "name": "getUser",
+        "params": [
+          {
+            "name": "user",
+            "type": {
+              "display": "User",
+              "lang": "ts",
+              "source": "annotated"
+            }
+          }
+        ],
+        "parentId": "31c7ade02975b9a8cd7bc3e516e99024",
+        "pure": true,
+        "returnType": {
+          "display": "User",
+          "lang": "ts",
+          "source": "annotated"
+        },
+        "signature": "function|31c7ade02975b9a8cd7bc3e516e99024|getUser|1|User",
+        "tier": "function"
+      }
+    ]
+  },
+  "schemaVersion": "0.1.0"
+}

@@ -1,0 +1,200 @@
+# =============================================================================
+# .codegraph.yml — codegraph configuration (fully-commented example)
+# =============================================================================
+#
+# Drop this file at your repo root (rename to `.codegraph.yml`) to configure
+# codegraph. Every field below is OPTIONAL except `schemaVersion`. For most
+# projects you only need 10–20 lines; the rest is here for reference.
+#
+# Globs use the picomatch / .gitignore dialect:
+#   **      crosses directory boundaries
+#   *       does not cross /
+#   !foo    negates a previous match
+#
+# Full reference: spec/config-schema.md
+# JSON Schema:    spec/config.schema.json
+# =============================================================================
+
+# Required. Bump only on breaking schema changes; additive fields stay at 1.
+schemaVersion: 1
+
+# -----------------------------------------------------------------------------
+# project — display-only metadata. Never affects analysis.
+# -----------------------------------------------------------------------------
+project:
+  name: my-app
+  description: "Short blurb shown in the viewer header."
+
+# -----------------------------------------------------------------------------
+# root — analysis root, relative to this file. Default: "." (this directory).
+# All globs below resolve against this root.
+# -----------------------------------------------------------------------------
+# root: ./src
+
+# -----------------------------------------------------------------------------
+# boundaries — name -> globs. Each file lands in exactly one boundary.
+#
+# Resolution rules when a file matches multiple patterns across boundaries:
+#   1. Longest matching pattern wins.
+#   2. On length tie, the boundary declared first in this file wins.
+#   3. A leading "!" REMOVES a file from a boundary; it never moves it.
+#
+# Files matching no boundary go to the implicit `_unassigned` boundary.
+#
+# Suggested names (no special semantics, just convention):
+#   frontend, backend, infra, shared, tests, tools
+# -----------------------------------------------------------------------------
+boundaries:
+  frontend:
+    - "apps/web/**"
+    - "packages/ui/**"
+    - "**/*.tsx"
+
+  backend:
+    - "apps/api/**"
+    - "services/**"
+    - "**/*.go"
+
+  infra:
+    - "deploy/**"
+    - "terraform/**"
+    - ".github/workflows/**"
+
+  shared:
+    - "packages/types/**"
+    - "packages/proto/**"
+
+# -----------------------------------------------------------------------------
+# ignore — globs excluded from analysis entirely. Merged with built-in defaults
+# (node_modules, dist, build, .git, target, __pycache__, *.min.js, *.lock,
+# .next, .turbo). Use a leading "!" to un-ignore a default.
+# -----------------------------------------------------------------------------
+ignore:
+  - "**/*.generated.*"
+  - "**/*.pb.go"
+  - "vendor/**"
+  # Re-include one generated file we DO want graphed:
+  - "!packages/proto/index.gen.ts"
+
+# -----------------------------------------------------------------------------
+# adapters — opt-out, not opt-in. Every adapter that auto-detects in your repo
+# runs by default. Use this section to disable one, force-enable one, or pass
+# adapter-specific options.
+#
+# Common keys for every adapter: `enabled`, `include`, `exclude`. Adapter-
+# specific keys are passed through; unknown keys produce a warning, not an
+# error, so configs survive adapter additions.
+# -----------------------------------------------------------------------------
+adapters:
+  typescript:
+    tsconfig: "./tsconfig.base.json"
+    followTypeOnly: false      # set true to follow `import type` edges
+
+  go:
+    buildTags: ["integration"]
+
+  python:
+    enabled: false             # we have a tiny scripts/ dir; skip it entirely
+
+  # The SCIP adapter accepts a pre-built index produced by your CI's indexer
+  # (scip-typescript, scip-go, etc.). When set, codegraph skips re-indexing
+  # those languages and reads the index directly.
+  scip:
+    indexPath: "./build/index.scip"
+
+# -----------------------------------------------------------------------------
+# groups — declarative node-grouping rules for the viewer.
+#
+# Each rule needs `id` plus at least one of `pattern`, `boundary`, `tagged`.
+# Multiple selectors AND together. First matching rule wins per file.
+# -----------------------------------------------------------------------------
+groups:
+  - id: auth
+    label: "Auth subsystem"
+    pattern: "services/auth/**"
+    collapsed: true            # render as one collapsed node by default
+    color: "#7B5BD6"
+
+  - id: billing-models
+    label: "Billing models"
+    boundary: backend
+    pattern: "services/billing/internal/models/**"
+
+  - id: feature-flags
+    label: "Feature flags"
+    tagged: "@featureFlag"     # any symbol carrying this annotation joins
+
+# -----------------------------------------------------------------------------
+# entryPoints — augment auto-detected entry points.
+#
+# Auto-detection covers HTTP routes (in known frameworks), CLI main blocks,
+# package exports, and binaries declared in package.json / pyproject.toml /
+# Cargo.toml. Use this section to add hints for things auto-detect missed,
+# or to remove ones that aren't really entry points (e.g. a test harness main).
+# -----------------------------------------------------------------------------
+entryPoints:
+  include:
+    - kind: file
+      path: "cmd/worker/main.go"
+      label: "Background worker"
+
+    - kind: function
+      symbol: "scripts/migrate.ts#runMigrations"
+
+    - kind: route
+      symbol: "apps/api/internal/admin#handler"
+      label: "Admin webhook"
+
+  exclude:
+    # Bare globs are treated as path matchers:
+    - "tests/**"
+    - "**/__fixtures__/**"
+    # Or use the same object form to exclude one specific kind+symbol:
+    - kind: route
+      symbol: "apps/api/v1/healthz"
+
+# -----------------------------------------------------------------------------
+# output — where artifacts go. Defaults all live under `.codegraph/` so a
+# single .gitignore line covers everything.
+# -----------------------------------------------------------------------------
+output:
+  ir:
+    path: ".codegraph/ir.json"   # written by `codegraph build`
+    pretty: false                # true = human-readable, larger file
+    splitChunks: false           # future: split huge IRs across files
+
+  viewer:
+    publish:
+      kind: "static"             # "static" | "github-pages" | "none"
+      dir: ".codegraph/viewer"
+      baseUrl: "/"               # for github-pages, set to "/<repo-name>/"
+
+  cache:
+    path: ".codegraph/cache"
+    enabled: true
+
+# -----------------------------------------------------------------------------
+# diff — used by the GitHub Action only. Maps change categories to severity
+# and decides which severities fail the check.
+#
+# Severities: error | warning | info | off
+# Categories (forward-compat: unknown ones are accepted):
+#   nodeAdded            nodeRemoved            nodeRetyped
+#   edgeAdded            edgeRemoved
+#   boundaryViolationAdded   boundaryViolationRemoved
+#   entryPointAdded      entryPointRemoved
+# -----------------------------------------------------------------------------
+diff:
+  fail: ["error"]                # severities that fail the Action
+
+  rules:
+    nodeRemoved: error
+    nodeAdded: info
+    edgeRemoved: warning
+    edgeAdded: info
+    boundaryViolationAdded: error
+    entryPointRemoved: warning
+
+  ignore:
+    - "tests/**"
+    - "**/scratch/**"

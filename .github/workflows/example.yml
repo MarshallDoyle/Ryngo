@@ -1,0 +1,117 @@
+# Example consumer workflow for the codegraph GitHub Action.
+#
+# Drop a copy of this file into `.github/workflows/codegraph.yml` in your
+# own repository to get a codegraph diff comment on every PR.
+#
+# What this workflow does:
+#   - on every PR open / synchronize / reopen / ready-for-review, builds
+#     the codegraph IR for the base ref and the head ref, diffs them,
+#     and posts (or updates) a sticky comment on the PR.
+#   - publishes the static viewer to gh-pages under `pr-<number>/`.
+#   - re-runs on merge_group events so merge-queue gating sees the same
+#     diff a maintainer saw on the PR.
+#
+# See packages/action/README.md for the full input/output reference and
+# security notes (especially around fork PRs and `pull_request_target`).
+
+name: codegraph
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+  # Optional: also gate the merge queue. Comment out if you don't use
+  # GitHub's merge queue feature.
+  merge_group: {}
+
+# `pull_request` (not `pull_request_target`) is the safe default: the
+# workflow runs against the fork's code with a read-only GITHUB_TOKEN
+# (except for the permissions explicitly granted below). Fork PRs do
+# not have access to repo secrets in this mode.
+permissions:
+  contents: read           # checkout
+  pull-requests: write     # post the diff comment
+  pages: write             # publish the static viewer (only if viewer-publish: true)
+  id-token: write          # required by some Pages publish flows
+
+# Cancel an in-progress run when a new commit is pushed to the same PR.
+# Safe because each run is independent and only the latest matters.
+concurrency:
+  group: codegraph-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  diff:
+    name: Diff codegraph IR
+    runs-on: ubuntu-latest
+    # Don't burn CI on draft PRs. Remove this `if` (or set
+    # CODEGRAPH_RUN_ON_DRAFT=true in env) to run on drafts too.
+    if: github.event.pull_request.draft != true
+    timeout-minutes: 15
+    steps:
+      - name: codegraph
+        id: codegraph
+        uses: codegraph/codegraph/packages/action@v1
+        with:
+          # Path to the codegraph config in your repo. Optional — the CLI
+          # falls back to defaults if the file is missing.
+          config-path: .codegraph.yml
+
+          # Bump this string to invalidate the incremental cache after a
+          # CLI or adapter upgrade. The action already keys on config +
+          # lockfile hashes, so this is a manual override.
+          cache-key: v1
+
+          # Comment policy. `on-change` is the recommended default — quiet
+          # PRs stay quiet. Switch to `always` if you want a paper trail.
+          comment-mode: on-change
+
+          # Fail the job when the diff contains a finding at or above this
+          # level. Set to `none` to disable the gate (comment only).
+          severity-threshold: warning
+
+          # Publish the static viewer to gh-pages/pr-<number>/. Requires
+          # `permissions.contents: write` (override below) and that Pages
+          # is enabled for the repo, serving from the gh-pages branch.
+          viewer-publish: 'false'
+
+          # Optional: pin the CLI version for reproducible CI.
+          # codegraph-version: 0.1.0
+
+          # The default token works for same-repo PRs. For
+          # `pull_request_target` workflows or org-wide deployments,
+          # pass a fine-grained PAT or GitHub App token instead.
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      # Surface the outputs so downstream jobs can fan out (e.g. block
+      # merge if `diff-summary` is non-empty, or attach `viewer-url` to
+      # a deploy preview).
+      - name: Show outputs
+        run: |
+          echo "Diff summary path: ${{ steps.codegraph.outputs.diff-summary }}"
+          echo "Viewer URL: ${{ steps.codegraph.outputs.viewer-url }}"
+
+  # ------------------------------------------------------------------
+  # OPTIONAL second job: viewer publish with elevated permissions.
+  #
+  # Splitting the publish into its own job keeps the privileged write
+  # token out of the analysis job, which is the part that runs untrusted
+  # PR code. Uncomment to enable.
+  # ------------------------------------------------------------------
+  # publish-viewer:
+  #   name: Publish viewer
+  #   runs-on: ubuntu-latest
+  #   needs: diff
+  #   if: github.event_name == 'pull_request' && github.event.pull_request.draft != true
+  #   permissions:
+  #     contents: write
+  #     pages: write
+  #     pull-requests: write
+  #   steps:
+  #     - uses: codegraph/codegraph/packages/action@v1
+  #       with:
+  #         viewer-publish: 'true'
+  #         comment-mode: never  # diff job already commented

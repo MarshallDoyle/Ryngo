@@ -1,0 +1,31 @@
+# pnpm workspace configuration for codegraph monorepo.
+#
+# Adds every directory under packages/ and adapters/ as a workspace package.
+# `packages/*`  — first-party application packages (core, cli, viewer,
+#                 action, adapter-sdk).
+# `adapters/*`  — first-party framework adapters (express, fastapi, nextjs,
+#                 prisma, etc.). Each adapter is its own package and is
+#                 published independently. Third-party adapters live in
+#                 their own repositories and are *not* listed here; they
+#                 are discovered at runtime — see STRUCTURE.md.
+#
+# We deliberately do NOT include `examples/*` or `test-fixtures/*` here.
+# Those directories contain fixture projects used by integration tests and
+# must remain isolated from the workspace dependency graph (otherwise pnpm
+# would try to symlink them and turbo would treat them as build inputs).
+packages:
+  - "packages/*"
+  - "adapters/*"
+
+# Catalogs let every workspace package pin to one shared version of a
+# common dependency without repeating the version literal in each
+# package.json. This is critical for codegraph because `core` and every
+# adapter must agree on the exact `zod` version (the IR schema is
+# branded by it) and the exact `typescript` version (adapters consume
+# `core`'s emitted .d.ts files).
+catalog:
+  typescript: "5.6.3"
+  zod: "3.23.8"
+  vitest: "2.1.4"
+  tsup: "8.3.5"
+  "@types/node": "22.9.0"

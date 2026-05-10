@@ -1,0 +1,316 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://codegraph.dev/schemas/config-v1.json",
+  "title": "codegraph config (.codegraph.yml)",
+  "description": "Schema for the .codegraph.yml file at the repository root. See spec/config-schema.md for rationale and examples.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion"],
+  "properties": {
+    "schemaVersion": {
+      "type": "integer",
+      "const": 1,
+      "description": "Schema version. Currently must be 1."
+    },
+    "project": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Display-only project metadata. Never affects analysis.",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 2000
+        }
+      }
+    },
+    "root": {
+      "type": "string",
+      "default": ".",
+      "description": "Path to the source root, relative to this config file. All other globs resolve against this root."
+    },
+    "boundaries": {
+      "type": "object",
+      "description": "Map from boundary name to a list of glob patterns. Each file lands in exactly one boundary; see resolution rules in spec/config-schema.md.",
+      "propertyNames": {
+        "pattern": "^[a-zA-Z][a-zA-Z0-9_-]*$",
+        "description": "Boundary identifier. Must not start with '_' (reserved for the implicit _unassigned boundary)."
+      },
+      "additionalProperties": {
+        "type": "array",
+        "items": { "$ref": "#/$defs/Glob" },
+        "minItems": 1
+      }
+    },
+    "ignore": {
+      "type": "array",
+      "description": "Glob patterns excluded from analysis. Merged with built-in defaults. Use a leading '!' to un-ignore a default.",
+      "items": { "$ref": "#/$defs/Glob" }
+    },
+    "adapters": {
+      "type": "object",
+      "description": "Per-adapter enable/disable + adapter-specific options.",
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9_-]*$"
+      },
+      "additionalProperties": { "$ref": "#/$defs/AdapterConfig" }
+    },
+    "groups": {
+      "type": "array",
+      "description": "Custom node-grouping rules for the viewer. First matching rule wins per file.",
+      "items": { "$ref": "#/$defs/Group" }
+    },
+    "entryPoints": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Augment the auto-detected entry-point set.",
+      "properties": {
+        "include": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/EntryPointInclude" }
+        },
+        "exclude": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/EntryPointExclude" }
+        }
+      }
+    },
+    "output": { "$ref": "#/$defs/Output" },
+    "diff": { "$ref": "#/$defs/Diff" }
+  },
+
+  "$defs": {
+    "Glob": {
+      "type": "string",
+      "minLength": 1,
+      "description": "A picomatch/gitignore-style glob. '**' crosses directories; '*' does not cross '/'; leading '!' negates."
+    },
+
+    "AdapterConfig": {
+      "type": "object",
+      "description": "Per-adapter options. Common keys are validated; anything else is passed through to the adapter.",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Force on/off. If absent, the adapter runs iff it auto-detects in this repo."
+        },
+        "include": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/Glob" },
+          "description": "Restrict the adapter to a subset of files."
+        },
+        "exclude": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/Glob" },
+          "description": "Subtract from include (or from the adapter's default set)."
+        },
+
+        "tsconfig": {
+          "type": "string",
+          "description": "TypeScript adapter: path to tsconfig.json."
+        },
+        "followTypeOnly": {
+          "type": "boolean",
+          "description": "TypeScript adapter: follow `import type` edges."
+        },
+        "buildTags": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Go adapter: build tags."
+        },
+        "indexPath": {
+          "type": "string",
+          "description": "SCIP adapter: path to a pre-built index file."
+        }
+      },
+      "additionalProperties": true
+    },
+
+    "Group": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id"],
+      "anyOf": [
+        { "required": ["pattern"] },
+        { "required": ["boundary"] },
+        { "required": ["tagged"] }
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_-]*$",
+          "description": "Stable group id. Used in the IR."
+        },
+        "label": {
+          "type": "string",
+          "description": "Human-readable label. Defaults to id."
+        },
+        "pattern": {
+          "$ref": "#/$defs/Glob",
+          "description": "Path glob to match files into this group."
+        },
+        "boundary": {
+          "type": "string",
+          "pattern": "^[a-zA-Z][a-zA-Z0-9_-]*$",
+          "description": "Restrict the rule to a named boundary."
+        },
+        "tagged": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Symbol-level tag (e.g. a docstring or decorator marker)."
+        },
+        "collapsed": {
+          "type": "boolean",
+          "default": false,
+          "description": "If true, the group renders as a single collapsed node."
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+          "description": "CSS hex color. Defaults to a hash of id."
+        }
+      }
+    },
+
+    "EntryPointInclude": {
+      "type": "object",
+      "additionalProperties": false,
+      "oneOf": [
+        { "required": ["symbol"] },
+        { "required": ["path"] }
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["function", "file", "route", "export"],
+          "default": "function"
+        },
+        "symbol": {
+          "type": "string",
+          "description": "IR symbol path, e.g. 'pkg/foo#bar' or 'a/b/c.ts#default'."
+        },
+        "path": {
+          "type": "string",
+          "description": "File path relative to root."
+        },
+        "label": {
+          "type": "string"
+        }
+      }
+    },
+
+    "EntryPointExclude": {
+      "oneOf": [
+        { "$ref": "#/$defs/Glob" },
+        { "$ref": "#/$defs/EntryPointInclude" }
+      ]
+    },
+
+    "Output": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "ir": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "path": {
+              "type": "string",
+              "default": ".codegraph/ir.json"
+            },
+            "pretty": {
+              "type": "boolean",
+              "default": false
+            },
+            "splitChunks": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        },
+        "viewer": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "publish": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "kind": {
+                  "type": "string",
+                  "enum": ["static", "github-pages", "none"],
+                  "default": "static"
+                },
+                "dir": {
+                  "type": "string",
+                  "default": ".codegraph/viewer"
+                },
+                "baseUrl": {
+                  "type": "string",
+                  "default": "/"
+                }
+              }
+            }
+          }
+        },
+        "cache": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "path": {
+              "type": "string",
+              "default": ".codegraph/cache"
+            },
+            "enabled": {
+              "type": "boolean",
+              "default": true
+            }
+          }
+        }
+      }
+    },
+
+    "Severity": {
+      "type": "string",
+      "enum": ["error", "warning", "info", "off"]
+    },
+
+    "Diff": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "fail": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/Severity" },
+          "default": ["error"],
+          "description": "Severities that cause the GitHub Action to fail the check."
+        },
+        "rules": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/Severity" },
+          "description": "Map from change category to severity. Unknown categories are accepted (forward-compat).",
+          "properties": {
+            "nodeAdded": { "$ref": "#/$defs/Severity" },
+            "nodeRemoved": { "$ref": "#/$defs/Severity" },
+            "nodeRetyped": { "$ref": "#/$defs/Severity" },
+            "edgeAdded": { "$ref": "#/$defs/Severity" },
+            "edgeRemoved": { "$ref": "#/$defs/Severity" },
+            "boundaryViolationAdded": { "$ref": "#/$defs/Severity" },
+            "boundaryViolationRemoved": { "$ref": "#/$defs/Severity" },
+            "entryPointAdded": { "$ref": "#/$defs/Severity" },
+            "entryPointRemoved": { "$ref": "#/$defs/Severity" }
+          }
+        },
+        "ignore": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/Glob" },
+          "description": "Globs whose changes are excluded from the diff entirely."
+        }
+      }
+    }
+  }
+}

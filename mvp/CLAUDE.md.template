@@ -1,0 +1,36 @@
+# Project guidance for Claude / Claude Code
+
+This repo is mapped by [Ryngo](https://ryngo.ai). Before making
+structural changes, read the `.ryngo/` directory.
+
+## What lives in `.ryngo/`
+
+- `annotations.md` — node-level notes the team has left. Each section is
+  keyed by a stable Ryngo node id (`file:…`, `def:…`, `cell:…`, `pkg:…`).
+  Honor any TODOs you find here.
+- `intents/<id>.md` — explicit "I want this changed" markers, one per file.
+  Each intent has frontmatter (`status: open|done|wontfix`, `type:
+  refactor|delete|tests|extract|rename`) and an "Affected nodes" list.
+  When you finish an intent, update its status to `done`.
+- `regions.json` — named subgraphs (auth, checkout, model layers, etc.).
+  Useful when the user references a region by name; resolve the names
+  through this file.
+- `rules.md` — architectural invariants. Treat these as hard constraints.
+  Do NOT introduce a change that violates a listed rule. If a rule is
+  ambiguous, ask before proceeding.
+- `wires.md` — user-authored intended relationships waiting to be wired
+  up. Implement these alongside any explicit intent that references them.
+
+## Working agreement
+
+1. Open the relevant intent first; don't ad-lib changes that aren't
+   listed there.
+2. Cite node ids in your commits and PR descriptions
+   (e.g. `def:src/auth/login.ts#authenticate`) — Ryngo uses these to
+   verify the diff against the intent.
+3. After the change lands, the user will reload Ryngo. Each intent's
+   acceptance checklist auto-ticks based on the structural diff. If a
+   box does NOT tick, the change wasn't structural enough to be visible
+   from the IR — leave a note explaining why.
+4. Never delete or rewrite files in `.ryngo/` unless the user explicitly
+   asks. They are append-only from your side.

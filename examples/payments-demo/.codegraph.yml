@@ -1,0 +1,64 @@
+# codegraph configuration for the payments-demo fixture.
+# Two service boundaries (frontend / backend) plus a Prisma data layer.
+version: 1
+
+include:
+  - "app/**/*.{ts,tsx}"
+  - "lib/**/*.ts"
+  - "middleware.ts"
+  - "api/**/*.py"
+  - "prisma/schema.prisma"
+
+exclude:
+  - "node_modules/**"
+  - ".next/**"
+  - "**/__pycache__/**"
+  - "**/*.test.*"
+
+adapters:
+  - nextjs
+  - fastapi
+  - prisma
+  - env-vars
+
+# Service-tier boundaries. The viewer collapses each boundary into a single
+# rounded-rect at the service tier; the cross-service edge between `web`
+# and `payments-api` is the typed `http` edge the demo storyboard inspects.
+boundaries:
+  - id: web
+    label: Next.js frontend
+    match:
+      - "app/**"
+      - "lib/**"
+      - "middleware.ts"
+  - id: payments-api
+    label: FastAPI backend
+    match:
+      - "api/**"
+  - id: data
+    label: Prisma + Postgres
+    match:
+      - "prisma/**"
+
+# Effect roots — codegraph propagates these tags up the call graph for the
+# pure-vs-effectful coloring used at 40s in the launch video.
+effects:
+  network:
+    - "fetch"
+  db:
+    - "prisma.*"
+    - "db.*.create"
+    - "db.*.update"
+    - "db.*.find_unique"
+    - "db.*.findMany"
+  env:
+    - "process.env.*"
+    - "os.environ.*"
+
+viewer:
+  port: 4747
+  layout: layered
+  defaultTier: service
+
+diff:
+  failOn: []

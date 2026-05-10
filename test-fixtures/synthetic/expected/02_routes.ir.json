@@ -1,0 +1,323 @@
+{
+  "ir": {
+    "edges": [
+      {
+        "category": "http-route",
+        "framework": "express",
+        "method": "GET",
+        "sourceId": "b59385b8d3f69c0930456c2c025d1703",
+        "targetId": "70757bfdedaa1af1bb75ed47f4924995",
+        "valueType": {
+          "display": "string",
+          "lang": "ts",
+          "source": "inferred"
+        }
+      },
+      {
+        "category": "http-route",
+        "framework": "express",
+        "method": "POST",
+        "sourceId": "4f805d9ac41d4fa639956215d4d2ea42",
+        "targetId": "2147278d1b28d9a6a8024103da530e9d",
+        "valueType": {
+          "display": "string",
+          "lang": "ts",
+          "source": "inferred"
+        }
+      },
+      {
+        "callKind": "direct",
+        "category": "call",
+        "sourceId": "b59385b8d3f69c0930456c2c025d1703",
+        "tags": [
+          "middleware"
+        ],
+        "targetId": "795af5a321c130332d20f1e10f738e5c"
+      },
+      {
+        "callKind": "direct",
+        "category": "call",
+        "sourceId": "4f805d9ac41d4fa639956215d4d2ea42",
+        "tags": [
+          "middleware"
+        ],
+        "targetId": "795af5a321c130332d20f1e10f738e5c"
+      },
+      {
+        "callKind": "direct",
+        "category": "call",
+        "sourceId": "4f805d9ac41d4fa639956215d4d2ea42",
+        "tags": [
+          "middleware"
+        ],
+        "targetId": "6b6a3c7edc862e0945c2715ec4220900"
+      },
+      {
+        "category": "type-flow",
+        "role": "read",
+        "sourceId": "b59385b8d3f69c0930456c2c025d1703",
+        "targetId": "58888b916ed1af69981c22044b8d04c4",
+        "valueType": {
+          "display": "string",
+          "lang": "ts",
+          "source": "inferred"
+        }
+      },
+      {
+        "category": "type-flow",
+        "role": "read",
+        "sourceId": "4f805d9ac41d4fa639956215d4d2ea42",
+        "targetId": "692c28ac9533aa2c0c5b27d1668ec10e",
+        "valueType": {
+          "display": "unknown",
+          "lang": "ts",
+          "source": "inferred"
+        }
+      }
+    ],
+    "metadata": {
+      "commit": "0000000000000000000000000000000000000000",
+      "generatedAt": "2026-05-09T00:00:00.000Z",
+      "generators": [
+        {
+          "name": "codegraph-tree-sitter-ts",
+          "version": "0.1.0"
+        },
+        {
+          "name": "codegraph-adapter-express",
+          "version": "0.1.0"
+        }
+      ],
+      "repo": ""
+    },
+    "nodes": [
+      {
+        "id": "003e58053684936600fd5dda16008aac",
+        "lang": "none",
+        "name": "synthetic",
+        "path": "test-fixtures/synthetic",
+        "signature": "service||test-fixtures/synthetic",
+        "tier": "service"
+      },
+      {
+        "id": "30f640584feec9c2bb7ded7442008bed",
+        "lang": "ts",
+        "name": "02_routes.ts",
+        "parentId": "003e58053684936600fd5dda16008aac",
+        "path": "test-fixtures/synthetic/src/02_routes.ts",
+        "signature": "module|003e58053684936600fd5dda16008aac|test-fixtures/synthetic/src/02_routes.ts",
+        "tier": "module"
+      },
+      {
+        "asyncness": "sync",
+        "exported": false,
+        "id": "795af5a321c130332d20f1e10f738e5c",
+        "kind": "function",
+        "name": "auth",
+        "params": [
+          {
+            "name": "_req",
+            "type": {
+              "display": "Request",
+              "lang": "ts",
+              "source": "annotated"
+            }
+          },
+          {
+            "name": "_res",
+            "type": {
+              "display": "Response",
+              "lang": "ts",
+              "source": "annotated"
+            }
+          },
+          {
+            "name": "next",
+            "type": {
+              "display": "NextFunction",
+              "lang": "ts",
+              "source": "annotated"
+            }
+          }
+        ],
+        "parentId": "30f640584feec9c2bb7ded7442008bed",
+        "pure": false,
+        "returnType": {
+          "display": "void",
+          "lang": "ts",
+          "source": "annotated"
+        },
+        "signature": "function|30f640584feec9c2bb7ded7442008bed|auth|3|Request,Response,NextFunction",
+        "tags": [
+          "middleware"
+        ],
+        "tier": "function"
+      },
+      {
+        "asyncness": "sync",
+        "exported": false,
+        "id": "6b6a3c7edc862e0945c2715ec4220900",
+        "kind": "function",
+        "name": "validate",
+        "params": [
+          {
+            "name": "_req",
+            "type": {
+              "display": "Request",
+              "lang": "ts",
+              "source": "annotated"
+            }
+          },
+          {
+            "name": "_res",
+            "type": {
+              "display": "Response",
+              "lang": "ts",
+              "source": "annotated"
+            }
+          },
+          {
+            "name": "next",
+            "type": {
+              "display": "NextFunction",
+              "lang": "ts",
+              "source": "annotated"
+            }
+          }
+        ],
+        "parentId": "30f640584feec9c2bb7ded7442008bed",
+        "pure": false,
+        "returnType": {
+          "display": "void",
+          "lang": "ts",
+          "source": "annotated"
+        },
+        "signature": "function|30f640584feec9c2bb7ded7442008bed|validate|3|Request,Response,NextFunction",
+        "tags": [
+          "middleware"
+        ],
+        "tier": "function"
+      },
+      {
+        "asyncness": "sync",
+        "exported": false,
+        "id": "b59385b8d3f69c0930456c2c025d1703",
+        "kind": "function",
+        "name": "getUser",
+        "params": [
+          {
+            "name": "req",
+            "type": {
+              "display": "Request",
+              "lang": "ts",
+              "source": "annotated"
+            }
+          },
+          {
+            "name": "res",
+            "type": {
+              "display": "Response",
+              "lang": "ts",
+              "source": "annotated"
+            }
+          }
+        ],
+        "parentId": "30f640584feec9c2bb7ded7442008bed",
+        "pure": false,
+        "returnType": {
+          "display": "void",
+          "lang": "ts",
+          "source": "annotated"
+        },
+        "signature": "function|30f640584feec9c2bb7ded7442008bed|getUser|2|Request,Response",
+        "tier": "function"
+      },
+      {
+        "asyncness": "sync",
+        "exported": false,
+        "id": "4f805d9ac41d4fa639956215d4d2ea42",
+        "kind": "function",
+        "name": "createUser",
+        "params": [
+          {
+            "name": "req",
+            "type": {
+              "display": "Request",
+              "lang": "ts",
+              "source": "annotated"
+            }
+          },
+          {
+            "name": "res",
+            "type": {
+              "display": "Response",
+              "lang": "ts",
+              "source": "annotated"
+            }
+          }
+        ],
+        "parentId": "30f640584feec9c2bb7ded7442008bed",
+        "pure": false,
+        "returnType": {
+          "display": "void",
+          "lang": "ts",
+          "source": "annotated"
+        },
+        "signature": "function|30f640584feec9c2bb7ded7442008bed|createUser|2|Request,Response",
+        "tier": "function"
+      },
+      {
+        "id": "70757bfdedaa1af1bb75ed47f4924995",
+        "leaf": {
+          "flavor": "literal",
+          "value": "/users/:id",
+          "valueLang": "ts"
+        },
+        "parentId": "b59385b8d3f69c0930456c2c025d1703",
+        "pure": true,
+        "role": "route-literal",
+        "signature": "expression|b59385b8d3f69c0930456c2c025d1703|http-route|\"/users/:id\"|0",
+        "tier": "expression"
+      },
+      {
+        "id": "2147278d1b28d9a6a8024103da530e9d",
+        "leaf": {
+          "flavor": "literal",
+          "value": "/users",
+          "valueLang": "ts"
+        },
+        "parentId": "4f805d9ac41d4fa639956215d4d2ea42",
+        "pure": true,
+        "role": "route-literal",
+        "signature": "expression|4f805d9ac41d4fa639956215d4d2ea42|http-route|\"/users\"|0",
+        "tier": "expression"
+      },
+      {
+        "id": "58888b916ed1af69981c22044b8d04c4",
+        "leaf": {
+          "field": "id",
+          "flavor": "http-input",
+          "from": "path"
+        },
+        "parentId": "b59385b8d3f69c0930456c2c025d1703",
+        "pure": true,
+        "role": "http-input",
+        "signature": "expression|b59385b8d3f69c0930456c2c025d1703|http-input|req.params.id|0",
+        "tier": "expression"
+      },
+      {
+        "id": "692c28ac9533aa2c0c5b27d1668ec10e",
+        "leaf": {
+          "flavor": "http-input",
+          "from": "body"
+        },
+        "parentId": "4f805d9ac41d4fa639956215d4d2ea42",
+        "pure": true,
+        "role": "http-input",
+        "signature": "expression|4f805d9ac41d4fa639956215d4d2ea42|http-input|req.body|0",
+        "tier": "expression"
+      }
+    ]
+  },
+  "schemaVersion": "0.1.0"
+}

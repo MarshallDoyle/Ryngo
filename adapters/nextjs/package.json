@@ -1,0 +1,65 @@
+{
+  "name": "@codegraph/adapter-nextjs",
+  "version": "0.1.0",
+  "description": "codegraph framework adapter for the Next.js App Router. Lifts route.ts handlers, page.tsx pages, 'use server' actions, and client fetch calls into the codegraph IR.",
+  "license": "MIT",
+  "homepage": "https://github.com/codegraph/codegraph/tree/main/adapters/nextjs#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/codegraph/codegraph.git",
+    "directory": "adapters/nextjs"
+  },
+  "bugs": {
+    "url": "https://github.com/codegraph/codegraph/issues"
+  },
+  "keywords": [
+    "codegraph",
+    "codegraph-adapter",
+    "nextjs",
+    "next",
+    "app-router",
+    "server-actions",
+    "static-analysis"
+  ],
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --dts --clean --target node20",
+    "dev": "tsup src/index.ts --format esm --dts --watch --target node20",
+    "clean": "rm -rf dist .turbo .tsbuildinfo",
+    "lint": "eslint src --ext .ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run clean && npm run build"
+  },
+  "peerDependencies": {
+    "@codegraph/adapter-sdk": "workspace:*"
+  },
+  "devDependencies": {
+    "@codegraph/adapter-sdk": "workspace:*",
+    "@types/node": "catalog:",
+    "tsup": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

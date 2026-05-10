@@ -1,0 +1,35 @@
+{
+  "name": "@codegraph/viewer",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Read-only React + Vite SPA for exploring codegraph IR.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc -b --noEmit"
+  },
+  "dependencies": {
+    "@codegraph/core": "workspace:*",
+    "@xyflow/react": "^12.3.5",
+    "elkjs": "^0.9.3",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "zustand": "^5.0.2",
+    "clsx": "^2.1.1",
+    "tailwind-merge": "^2.5.5",
+    "class-variance-authority": "^0.7.1",
+    "lucide-react": "^0.469.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "tailwindcss": "^4.0.0",
+    "typescript": "^5.7.2",
+    "vite": "^5.4.11"
+  }
+}

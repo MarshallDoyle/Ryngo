@@ -1,0 +1,174 @@
+{
+  "ir": {
+    "edges": [
+      {
+        "category": "type-flow",
+        "role": "field-read",
+        "sourceId": "e5628cc219a4c6f6c744ee4876cf6969",
+        "tags": [
+          "foreign-key",
+          "fk:author_id->users.id"
+        ],
+        "targetId": "75f566627bc0805b7241f996d5f4b078",
+        "valueType": {
+          "display": "Integer",
+          "lang": "py",
+          "source": "annotated"
+        }
+      },
+      {
+        "category": "type-flow",
+        "role": "field-read",
+        "sourceId": "75f566627bc0805b7241f996d5f4b078",
+        "tags": [
+          "relationship",
+          "back-populates:author"
+        ],
+        "targetId": "e5628cc219a4c6f6c744ee4876cf6969",
+        "valueType": {
+          "display": "list[Post]",
+          "lang": "py",
+          "source": "annotated"
+        }
+      },
+      {
+        "category": "type-flow",
+        "role": "field-read",
+        "sourceId": "e5628cc219a4c6f6c744ee4876cf6969",
+        "tags": [
+          "relationship",
+          "back-populates:posts"
+        ],
+        "targetId": "75f566627bc0805b7241f996d5f4b078",
+        "valueType": {
+          "display": "User",
+          "lang": "py",
+          "source": "annotated"
+        }
+      }
+    ],
+    "metadata": {
+      "commit": "0000000000000000000000000000000000000000",
+      "generatedAt": "2026-05-09T00:00:00.000Z",
+      "generators": [
+        {
+          "name": "codegraph-tree-sitter-py",
+          "version": "0.1.0"
+        },
+        {
+          "name": "codegraph-adapter-sqlalchemy",
+          "version": "0.1.0"
+        }
+      ],
+      "repo": ""
+    },
+    "nodes": [
+      {
+        "id": "003e58053684936600fd5dda16008aac",
+        "lang": "none",
+        "name": "synthetic",
+        "path": "test-fixtures/synthetic",
+        "signature": "service||test-fixtures/synthetic",
+        "tier": "service"
+      },
+      {
+        "id": "9b8c5bf5b6ed6258ec1400543a0d0a0c",
+        "lang": "py",
+        "name": "07_python_sqlalchemy.py",
+        "parentId": "003e58053684936600fd5dda16008aac",
+        "path": "test-fixtures/synthetic/src/07_python_sqlalchemy.py",
+        "signature": "module|003e58053684936600fd5dda16008aac|test-fixtures/synthetic/src/07_python_sqlalchemy.py",
+        "tier": "module"
+      },
+      {
+        "exported": true,
+        "fields": [
+          {
+            "name": "id",
+            "readonly": true,
+            "type": {
+              "display": "Integer",
+              "lang": "py",
+              "source": "annotated"
+            }
+          },
+          {
+            "name": "email",
+            "type": {
+              "display": "String",
+              "lang": "py",
+              "source": "annotated"
+            }
+          },
+          {
+            "name": "posts",
+            "type": {
+              "display": "list[Post]",
+              "lang": "py",
+              "source": "annotated"
+            }
+          }
+        ],
+        "id": "75f566627bc0805b7241f996d5f4b078",
+        "kind": "class",
+        "name": "User",
+        "parentId": "9b8c5bf5b6ed6258ec1400543a0d0a0c",
+        "signature": "type|9b8c5bf5b6ed6258ec1400543a0d0a0c|User",
+        "tags": [
+          "sqlalchemy-model",
+          "table:users"
+        ],
+        "tier": "type"
+      },
+      {
+        "exported": true,
+        "fields": [
+          {
+            "name": "id",
+            "readonly": true,
+            "type": {
+              "display": "Integer",
+              "lang": "py",
+              "source": "annotated"
+            }
+          },
+          {
+            "name": "title",
+            "type": {
+              "display": "String",
+              "lang": "py",
+              "source": "annotated"
+            }
+          },
+          {
+            "name": "author_id",
+            "type": {
+              "display": "Integer",
+              "lang": "py",
+              "source": "annotated"
+            }
+          },
+          {
+            "name": "author",
+            "type": {
+              "display": "User",
+              "lang": "py",
+              "source": "annotated"
+            }
+          }
+        ],
+        "id": "e5628cc219a4c6f6c744ee4876cf6969",
+        "kind": "class",
+        "name": "Post",
+        "parentId": "9b8c5bf5b6ed6258ec1400543a0d0a0c",
+        "signature": "type|9b8c5bf5b6ed6258ec1400543a0d0a0c|Post",
+        "tags": [
+          "sqlalchemy-model",
+          "table:posts"
+        ],
+        "tier": "type"
+      }
+    ]
+  },
+  "schemaVersion": "0.1.0"
+}

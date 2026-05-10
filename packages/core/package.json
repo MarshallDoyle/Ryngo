@@ -1,0 +1,67 @@
+{
+  "name": "@codegraph/core",
+  "version": "0.1.0",
+  "private": true,
+  "description": "codegraph core: canonical IR types, validator, sample generator, and shared analyzer plumbing. The IR module (`./ir`) is the single source of truth for the IR shape and is consumed by every other workspace package — viewer, indexers, adapters, diff, and the GitHub Action.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "files": [
+    "dist",
+    "src",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./ir": {
+      "types": "./dist/ir/index.d.ts",
+      "import": "./dist/ir/index.js",
+      "default": "./dist/ir/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "clean": "rimraf dist .turbo .tsbuildinfo",
+    "lint": "eslint \"src/**/*.{ts,tsx}\"",
+    "lint:fix": "eslint \"src/**/*.{ts,tsx}\" --fix",
+    "test": "vitest run",
+    "test:unit": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "@vitest/coverage-v8": "2.1.4",
+    "fast-check": "^3.23.1",
+    "tsup": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  },
+  "engines": {
+    "node": ">=20.11.0"
+  },
+  "codegraph": {
+    "irSchemaVersion": "0.1.0",
+    "irExportPath": "./ir",
+    "notes": [
+      "The IR types canonical to v0.1 live in `src/ir/types.ts` and are re-exported from `src/ir/index.ts`. The `./ir` subpath export is the recommended import for downstream packages (e.g. `import type { IR } from '@codegraph/core/ir'`).",
+      "There is no separate `@codegraph/ir` workspace package in v0.1; consumers that previously planned to depend on `@codegraph/ir` should depend on `@codegraph/core` and import from `@codegraph/core/ir`."
+    ]
+  }
+}
