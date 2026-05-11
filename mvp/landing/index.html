@@ -222,46 +222,92 @@ npm start          # HTTP server (API + /mcp + landing + /app)</code></pre>
     <section id="evals" class="section section-alt">
       <h2>Token efficiency evals</h2>
       <p class="section-lede">
-        This is the benchmark we will publish from the corpus harness: compare
-        raw repo context with Ryngo's compressed representations, broken down by
-        language family and representation type. The chart below is an
-        interactive model of the metric; the next step is wiring it directly to
-        <code>npm run corpus</code> output.
+        Current corpus-backed sketch: compare raw repo context with the
+        projections Ryngo can hand to an agent. The plot is normalized to a
+        1.1m-token repo so the shape is readable; the ratios come from the
+        latest <code>npm run corpus</code> token report.
       </p>
-      <div class="eval-card">
-        <div class="eval-controls">
-          <label for="repoTokens">
-            Raw repo context
-            <span class="mono" id="repoTokensLabel">250k tokens</span>
-          </label>
-          <input id="repoTokens" type="range" min="50000" max="2000000" step="50000" value="250000" />
+      <div class="eval-card eval-sketch-card">
+        <div class="eval-sketch-head">
+          <div>
+            <span>53-repo corpus median</span>
+            <strong>Raw context collapses into map-sized context</strong>
+          </div>
+          <div class="eval-price mono">Assumes $3 / 1M input tokens</div>
         </div>
-        <div class="eval-bars" aria-label="Estimated token budget by representation">
-          <div class="eval-bar-row">
-            <span>Raw files</span>
-            <div class="eval-bar-track"><span class="eval-bar raw" id="barRaw"></span></div>
-            <strong id="rawValue">250k</strong>
+        <svg class="xkcd-plot" viewBox="0 0 880 460" role="img" aria-labelledby="xkcdEvalTitle xkcdEvalDesc">
+          <title id="xkcdEvalTitle">Ryngo token and cost compression plot</title>
+          <desc id="xkcdEvalDesc">A hand-drawn style line plot comparing raw files, compact IR, view model, focused subgraph, topology, and a node signature for a 1.1 million token repository.</desc>
+          <defs>
+            <filter id="rough-line">
+              <feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="1" seed="8" result="noise" />
+              <feDisplacementMap in="SourceGraphic" in2="noise" scale="1.1" />
+            </filter>
+          </defs>
+          <path class="plot-paper-line" d="M94 374 C230 366 371 382 512 372 C640 362 730 379 806 369" />
+          <path class="plot-axis" d="M96 55 C94 126 97 205 93 285 C91 339 96 381 93 410" />
+          <path class="plot-axis" d="M80 388 C204 385 325 390 452 386 C591 382 701 389 815 384" />
+          <text class="plot-title" x="122" y="38">context spent per question</text>
+          <text class="plot-y" x="34" y="78">1m</text>
+          <text class="plot-y" x="42" y="204">100k</text>
+          <text class="plot-y" x="50" y="320">1k</text>
+          <text class="plot-y" x="54" y="390">10</text>
+          <path class="plot-guide" d="M94 86 C284 90 527 84 808 89" />
+          <path class="plot-guide" d="M94 207 C278 204 541 211 810 204" />
+          <path class="plot-guide" d="M94 328 C272 333 547 323 812 329" />
+          <path class="plot-line" d="M132 82 C210 96 250 112 300 118 C378 130 425 205 476 214 C528 234 556 323 608 329 C657 333 682 334 716 337 C751 344 766 373 790 382" />
+          <g class="plot-point raw">
+            <circle cx="132" cy="82" r="8" />
+            <text x="154" y="76">Raw files</text>
+            <text x="154" y="98">1.1m tokens · $3.30</text>
+          </g>
+          <g class="plot-point compact">
+            <circle cx="300" cy="118" r="7" />
+            <text x="322" y="113">Compact IR</text>
+            <text x="322" y="135">669k · $2.01</text>
+          </g>
+          <g class="plot-point view">
+            <circle cx="476" cy="214" r="7" />
+            <text x="498" y="205">ViewModel</text>
+            <text x="498" y="227">153k · $0.46</text>
+          </g>
+          <g class="plot-point focus">
+            <circle cx="608" cy="329" r="7" />
+            <text x="514" y="306">focused subgraph</text>
+            <text x="535" y="326">3.1k · less than 1¢</text>
+          </g>
+          <g class="plot-point topology">
+            <circle cx="716" cy="337" r="7" />
+            <text x="695" y="290">topology</text>
+            <text x="682" y="312">1.3k · less than 1¢</text>
+          </g>
+          <g class="plot-point sig">
+            <circle cx="790" cy="382" r="6" />
+            <text x="635" y="411">node signature: ~70 tokens</text>
+          </g>
+          <path class="plot-arrow" d="M742 91 C697 119 671 157 658 211" />
+          <text class="plot-note" x="648" y="73">this is the money leak</text>
+          <path class="plot-arrow" d="M434 352 C502 368 602 367 704 353" />
+          <text class="plot-note" x="386" y="432">agent gets the map, not the repo dump</text>
+        </svg>
+        <div class="eval-callouts">
+          <div>
+            <strong>843× smaller</strong>
+            <span>Topology median: 0.12% of raw context.</span>
           </div>
-          <div class="eval-bar-row">
-            <span>Compact IR</span>
-            <div class="eval-bar-track"><span class="eval-bar compact" id="barCompact"></span></div>
-            <strong id="compactValue">20k</strong>
+          <div>
+            <strong>352× smaller</strong>
+            <span>Focused subgraph median: 0.28% of raw context.</span>
           </div>
-          <div class="eval-bar-row">
-            <span>Topology</span>
-            <div class="eval-bar-track"><span class="eval-bar topology" id="barTopology"></span></div>
-            <strong id="topologyValue">750</strong>
-          </div>
-          <div class="eval-bar-row">
-            <span>Focused subgraph</span>
-            <div class="eval-bar-track"><span class="eval-bar subgraph" id="barSubgraph"></span></div>
-            <strong id="subgraphValue">3.8k</strong>
+          <div>
+            <strong>15k× smaller</strong>
+            <span>One source-backed node signature: 0.006% of raw context.</span>
           </div>
         </div>
         <p class="eval-note">
-          Model defaults: compact IR about 8% of raw context, topology about
-          0.3%, focused subgraph about 1.5%. Corpus-backed landing metrics
-          should replace these assumptions once the run history is stable.
+          The honest signal: compact IR is still a compiler artifact, not the
+          thing we should blindly paste into an LLM. The user-facing win comes
+          from topology, source-backed signatures, and k-hop subgraphs.
         </p>
       </div>
       <div class="eval-plan">
@@ -713,28 +759,6 @@ git commit -m "ryngo: dismiss intentional warnings + auth notes"</code></pre>
         <span class="foot-tag">— the map your coding agent is missing</span>
       </div>
     </footer>
-    <script>
-      const slider = document.getElementById("repoTokens");
-      const fmt = (n) => n >= 1000000 ? `${(n / 1000000).toFixed(1)}m` : n >= 1000 ? `${Math.round(n / 1000)}k` : `${Math.round(n)}`;
-      function updateEval() {
-        const raw = Number(slider.value);
-        const compact = Math.max(900, raw * 0.08);
-        const topology = Math.max(450, raw * 0.003);
-        const subgraph = Math.max(1200, raw * 0.015);
-        document.getElementById("repoTokensLabel").textContent = `${fmt(raw)} tokens`;
-        document.getElementById("rawValue").textContent = fmt(raw);
-        document.getElementById("compactValue").textContent = fmt(compact);
-        document.getElementById("topologyValue").textContent = fmt(topology);
-        document.getElementById("subgraphValue").textContent = fmt(subgraph);
-        document.getElementById("barRaw").style.width = "100%";
-        document.getElementById("barCompact").style.width = `${Math.max(3, (compact / raw) * 100)}%`;
-        document.getElementById("barTopology").style.width = `${Math.max(2, (topology / raw) * 100)}%`;
-        document.getElementById("barSubgraph").style.width = `${Math.max(2.5, (subgraph / raw) * 100)}%`;
-      }
-      slider?.addEventListener("input", updateEval);
-      updateEval();
-    </script>
-
     <script>
       // Hydrate the hero stats banner + multiplier headline from
       // /api/stats/public. The HTML ships with baked corpus-baseline

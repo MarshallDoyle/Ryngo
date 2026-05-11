@@ -384,56 +384,136 @@ pre code {
   border-radius: 10px;
   box-shadow: var(--shadow-soft);
 }
-.eval-controls {
-  margin-bottom: 18px;
+.eval-sketch-card {
+  padding: 22px 22px 18px;
 }
-.eval-controls label {
+.eval-sketch-head {
   display: flex;
-  align-items: baseline;
   justify-content: space-between;
   gap: 18px;
-  font-weight: 600;
+  align-items: start;
+  margin-bottom: 8px;
 }
-.eval-controls input {
-  width: 100%;
-  margin-top: 12px;
-  accent-color: var(--accent);
-}
-.eval-bars {
-  display: grid;
-  gap: 11px;
-}
-.eval-bar-row {
-  display: grid;
-  grid-template-columns: 130px minmax(120px, 1fr) 64px;
-  gap: 12px;
-  align-items: center;
-  font-size: 13px;
-}
-.eval-bar-row > span {
-  color: var(--muted);
-}
-.eval-bar-row strong {
-  text-align: right;
-  font-family:
-    ui-monospace, "JetBrains Mono", "SFMono-Regular", Menlo, Consolas, monospace;
-}
-.eval-bar-track {
-  height: 13px;
-  border-radius: 999px;
-  background: color-mix(in oklab, var(--line) 70%, transparent);
-  overflow: hidden;
-}
-.eval-bar {
+.eval-sketch-head span {
   display: block;
-  height: 100%;
-  min-width: 2px;
-  border-radius: inherit;
+  color: var(--muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
-.eval-bar.raw { background: var(--muted); }
-.eval-bar.compact { background: var(--fn); }
-.eval-bar.topology { background: var(--accent); }
-.eval-bar.subgraph { background: var(--call); }
+.eval-sketch-head strong {
+  display: block;
+  margin-top: 3px;
+  font-size: 18px;
+  letter-spacing: -0.01em;
+}
+.eval-price {
+  color: var(--muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+.xkcd-plot {
+  width: 100%;
+  height: auto;
+  display: block;
+  margin: 4px 0 12px;
+  background:
+    linear-gradient(color-mix(in oklab, var(--line) 36%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in oklab, var(--line) 28%, transparent) 1px, transparent 1px);
+  background-size: 34px 34px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.xkcd-plot text {
+  font-family: "Comic Sans MS", "Marker Felt", "Bradley Hand", cursive;
+  fill: var(--text);
+}
+.plot-axis,
+.plot-line,
+.plot-arrow,
+.plot-paper-line {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: url(#rough-line);
+}
+.plot-axis {
+  stroke: var(--text);
+  stroke-width: 3;
+}
+.plot-guide {
+  fill: none;
+  stroke: color-mix(in oklab, var(--muted) 46%, transparent);
+  stroke-width: 1.5;
+  stroke-dasharray: 6 9;
+}
+.plot-paper-line {
+  stroke: color-mix(in oklab, var(--accent) 55%, transparent);
+  stroke-width: 6;
+  opacity: 0.24;
+}
+.plot-line {
+  stroke: var(--accent);
+  stroke-width: 4;
+}
+.plot-arrow {
+  stroke: var(--muted);
+  stroke-width: 2.2;
+  marker-end: none;
+}
+.plot-title {
+  font-size: 22px;
+  font-weight: 700;
+}
+.plot-y {
+  font-size: 14px;
+  fill: var(--muted);
+}
+.plot-point circle {
+  stroke: var(--text);
+  stroke-width: 2.5;
+  fill: var(--bg);
+}
+.plot-point.raw circle { fill: var(--muted); }
+.plot-point.compact circle { fill: var(--fn); }
+.plot-point.view circle { fill: var(--cls); }
+.plot-point.focus circle { fill: var(--call); }
+.plot-point.topology circle { fill: var(--accent); }
+.plot-point.sig circle { fill: var(--pkg); }
+.plot-point text:first-of-type {
+  font-size: 16px;
+  font-weight: 700;
+}
+.plot-point text:last-of-type {
+  font-size: 13px;
+  fill: var(--muted);
+}
+.plot-note {
+  font-size: 15px;
+  fill: var(--muted);
+}
+.eval-callouts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+.eval-callouts > div {
+  padding: 12px 14px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.eval-callouts strong {
+  display: block;
+  font-size: 18px;
+}
+.eval-callouts span {
+  display: block;
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 1.35;
+}
 .eval-note {
   margin: 16px 0 0;
   padding-top: 14px;
@@ -465,15 +545,19 @@ pre code {
 
 @media (max-width: 760px) {
   .proof-grid,
+  .eval-callouts,
   .eval-plan {
     grid-template-columns: 1fr;
   }
-  .eval-bar-row {
-    grid-template-columns: 1fr;
-    gap: 5px;
+  .eval-sketch-head {
+    display: grid;
+    gap: 8px;
   }
-  .eval-bar-row strong {
-    text-align: left;
+  .eval-price {
+    white-space: normal;
+  }
+  .xkcd-plot {
+    min-height: 360px;
   }
 }
 
