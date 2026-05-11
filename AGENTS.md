@@ -30,6 +30,7 @@ soften the tone in edits.
 | connect Claude/Codex/ChatGPT to the node viewer | [`mvp/docs/AGENT_VIEWER.md`](mvp/docs/AGENT_VIEWER.md) |
 | change the UI | [`mvp/src/App.jsx`](mvp/src/App.jsx) + [`mvp/src/components/nodes/`](mvp/src/components/nodes/) |
 | measure compiler progress | [`mvp/test/SCOPE.md`](mvp/test/SCOPE.md) |
+| add a compiler warning | [`mvp/docs/WARNINGS_CATALOG.md`](mvp/docs/WARNINGS_CATALOG.md) — full taxonomy + which 20 to ship next |
 | understand priorities | the master plan (see "Source of truth" below) |
 | deploy | [`mvp/docs/HOSTING.md`](mvp/docs/HOSTING.md) |
 | build the marketing landing page | [`mvp/docs/LANDING.md`](mvp/docs/LANDING.md) |
