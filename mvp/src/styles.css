@@ -24,6 +24,11 @@
   --input-bg: #ffffff;
   --input-border: #b9b394;
   --code-bg: #fffdf7;
+  --source-header-bg: #0a1018;
+  --source-header-text: #f8fafc;
+  --source-header-muted: #cbd5e1;
+  --source-header-icon: #93c5fd;
+  --source-header-border: #d8d3b4;
   /* Legend swatch fills — paired with the --fn etc. tokens but as
      concrete backgrounds the legend can paint without per-mode JSX. */
   --sw-file-bg: #f4f1e3;
@@ -59,6 +64,11 @@
   --input-bg: #111827;
   --input-border: #374151;
   --code-bg: #050a13;
+  --source-header-bg: #050a13;
+  --source-header-text: #e5e7eb;
+  --source-header-muted: #9ca3af;
+  --source-header-icon: #a5d8ff;
+  --source-header-border: #374151;
   --sw-file-bg: #111827;
   --sw-file-border: #374151;
   --sw-fn-bg: #1e3a5f;
@@ -1319,7 +1329,8 @@ main {
   gap: 10px;
   padding: 8px 14px;
   border-bottom: 1px solid var(--line);
-  background: #0a1018;
+  background: var(--source-header-bg);
+  color: var(--source-header-text);
   font-size: 13px;
   flex-wrap: wrap;
 }
@@ -1327,16 +1338,17 @@ main {
   font-family: monospace;
   width: 18px;
   text-align: center;
+  color: var(--source-header-icon);
 }
 .focus-name {
   font-weight: 600;
   font-family:
     ui-monospace, "JetBrains Mono", "SFMono-Regular", Menlo, Consolas,
     monospace;
-  color: var(--text);
+  color: var(--source-header-text);
 }
 .focus-file {
-  color: var(--muted);
+  color: var(--source-header-muted);
   font-size: 11px;
   margin-left: 4px;
   word-break: break-all;
@@ -1344,14 +1356,14 @@ main {
 .focus-back {
   margin-left: auto;
   background: transparent;
-  color: var(--muted);
-  border: 1px solid var(--border);
+  color: var(--source-header-muted);
+  border: 1px solid var(--source-header-border);
   padding: 4px 10px;
   font-size: 11px;
   border-radius: 4px;
 }
 .focus-back:hover {
-  color: var(--text);
+  color: var(--source-header-text);
   border-color: var(--accent);
 }
 
