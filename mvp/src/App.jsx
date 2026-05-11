@@ -1358,14 +1358,15 @@ export default function App() {
       if (focusStack.length > 0) {
         e.preventDefault();
         setFocusStack((s) => s.slice(0, -1));
-      } else if (selected) {
+      } else if (selected || selectedEdge) {
         e.preventDefault();
         setSelected(null);
+        setSelectedEdge(null);
       }
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [focusStack.length, selected]);
+  }, [focusStack.length, selected, selectedEdge]);
 
   // ----- repo view layout (memoized) -----
   const repoBase = useMemo(() => {
@@ -1491,6 +1492,7 @@ export default function App() {
       setIr(null);
       setAgentViewModel(null);
       setSelected(null);
+      setSelectedEdge(null);
       setFocusStack([]);
       setPinnedIds(new Set());
       setContextMenu(null);
@@ -1906,22 +1908,12 @@ export default function App() {
       <header>
         <div className="brand">
           <a className="brand-home" href="/" aria-label="Ryngo home">
-            <div className="logo" aria-hidden="true">
-              <svg width="22" height="22" viewBox="0 0 32 32">
-                <rect width="32" height="32" rx="6" fill="#030712" />
-                {/* Block-letter R: vertical bar + top + bowl returning to bar + diagonal leg. */}
-                <path
-                  d="M8 24V8h6a5 5 0 010 10H8 M13 18l5 6"
-                  stroke="#c8ff3d"
-                  strokeWidth="2"
-                  fill="none"
-                  strokeLinejoin="round"
-                  strokeLinecap="round"
-                />
-              </svg>
-            </div>
             <h1>
-              Ryngo <span className="tag">MVP</span>
+              <svg className="ryngo-wordmark" viewBox="0 0 148 56" role="img" aria-label="Ryngo">
+                <text x="12" y="39" className="ryngo-wordmark-layer">Ryngo</text>
+                <text x="9" y="38" className="ryngo-wordmark-face">Ryngo</text>
+              </svg>
+              <span className="tag">MVP</span>
             </h1>
           </a>
           <button
@@ -2236,7 +2228,9 @@ export default function App() {
             node={focusedNode}
             layout={focusLayout}
             selected={selected}
+            selectedEdge={selectedEdge}
             onSelect={(e, n) => handleNodeClick("focus", e, n)}
+            onEdgeSelect={(e, edge) => handleEdgeClick("focus", e, edge)}
             onDoubleSelect={(e, n) => handleNodeDoubleClick("focus", e, n)}
             onContextMenu={handleNodeContextMenu}
             onInspect={onInspect}
@@ -2563,7 +2557,9 @@ function FocusView({
   node,
   layout,
   selected,
+  selectedEdge,
   onSelect,
+  onEdgeSelect,
   onDoubleSelect,
   onContextMenu,
   onInspect,
@@ -2739,6 +2735,7 @@ function FocusView({
               if (instanceRef) instanceRef.current = inst;
             }}
             onNodeClick={onSelect}
+            onEdgeClick={onEdgeSelect}
             onNodeDoubleClick={onDoubleSelect}
             onNodeContextMenu={onContextMenu}
             onPaneClick={onPaneClick}
@@ -2765,23 +2762,34 @@ function FocusView({
               <div className="legend-row legend-hint">
                 left = callers · right = callees
               </div>
+              <div className="legend-row">
+                <span className="ln ln-solid" /> confirmed
+                <span className="ln ln-dotted" /> inferred
+                <span className="ln ln-dashed" /> heuristic
+              </div>
               <div className="legend-row legend-hint">
                 click = open source · hover details = highlight line
               </div>
             </Panel>
-            {selected && selected.data?.kind !== "file-header" && (
+            {(selected || selectedEdge) && selected?.data?.kind !== "file-header" && (
               <Panel position="top-right" className="inspector">
-                <div className="inspector-header">
-                  {iconForKind(selected.data?.kind)} {selected.data?.label}
-                </div>
-                <NodeMeta
-                  data={selected.data}
-                  ir={ir}
-                  selectedId={selected.id}
-                />
-                <button className="inspector-drill" onClick={onInspect}>
-                  Inspect node ↳
-                </button>
+                {selectedEdge ? (
+                  <EdgeMeta edgeSelection={selectedEdge} ir={ir} />
+                ) : (
+                  <>
+                    <div className="inspector-header">
+                      {iconForKind(selected.data?.kind)} {selected.data?.label}
+                    </div>
+                    <NodeMeta
+                      data={selected.data}
+                      ir={ir}
+                      selectedId={selected.id}
+                    />
+                    <button className="inspector-drill" onClick={onInspect}>
+                      Inspect node ↳
+                    </button>
+                  </>
+                )}
               </Panel>
             )}
           </ReactFlow>
@@ -2996,14 +3004,7 @@ function NodeMeta({ data, ir, selectedId }) {
   }
   // function / class / cell
   const returnType = data?.returnType?.display || data?.returnType || null;
-  const callers = ir.edges
-    .filter((e) => e.kind === "calls" && e.target === selectedId)
-    .map((e) => ir.nodes.find((node) => node.id === e.source))
-    .filter(Boolean);
-  const callees = ir.edges
-    .filter((e) => e.kind === "calls" && e.source === selectedId)
-    .map((e) => ir.nodes.find((node) => node.id === e.target))
-    .filter(Boolean);
+  const relationshipGroups = groupedRelationships(ir, selectedId);
   return (
     <dl>
       <Row label="kind">{data.kind}</Row>
@@ -3066,44 +3067,135 @@ function NodeMeta({ data, ir, selectedId }) {
         </Row>
       )}
       <Row label="lang" mono>{data.lang || "—"}</Row>
-      <Row label={`callers (${callers.length})`}>
-        {callers.length ? (
-          <ul className="ref-list">
-            {callers.slice(0, 12).map((node, i) => (
-              <li
-                key={i}
-                onMouseEnter={() => emitSourceLine(node.data || node)}
-                title={node.source ? sourceLabel(node.source) : idToLabel(ir, node.id)}
-              >
-                {idToLabel(ir, node.id)}
-              </li>
-            ))}
-            {callers.length > 12 && <li>…+{callers.length - 12}</li>}
-          </ul>
-        ) : (
-          <span className="muted">—</span>
-        )}
-      </Row>
-      <Row label={`callees (${callees.length})`}>
-        {callees.length ? (
-          <ul className="ref-list">
-            {callees.slice(0, 12).map((node, i) => (
-              <li
-                key={i}
-                onMouseEnter={() => emitSourceLine(node.data || node)}
-                title={node.source ? sourceLabel(node.source) : idToLabel(ir, node.id)}
-              >
-                {idToLabel(ir, node.id)}
-              </li>
-            ))}
-            {callees.length > 12 && <li>…+{callees.length - 12}</li>}
-          </ul>
-        ) : (
-          <span className="muted">—</span>
-        )}
-      </Row>
+      <RelationshipRows groups={relationshipGroups.incoming} label="incoming" />
+      <RelationshipRows groups={relationshipGroups.outgoing} label="outgoing" />
     </dl>
   );
+}
+
+function EdgeMeta({ edgeSelection, ir }) {
+  const raw = edgeSelection.raw || {};
+  const kind = raw.kind || edgeSelection.data?.kind || "edge";
+  const confidence = raw.confidence || edgeSelection.data?.confidence || "unknown";
+  const sourceNode = ir.nodes.find((node) => node.id === (raw.source || edgeSelection.source));
+  const targetNode = ir.nodes.find((node) => node.id === (raw.target || edgeSelection.target));
+  const sourceLocation = raw.sourceLocation || edgeSelection.data?.sourceLocation || null;
+  return (
+    <>
+      <div className="inspector-header">
+        → {edgeKindLabel(kind)}
+      </div>
+      <dl>
+        <Row label="kind" mono>{kind}</Row>
+        <Row label="confidence" mono>{confidence}</Row>
+        {raw.resolution && <Row label="resolution" mono>{raw.resolution}</Row>}
+        {raw.provenance?.extractor && <Row label="extractor" mono>{raw.provenance.extractor}</Row>}
+        {raw.provenance?.reason && <Row label="reason">{raw.provenance.reason}</Row>}
+        <Row label="source">
+          <Endpoint node={sourceNode} fallback={raw.source || edgeSelection.source} />
+        </Row>
+        <Row label="target">
+          <Endpoint node={targetNode} fallback={raw.target || edgeSelection.target} />
+        </Row>
+        <Row label="evidence" mono>
+          {sourceLocation ? (
+            <span
+              className="edge-evidence"
+              onMouseEnter={() => emitSourceLine({ source: sourceLocation, label: edgeKindLabel(kind), kind })}
+              title={sourceLabel(sourceLocation)}
+            >
+              {sourceLabel(sourceLocation)}
+            </span>
+          ) : (
+            <span className="muted">inferred from endpoint/source metadata</span>
+          )}
+        </Row>
+      </dl>
+    </>
+  );
+}
+
+function Endpoint({ node, fallback }) {
+  if (!node) return <span className="mono">{fallback || "unknown"}</span>;
+  const data = nodeData(node);
+  return (
+    <span
+      className="relationship-row"
+      onMouseEnter={() => emitSourceLine(data)}
+      title={node.source ? sourceLabel(node.source) : node.id}
+    >
+      <span className="relationship-kind">{node.kind}</span>
+      <span className="mono">{node.label}</span>
+      {node.source && <span className="relationship-source">{sourceLabel(node.source)}</span>}
+    </span>
+  );
+}
+
+function RelationshipRows({ groups, label }) {
+  const total = groups.reduce((sum, group) => sum + group.items.length, 0);
+  return (
+    <Row label={`${label} (${total})`}>
+      {total ? (
+        <ul className="ref-list relationship-list">
+          {groups.map((group) => (
+            <li key={group.kind} className="relationship-group">
+              <span className="relationship-group-title">{edgeKindLabel(group.kind)} · {group.items.length}</span>
+              <ul>
+                {group.items.slice(0, 10).map((item) => (
+                  <li
+                    key={item.edge.id}
+                    onMouseEnter={() => item.node && emitSourceLine(nodeData(item.node))}
+                    title={item.node?.source ? sourceLabel(item.node.source) : item.edge.id}
+                  >
+                    <span className={`relationship-confidence relationship-confidence-${item.edge.confidence || "unknown"}`}>
+                      {item.edge.confidence || "unknown"}
+                    </span>
+                    {item.node ? idToLabel({ nodes: [item.node] }, item.node.id) : item.otherId}
+                  </li>
+                ))}
+                {group.items.length > 10 && <li>…+{group.items.length - 10}</li>}
+              </ul>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <span className="muted">—</span>
+      )}
+    </Row>
+  );
+}
+
+function groupedRelationships(ir, selectedId) {
+  const byId = new Map(ir.nodes.map((node) => [node.id, node]));
+  const incoming = new Map();
+  const outgoing = new Map();
+  for (const edge of ir.edges) {
+    if (edge.target === selectedId) addRelationship(incoming, edge, edge.source, byId);
+    if (edge.source === selectedId) addRelationship(outgoing, edge, edge.target, byId);
+  }
+  return {
+    incoming: relationshipEntries(incoming),
+    outgoing: relationshipEntries(outgoing),
+  };
+}
+
+function addRelationship(map, edge, otherId, byId) {
+  if (!map.has(edge.kind)) map.set(edge.kind, []);
+  map.get(edge.kind).push({ edge, otherId, node: byId.get(otherId) || null });
+}
+
+function relationshipEntries(map) {
+  return [...map.entries()]
+    .sort((a, b) => b[1].length - a[1].length || compareText(edgeKindLabel(a[0]), edgeKindLabel(b[0])))
+    .map(([kind, items]) => ({ kind, items }));
+}
+
+function edgeKindLabel(kind) {
+  return String(kind || "edge").replace(/-/g, " ");
+}
+
+function compareText(a = "", b = "") {
+  return String(a).localeCompare(String(b));
 }
 
 function idToLabel(ir, id) {

@@ -12,6 +12,7 @@
   --muted: #5a5a5a;
   --accent: #5a8a00;       /* darkened Volt for AA contrast on light bg */
   --accent-ink: #fbfaf2;
+  --logo-layer: #8fa23b;
   --error: #b91c1c;
   --warn: #a16207;
   --link: #0e7490;         /* teal — distinguishes nav from --fn blue */
@@ -47,6 +48,7 @@
   --muted: #9ca3af;
   --accent: #c8ff3d;
   --accent-ink: #030712;
+  --logo-layer: #c8ff3d;
   --error: #fca5a5;
   --warn: #fbbf24;
   --link: #60a5fa;
@@ -125,10 +127,39 @@ header {
 }
 
 .brand h1 {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   margin: 0;
   font-size: 16px;
   font-weight: 600;
   letter-spacing: -0.01em;
+}
+
+.ryngo-wordmark {
+  width: 104px;
+  height: 40px;
+  display: block;
+  overflow: visible;
+  color: var(--text);
+}
+.ryngo-wordmark text {
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, ui-sans-serif,
+    sans-serif;
+  font-size: 34px;
+  font-weight: 850;
+  letter-spacing: -2px;
+}
+.ryngo-wordmark-layer {
+  fill: var(--logo-layer);
+  opacity: 0.22;
+  paint-order: stroke;
+  stroke: var(--panel);
+  stroke-width: 0.8px;
+}
+.ryngo-wordmark-face {
+  fill: currentColor;
 }
 
 .theme-toggle {
@@ -966,6 +997,61 @@ main {
 }
 .ln-call {
   border-color: var(--call);
+}
+.ln-solid {
+  border-color: var(--text);
+}
+.ln-dotted {
+  border-color: var(--text);
+  border-top-style: dotted;
+}
+.ln-dashed {
+  border-color: var(--text);
+  border-top-style: dashed;
+}
+
+.relationship-list,
+.relationship-list ul {
+  list-style: none;
+  padding-left: 0;
+}
+.relationship-group {
+  margin-bottom: 7px;
+}
+.relationship-group-title {
+  display: block;
+  margin-bottom: 3px;
+  color: var(--muted);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.relationship-row,
+.edge-evidence {
+  cursor: crosshair;
+}
+.relationship-kind,
+.relationship-confidence {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 5px;
+  border: 1px solid color-mix(in oklab, currentColor 28%, transparent);
+  border-radius: 999px;
+  padding: 1px 5px;
+  font-size: 9px;
+  line-height: 1.1;
+  color: var(--muted);
+}
+.relationship-source {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 10px;
+}
+.relationship-confidence-framework-inferred,
+.relationship-confidence-heuristic,
+.relationship-confidence-unknown {
+  color: #b45309;
 }
 
 /* ---------- React Flow overrides ---------- */
