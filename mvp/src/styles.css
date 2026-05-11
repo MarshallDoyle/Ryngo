@@ -1102,6 +1102,14 @@ main {
 /* Hide selection outline (we render our own highlight via opacity). */
 .react-flow__node.selected {
   box-shadow: 0 0 0 1.5px var(--accent) !important;
+  border-radius: 7px;
+}
+.react-flow__node-rfn.selected,
+.react-flow__node-rcls.selected,
+.react-flow__node-rcell.selected,
+.react-flow__node-rpkg.selected,
+.react-flow__node-rchip.selected {
+  box-shadow: none !important;
 }
 
 /* ============================================================================
@@ -1518,6 +1526,7 @@ pre.code::-webkit-scrollbar-thumb:hover {
 }
 .rfn-fn-selected {
   box-shadow: 0 0 0 3px var(--accent);
+  border-radius: 7px;
 }
 .rfn-fn-header {
   display: flex;
@@ -1693,6 +1702,7 @@ pre.code::-webkit-scrollbar-thumb:hover {
 }
 .rfn-cls-selected {
   box-shadow: 0 0 0 3px var(--accent);
+  border-radius: 7px;
 }
 .rfn-cls-header {
   display: flex;
@@ -2018,8 +2028,7 @@ pre.code::-webkit-scrollbar-thumb:hover {
   opacity: 0.6;
 }
 .rfn-chip-selected {
-  outline: 2px solid var(--accent);
-  outline-offset: 1px;
+  box-shadow: 0 0 0 2px var(--accent);
 }
 
 /* Handles on layers + chips — small, subtle */
