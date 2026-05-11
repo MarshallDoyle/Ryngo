@@ -233,63 +233,135 @@ npm start          # HTTP server (API + /mcp + landing + /app)</code></pre>
             <span>53-repo corpus median</span>
             <strong>Raw context collapses into map-sized context</strong>
           </div>
-          <div class="eval-price mono">Assumes $3 / 1M input tokens</div>
+          <div class="eval-price mono">Input-token cost, model prices at right</div>
         </div>
-        <svg class="xkcd-plot" viewBox="0 0 880 460" role="img" aria-labelledby="xkcdEvalTitle xkcdEvalDesc">
-          <title id="xkcdEvalTitle">Ryngo token and cost compression plot</title>
-          <desc id="xkcdEvalDesc">A hand-drawn style line plot comparing raw files, compact IR, view model, focused subgraph, topology, and a node signature for a 1.1 million token repository.</desc>
-          <defs>
-            <filter id="rough-line">
-              <feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="1" seed="8" result="noise" />
-              <feDisplacementMap in="SourceGraphic" in2="noise" scale="1.1" />
-            </filter>
-          </defs>
-          <path class="plot-paper-line" d="M94 374 C230 366 371 382 512 372 C640 362 730 379 806 369" />
-          <path class="plot-axis" d="M96 55 C94 126 97 205 93 285 C91 339 96 381 93 410" />
-          <path class="plot-axis" d="M80 388 C204 385 325 390 452 386 C591 382 701 389 815 384" />
-          <text class="plot-title" x="122" y="38">context spent per question</text>
-          <text class="plot-y" x="34" y="78">1m</text>
-          <text class="plot-y" x="42" y="204">100k</text>
-          <text class="plot-y" x="50" y="320">1k</text>
-          <text class="plot-y" x="54" y="390">10</text>
-          <path class="plot-guide" d="M94 86 C284 90 527 84 808 89" />
-          <path class="plot-guide" d="M94 207 C278 204 541 211 810 204" />
-          <path class="plot-guide" d="M94 328 C272 333 547 323 812 329" />
-          <path class="plot-line" d="M132 82 C210 96 250 112 300 118 C378 130 425 205 476 214 C528 234 556 323 608 329 C657 333 682 334 716 337 C751 344 766 373 790 382" />
-          <g class="plot-point raw">
-            <circle cx="132" cy="82" r="8" />
-            <text x="154" y="76">Raw files</text>
-            <text x="154" y="98">1.1m tokens · $3.30</text>
-          </g>
-          <g class="plot-point compact">
-            <circle cx="300" cy="118" r="7" />
-            <text x="322" y="113">Compact IR</text>
-            <text x="322" y="135">669k · $2.01</text>
-          </g>
-          <g class="plot-point view">
-            <circle cx="476" cy="214" r="7" />
-            <text x="498" y="205">ViewModel</text>
-            <text x="498" y="227">153k · $0.46</text>
-          </g>
-          <g class="plot-point focus">
-            <circle cx="608" cy="329" r="7" />
-            <text x="514" y="306">focused subgraph</text>
-            <text x="535" y="326">3.1k · less than 1¢</text>
-          </g>
-          <g class="plot-point topology">
-            <circle cx="716" cy="337" r="7" />
-            <text x="695" y="290">topology</text>
-            <text x="682" y="312">1.3k · less than 1¢</text>
-          </g>
-          <g class="plot-point sig">
-            <circle cx="790" cy="382" r="6" />
-            <text x="635" y="411">node signature: ~70 tokens</text>
-          </g>
-          <path class="plot-arrow" d="M742 91 C697 119 671 157 658 211" />
-          <text class="plot-note" x="648" y="73">this is the money leak</text>
-          <path class="plot-arrow" d="M434 352 C502 368 602 367 704 353" />
-          <text class="plot-note" x="386" y="432">agent gets the map, not the repo dump</text>
-        </svg>
+        <div class="eval-plot-grid">
+          <svg class="xkcd-plot token-plot" viewBox="0 0 880 460" role="img" aria-labelledby="xkcdEvalTitle xkcdEvalDesc">
+            <title id="xkcdEvalTitle">Ryngo token and cost compression plot</title>
+            <desc id="xkcdEvalDesc">A hand-drawn style line plot comparing raw files, compact IR, view model, focused subgraph, topology, and a node signature for a 1.1 million token repository.</desc>
+            <defs>
+              <filter id="rough-line">
+                <feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="1" seed="8" result="noise" />
+                <feDisplacementMap in="SourceGraphic" in2="noise" scale="1.1" />
+              </filter>
+            </defs>
+            <path class="plot-paper-line" d="M94 374 C230 366 371 382 512 372 C640 362 730 379 806 369" />
+            <path class="plot-axis" d="M96 55 C94 126 97 205 93 285 C91 339 96 381 93 410" />
+            <path class="plot-axis" d="M80 388 C204 385 325 390 452 386 C591 382 701 389 815 384" />
+            <text class="plot-title" x="380" y="38">context spent per question</text>
+            <text class="plot-y" x="34" y="78">1m</text>
+            <text class="plot-y" x="42" y="204">100k</text>
+            <text class="plot-y" x="50" y="320">1k</text>
+            <text class="plot-y" x="54" y="390">10</text>
+            <path class="plot-guide" d="M94 86 C284 90 527 84 808 89" />
+            <path class="plot-guide" d="M94 207 C278 204 541 211 810 204" />
+            <path class="plot-guide" d="M94 328 C272 333 547 323 812 329" />
+            <path class="plot-line" d="M132 82 C210 96 250 112 300 118 C378 130 425 205 476 214 C528 234 556 323 608 329 C657 333 682 334 716 337 C751 344 766 373 790 382" />
+            <path class="plot-leader" d="M132 82 C150 64 164 54 184 48" />
+            <path class="plot-leader" d="M300 118 C326 134 348 151 372 169" />
+            <path class="plot-leader" d="M476 214 C492 194 513 174 539 157" />
+            <path class="plot-leader" d="M608 329 C587 295 560 268 529 248" />
+            <path class="plot-leader" d="M716 337 C704 312 708 288 727 270" />
+            <g class="plot-point raw">
+              <circle cx="132" cy="82" r="8" />
+              <rect class="plot-label-bg" x="184" y="31" width="168" height="47" rx="7" />
+              <text x="197" y="52">Raw files</text>
+              <text x="197" y="70">1.1m tokens · $3.30</text>
+            </g>
+            <g class="plot-point compact">
+              <circle cx="300" cy="118" r="7" />
+              <rect class="plot-label-bg" x="367" y="157" width="174" height="48" rx="7" />
+              <text x="380" y="179">Compact IR</text>
+              <text x="380" y="197">669k · $2.01</text>
+            </g>
+            <g class="plot-point view">
+              <circle cx="476" cy="214" r="7" />
+              <rect class="plot-label-bg" x="536" y="138" width="160" height="48" rx="7" />
+              <text x="549" y="160">ViewModel</text>
+              <text x="549" y="178">153k · $0.46</text>
+            </g>
+            <g class="plot-point focus">
+              <circle cx="608" cy="329" r="7" />
+              <rect class="plot-label-bg" x="386" y="226" width="180" height="48" rx="7" />
+              <text x="399" y="248">focused subgraph</text>
+              <text x="419" y="266">3.1k · less than 1¢</text>
+            </g>
+            <g class="plot-point topology">
+              <circle cx="716" cy="337" r="7" />
+              <rect class="plot-label-bg" x="706" y="248" width="154" height="48" rx="7" />
+              <text x="719" y="270">topology</text>
+              <text x="719" y="288">1.3k · less than 1¢</text>
+            </g>
+            <g class="plot-point sig">
+              <circle cx="790" cy="382" r="6" />
+              <rect class="plot-label-bg" x="599" y="397" width="206" height="25" rx="7" />
+              <text x="612" y="415">node signature: ~70 tokens</text>
+            </g>
+            <path class="plot-arrow" d="M742 91 C697 119 671 157 658 211" />
+            <text class="plot-note" x="648" y="73">this is the money leak</text>
+            <path class="plot-arrow" d="M434 352 C502 368 602 367 704 353" />
+            <text class="plot-note" x="386" y="432">agent gets the map, not the repo dump</text>
+          </svg>
+          <svg class="xkcd-plot cost-plot" viewBox="0 0 520 460" role="img" aria-labelledby="costEvalTitle costEvalDesc">
+            <title id="costEvalTitle">Model input-token cost savings plot</title>
+            <desc id="costEvalDesc">A hand-drawn style bar chart showing raw 1.1 million token context cost versus Ryngo topology cost for Claude Opus, Claude Sonnet, Claude Haiku, and GPT 5.5.</desc>
+            <defs>
+              <filter id="rough-cost-line">
+                <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="1" seed="12" result="noise" />
+                <feDisplacementMap in="SourceGraphic" in2="noise" scale="0.9" />
+              </filter>
+            </defs>
+            <text class="plot-title cost-title" x="38" y="38">money saved per repo question</text>
+            <text class="cost-subtitle" x="40" y="62">1.1m raw tokens vs 1.3k topology tokens</text>
+            <path class="plot-axis cost-axis" d="M132 386 C230 383 321 388 436 384" />
+            <text class="plot-y cost-tick" x="132" y="410">$0</text>
+            <text class="plot-y cost-tick" x="252" y="410">$3</text>
+            <text class="plot-y cost-tick" x="380" y="410">$6</text>
+            <path class="plot-guide" d="M250 92 C252 162 249 265 252 382" />
+            <path class="plot-guide" d="M380 92 C377 170 382 259 379 382" />
+
+            <g class="cost-row">
+              <text class="cost-model" x="34" y="112">Claude Opus</text>
+              <text class="cost-rate" x="34" y="132">$5 / 1M input</text>
+              <path class="cost-bar raw-cost" d="M132 112 C190 108 248 116 365 112" />
+              <path class="cost-bar map-cost" d="M132 127 C134 126 137 128 139 127" />
+              <circle class="cost-dot" cx="139" cy="127" r="4" />
+              <text class="cost-value" x="374" y="116">$5.50 raw</text>
+              <text class="cost-save" x="160" y="150">Ryngo map: less than 1¢ · saves $5.49</text>
+            </g>
+
+            <g class="cost-row">
+              <text class="cost-model" x="34" y="192">Claude Sonnet</text>
+              <text class="cost-rate" x="34" y="212">$3 / 1M input</text>
+              <path class="cost-bar raw-cost" d="M132 192 C175 189 218 196 270 192" />
+              <path class="cost-bar map-cost" d="M132 207 C134 206 136 208 138 207" />
+              <circle class="cost-dot" cx="138" cy="207" r="4" />
+              <text class="cost-value" x="280" y="196">$3.30 raw</text>
+              <text class="cost-save" x="160" y="230">Ryngo map: less than 1¢ · saves $3.30</text>
+            </g>
+
+            <g class="cost-row">
+              <text class="cost-model" x="34" y="272">Claude Haiku</text>
+              <text class="cost-rate" x="34" y="292">$1 / 1M input</text>
+              <path class="cost-bar raw-cost" d="M132 272 C146 269 161 276 175 272" />
+              <path class="cost-bar map-cost" d="M132 287 C134 286 135 288 137 287" />
+              <circle class="cost-dot" cx="137" cy="287" r="4" />
+              <text class="cost-value" x="186" y="276">$1.10 raw</text>
+              <text class="cost-save" x="160" y="310">Ryngo map: less than 1¢ · saves $1.10</text>
+            </g>
+
+            <g class="cost-row">
+              <text class="cost-model" x="34" y="352">GPT-5.5</text>
+              <text class="cost-rate" x="34" y="372">$5 / 1M input</text>
+              <path class="cost-bar raw-cost" d="M132 352 C191 348 246 356 365 352" />
+              <path class="cost-bar map-cost" d="M132 367 C134 366 137 368 139 367" />
+              <circle class="cost-dot" cx="139" cy="367" r="4" />
+              <text class="cost-value" x="374" y="356">$5.50 raw</text>
+              <text class="cost-save" x="374" y="374">saves $5.49</text>
+            </g>
+            <text class="plot-note cost-foot" x="40" y="438">Input context only. Output cost and model quality are separate.</text>
+          </svg>
+        </div>
         <div class="eval-callouts">
           <div>
             <strong>843× smaller</strong>

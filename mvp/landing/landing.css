@@ -385,7 +385,11 @@ pre code {
   box-shadow: var(--shadow-soft);
 }
 .eval-sketch-card {
+  max-width: 1180px;
   padding: 22px 22px 18px;
+}
+.section.section-alt > .eval-sketch-card {
+  max-width: 1180px;
 }
 .eval-sketch-head {
   display: flex;
@@ -411,6 +415,12 @@ pre code {
   color: var(--muted);
   font-size: 12px;
   white-space: nowrap;
+}
+.eval-plot-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.32fr) minmax(320px, 0.78fr);
+  gap: 14px;
+  align-items: stretch;
 }
 .xkcd-plot {
   width: 100%;
@@ -446,6 +456,19 @@ pre code {
   stroke: color-mix(in oklab, var(--muted) 46%, transparent);
   stroke-width: 1.5;
   stroke-dasharray: 6 9;
+}
+.plot-label-bg {
+  fill: color-mix(in oklab, var(--bg) 94%, white);
+  stroke: color-mix(in oklab, var(--line) 86%, var(--text));
+  stroke-width: 1;
+  opacity: 0.95;
+}
+.plot-leader {
+  fill: none;
+  stroke: color-mix(in oklab, var(--muted) 58%, transparent);
+  stroke-width: 1.6;
+  stroke-dasharray: 4 5;
+  stroke-linecap: round;
 }
 .plot-paper-line {
   stroke: color-mix(in oklab, var(--accent) 55%, transparent);
@@ -491,6 +514,60 @@ pre code {
 .plot-note {
   font-size: 15px;
   fill: var(--muted);
+}
+.cost-plot {
+  height: 100%;
+  min-height: 360px;
+}
+.cost-title {
+  font-size: 18px;
+}
+.cost-subtitle,
+.cost-rate,
+.cost-save,
+.cost-value,
+.cost-foot {
+  fill: var(--muted);
+}
+.cost-subtitle,
+.cost-save,
+.cost-rate {
+  font-size: 11px;
+}
+.cost-model {
+  font-size: 13px;
+  font-weight: 700;
+}
+.cost-value {
+  font-size: 11px;
+}
+.cost-bar {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: url(#rough-cost-line);
+}
+.raw-cost {
+  stroke: var(--accent);
+  stroke-width: 9;
+}
+.map-cost {
+  stroke: var(--fn);
+  stroke-width: 5;
+}
+.cost-dot {
+  fill: var(--fn);
+  stroke: var(--text);
+  stroke-width: 1.8;
+}
+.cost-axis {
+  stroke-width: 2.6;
+}
+.cost-tick {
+  font-size: 11px;
+}
+.cost-foot {
+  font-size: 12px;
 }
 .eval-callouts {
   display: grid;
@@ -555,6 +632,9 @@ pre code {
   }
   .eval-price {
     white-space: normal;
+  }
+  .eval-plot-grid {
+    grid-template-columns: 1fr;
   }
   .xkcd-plot {
     min-height: 360px;
