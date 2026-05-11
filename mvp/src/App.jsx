@@ -1903,6 +1903,29 @@ export default function App() {
     return items;
   }, [ir, focusStack]);
 
+  // Total compiler-warning count ("concerns") within the current
+  // viewer scope. Walks every visible node + its direct children
+  // before any drill-into-another-file recursion. The user is told
+  // how much there is to look at without leaving the current canvas.
+  //   - Repo overview (no focus): every node in the IR counts.
+  //   - Focus view: the focused node + nodes with parentId === focusedId
+  //     only. (E.g. focused on a class → count the class's own
+  //     warnings plus the warnings on each method that's nested
+  //     inside the same node-editor card.)
+  const concernCount = useMemo(() => {
+    if (!ir?.nodes?.length) return 0;
+    if (focusedId == null) {
+      return ir.nodes.reduce(
+        (sum, n) => sum + (n.data?.warnings?.length || 0),
+        0,
+      );
+    }
+    return ir.nodes.reduce((sum, n) => {
+      if (n.id !== focusedId && n.parentId !== focusedId) return sum;
+      return sum + (n.data?.warnings?.length || 0);
+    }, 0);
+  }, [ir?.nodes, focusedId]);
+
   return (
     <div className="app">
       <header>
@@ -2141,6 +2164,18 @@ export default function App() {
               {ir.stats.packages} pkgs
               <span className="dot">·</span>
               <span className="calls">{ir.stats.callEdges} calls</span>
+              <span className="dot">·</span>
+              <span
+                className="concerns"
+                data-zero={concernCount === 0 ? "true" : "false"}
+                title={
+                  concernCount === 0
+                    ? "Compiler heuristics flagged nothing in this view"
+                    : `${concernCount} compiler-warning${concernCount === 1 ? "" : "s"} on visible nodes (nested loops, I/O-in-loop, recursion, long functions, deep nesting, many params)`
+                }
+              >
+                {concernCount} concern{concernCount === 1 ? "" : "s"}
+              </span>
               {ir.ref && ir.ref !== "HEAD" && (
                 <>
                   <span className="dot">·</span>
@@ -2189,7 +2224,19 @@ export default function App() {
           {focusedId != null && focusLayout && (
             <span className="muted" style={{ marginLeft: "auto" }}>
               {focusLayout.counts.incoming} in · {focusLayout.counts.outgoing} out
-              · click opens source · esc to back
+              ·{" "}
+              <span
+                className="concerns"
+                data-zero={concernCount === 0 ? "true" : "false"}
+                title={
+                  concernCount === 0
+                    ? "No compiler concerns flagged in this scope"
+                    : `${concernCount} compiler-warning${concernCount === 1 ? "" : "s"} on this node and its direct children`
+                }
+              >
+                {concernCount} concern{concernCount === 1 ? "" : "s"}
+              </span>
+              {" "}· click opens source · esc to back
             </span>
           )}
         </div>

@@ -318,6 +318,19 @@ button.sample:hover:not(:disabled) {
 .banner .cells {
   color: #bef264;
 }
+.banner .concerns,
+.concerns {
+  /* Compiler-warning ("concerns") counter in the stats banner +
+     focus-view summary. Reuses --warn so it's consistent with the
+     per-node ⚠ badge palette; --muted when the count is zero so
+     the strip doesn't visually shout for nothing. Text-only — no
+     icon, no glyph, by user request. */
+  color: var(--warn);
+  font-variant-numeric: tabular-nums;
+}
+.concerns[data-zero="true"] {
+  color: var(--muted);
+}
 .banner .ref-badge {
   display: inline-block;
   padding: 1px 6px;
