@@ -2617,6 +2617,7 @@ function FocusView({
   const [source, setSource] = useState(null);
   const [sourceErr, setSourceErr] = useState(null);
   const [sourceLoading, setSourceLoading] = useState(false);
+  const [sourceCollapsed, setSourceCollapsed] = useState(false);
 
   const refQueryFor = useCallback(
     (sourceNode = node) => {
@@ -2741,7 +2742,7 @@ function FocusView({
   }, [fetchSourceFor, node, source?.file]);
 
   return (
-    <div className="focus">
+    <div className={`focus ${sourceCollapsed ? "focus-source-collapsed" : ""}`}>
       <div className="focus-source">
         <div className="focus-source-header">
           <span className="focus-icon">{iconForKind(node.kind)}</span>
@@ -2749,6 +2750,13 @@ function FocusView({
           {source?.file && (
             <span className="focus-file mono">{source.file}</span>
           )}
+          <button
+            className="focus-toggle-source"
+            onClick={() => setSourceCollapsed(true)}
+            title="Hide the code editor and focus on the node viewer"
+          >
+            Hide code
+          </button>
           <button className="focus-back" onClick={onBack}>
             ← back
           </button>
@@ -2773,6 +2781,15 @@ function FocusView({
         </div>
       </div>
       <div className="focus-graph">
+        {sourceCollapsed && (
+          <button
+            className="focus-show-source"
+            onClick={() => setSourceCollapsed(false)}
+            title="Show the code editor"
+          >
+            Show code
+          </button>
+        )}
         {layout && (
           <ReactFlow
             nodes={layout.nodes}
