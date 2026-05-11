@@ -25,6 +25,7 @@ import { detectLang, isAnalyzable, parseFile } from "./parsers/index.js";
 import { resolveSymbols } from "./resolver.js";
 import { runAdapters } from "./adapters/index.js";
 import { annotateEffects } from "./effects.js";
+import { attachDeadCodeWarnings } from "./dead-code.js";
 import { buildCompileReport } from "./quality.js";
 import { normalizeProvenance } from "./provenance.js";
 import { parse as parseRyngoMd } from "./ryngo-md.js";
@@ -281,6 +282,12 @@ async function buildIR(rootDir, repoName) {
     edges: dedupedEdges,
   };
   annotateEffects(ir, adapterResult.effects);
+  // Phase 10.next — IR-level warnings (dead-function + circular-import).
+  // Runs against the fully-resolved edge graph so the dead-function
+  // pass sees every inbound call edge; warnings get attached to
+  // `node.data.warnings` alongside the per-function ones from
+  // warnings.js so the viewer renders them uniformly.
+  attachDeadCodeWarnings(ir);
 
   // -- finalize -------------------------------------------------------------
   ir.nodes.sort((a, b) => {

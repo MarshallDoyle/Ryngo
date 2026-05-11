@@ -85,6 +85,11 @@ plan first.
 | Iter 2 — hero stats banner + latest-news + roadmap | claude | shipped (minus newsletter) | `mvp/landing/index.html`, `mvp/landing/landing.css`. Inline hydration JS at end of index.html (no separate stats.js file needed). Newsletter deferred per user. |
 | Iter 3 — feature screenshots + mascot swap | both | gated on logo finalist pick | `mvp/landing/images/*` (new), `mvp/landing/{index.html,landing.css}` |
 | Research — competitor landing audits (LiteLLM + Unsloth) | claude | shipped | `litellmresearch.md`, `unslothresearch.md` (repo root) |
+| **Phase 10.next — 20 new compiler warnings** | claude | shipped | `mvp/lib/warnings.js` (+18 body-regex), `mvp/lib/dead-code.js` (new, +2 IR-level), `mvp/lib/analyze.js` (pipeline wire-up). Total shipped warnings: 27. |
+| **High-leverage phases — master plan** | claude | spec'd | `mvp/docs/HIGH_LEVERAGE_PHASES.md` covers Phase 5.1 (tree-sitter swap), 5.4 (Go), 5.5 (Rust). Each is independently shippable with feature flags + corpus regression gate. |
+| Phase 5.1 — tree-sitter parser swap (TS + Python) | unclaimed | designed, ready to ship | `mvp/lib/parsers/tree-sitter-runtime.js` (new), `mvp/lib/parsers/queries/{ts,py}/*.scm` (new), `mvp/lib/parsers/{ts,py}-tree-sitter.js` (new), `mvp/lib/parsers/index.js` (dispatch), `mvp/test/parser-parity.js` (new). Unlocks ~30 🟡 catalog warnings + better signatures. |
+| Phase 5.4 — Go support | unclaimed | designed, ready to ship | hybrid tree-sitter + `go list -deps -json`; new `mvp/lib/parsers/go-{list,tree-sitter}.js`, queries, WASM grammar. |
+| Phase 5.5 — Rust support | unclaimed | designed, ready to ship | hybrid tree-sitter + `cargo metadata`; new `mvp/lib/parsers/rust-{cargo,tree-sitter}.js`, trait edges via `impl` blocks. |
 
 To **claim** a workstream: edit this table, change `unclaimed` to your
 agent name, commit. Use `claude/<workstream-slug>` or `codex/<slug>` as

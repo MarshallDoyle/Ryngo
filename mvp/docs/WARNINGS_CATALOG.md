@@ -7,10 +7,13 @@ a menu-pick instead of an open-ended question.
 
 ## Today (shipped)
 
-`mvp/lib/warnings.js` ships seven warnings. All are body-text regex
-against the function source. No type info, no cross-file analysis, no
-AST. Per-function `data.warnings: [{ kind, severity, message }]`
-attached during analyze.
+`mvp/lib/warnings.js` ships **27 warnings**: 7 from Phase 10, plus 18
+new body-text detectors and 2 IR-level passes from Phase 10.next. All
+are deterministic regex / scope / edge walks. No type info needed.
+Per-function `data.warnings: [{ kind, severity, message }]` attached
+during analyze.
+
+**Phase 10 (original seven):**
 
 | kind | severity | signal |
 |---|---|---|
@@ -18,9 +21,49 @@ attached during analyze.
 | `nested-loop` | medium | two loops nested |
 | `io-in-loop` | high | network / DB call inside a `for` / `while` body |
 | `recursion` | low | function body calls itself, no memo cue |
-| `long-function` | low | > 120 LOC |
+| `long-function` | low | > 60 LOC |
 | `many-params` | low | > 6 params |
 | `deep-nesting` | low | brace / indent depth ≥ 5 |
+
+**Phase 10.next — 18 body-regex detectors:**
+
+| kind | severity | signal |
+|---|---|---|
+| `eval-or-function-ctor` | high | `eval(...)` / `new Function(...)` / Python `exec(...)` |
+| `weak-crypto` | medium | MD5 / SHA-1 |
+| `jwt-no-verify` | high | `jwt.decode` without `jwt.verify` |
+| `cors-allow-all` | high | Access-Control-Allow-Origin: * |
+| `requests-verify-false` | high | Python `verify=False` / JS `rejectUnauthorized: false` |
+| `hardcoded-password` | high | credential literal in source |
+| `cookie-no-httponly` | medium | `res.cookie(...)` without `HttpOnly` flag |
+| `sort-in-loop` | high | sort / sorted inside loop body |
+| `string-concat-in-loop` | medium | `s += "..."` inside loop body |
+| `sync-io-in-async` | high | `async` fn with `fs.*Sync` / `time.sleep` / `requests.X` |
+| `fetch-without-timeout` | medium | `fetch(...)` / `requests.X(...)` without timeout |
+| `regex-compile-in-loop` | medium | `new RegExp` / `re.compile` inside loop body |
+| `loose-equality` | low | JS `==` / `!=` instead of `===` / `!==` |
+| `empty-catch` | medium | `catch(...) {}` / Python `except: pass` |
+| `swallowed-error` | medium | catch only `console.log`s the error |
+| `ts-ignore` | medium | `@ts-ignore` / `@ts-nocheck` / `as any` |
+| `async-without-await` | low | `async` keyword with no `await` in body |
+| `settimeout-not-cleared` | low | `setTimeout` / `setInterval` return not stored |
+
+**Phase 10.next — 2 IR-level passes** (in `mvp/lib/dead-code.js`):
+
+| kind | severity | signal |
+|---|---|---|
+| `dead-function` | medium | def with no inbound `calls`, parent file never imported, name not entry-point, not in test/example/script/docs path (TS/JS only — Python deferred until tree-sitter) |
+| `circular-import` | high | cycle in `imports-file` subgraph (Tarjan SCC); attached to every file node in the cycle |
+
+**Smoke check on real repos** (verifying the new detectors fire):
+
+| repo | warnings landed | notable kinds |
+|---|---:|---|
+| `expressjs/express` | 81 | dead-function 39 · long-function 23 · recursion 16 · settimeout-not-cleared 2 · string-concat-in-loop 1 |
+| `tiangolo/fastapi` | 1,412 | async-without-await 733 · deep-nesting 325 · long-function 244 · recursion 48 · swallowed-error 8 · eval-or-function-ctor 4 · hardcoded-password 3 · sort-in-loop 1 · empty-catch 1 |
+
+`expects: all repos within declared bounds` on the full 54-repo
+corpus run. No classification regressed.
 
 ---
 
@@ -307,39 +350,46 @@ All 🟢. Mostly skip.
 
 ---
 
-## Shipping plan — next 20 to add
+## Shipping plan — next batch (after Phase 10.next)
 
-Picking by (a) high signal-to-noise, (b) low implementation cost, (c)
-no false-positive blowback on the corpus benchmark. Each is a small
-addition to `mvp/lib/warnings.js`.
+The 20-pick Phase 10.next batch shipped. **27 warnings now live** —
+`mvp/lib/warnings.js` for 25 of them + `mvp/lib/dead-code.js` for the
+2 IR-level passes.
+
+(One substitution from the original list: `unused-export` was deferred
+in favor of `circular-import` because we don't yet have per-binding
+import resolution — distinguishing "file imported" from "binding
+imported" needs the same tree-sitter upgrade as Phase 5.1. The
+catalog will pick `unused-export` back up once that lands.)
+
+**Next batch — 20 more 🟢 ship-today candidates:**
 
 | # | kind | sev | from |
 |---|---|---|---|
-| 1 | `string-concat-in-loop` | medium | A.1 |
-| 2 | `regex-compile-in-loop` | medium | A.1 |
-| 3 | `sort-in-loop` | high | A.1 |
-| 4 | `sync-io-in-async` | high | A.3 |
-| 5 | `fetch-without-timeout` | medium | A.3 |
-| 6 | `async-without-await` | low | B |
-| 7 | `settimeout-not-cleared` | low | B |
-| 8 | `eval-or-function-ctor` | high | C |
-| 9 | `weak-crypto` | medium | C |
-| 10 | `jwt-no-verify` | high | C |
-| 11 | `cors-allow-all` | high | C |
-| 12 | `cookie-no-httponly` | medium | C |
-| 13 | `requests-verify-false` | high | C |
-| 14 | `hardcoded-password` | high | C |
-| 15 | `loose-equality` | low | D |
-| 16 | `empty-catch` | medium | D |
-| 17 | `swallowed-error` | medium | D |
-| 18 | `unused-export` | low | D |
-| 19 | `dead-function` | medium | D |
-| 20 | `ts-ignore` | medium | F |
+| 1 | `quad-plus-nested-loop` | high | A.1 |
+| 2 | `array-as-queue` | low | A.2 |
+| 3 | `array-from-in-loop` | low | A.1 |
+| 4 | `redundant-conversion` | low | A.1 |
+| 5 | `inefficient-spread-in-loop` | medium | A.1 |
+| 6 | `child-process-with-string` | high | C |
+| 7 | `pickle-untrusted` | high | C |
+| 8 | `yaml-unsafe-load` | high | C |
+| 9 | `dangerous-permission` | medium | C |
+| 10 | `env-logged` | medium | C |
+| 11 | `assignment-in-condition` | medium | D |
+| 12 | `god-function` | medium | E (> 300 LOC) |
+| 13 | `god-class` | medium | E |
+| 14 | `god-file` | medium | E |
+| 15 | `too-many-imports` | low | E |
+| 16 | `todo-without-owner` | low | E |
+| 17 | `stale-todo` | low | E |
+| 18 | `test-skipped` | low | H |
+| 19 | `noqa-without-reason` | low | F |
+| 20 | `prisma-find-many-no-where` | low | G |
 
-Twenty doable, ~30 LOC each → ~600 LOC into `warnings.js`. The seven
-that exist today get us to 27 total. After that, the parser-blocked
-and types-blocked entries (`forgotten-await`, `inconsistent-return`,
-`react-effect-missing-deps`, …) unlock as Phase 5.1 / 5.2 land.
+After that, the parser-blocked entries (🟡 in each category) unlock as
+Phase 5.1 lands. See [`mvp/docs/HIGH_LEVERAGE_PHASES.md`](HIGH_LEVERAGE_PHASES.md)
+for the tree-sitter swap plan.
 
 ---
 
