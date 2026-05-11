@@ -1909,9 +1909,9 @@ export default function App() {
         <div className="brand">
           <a className="brand-home" href="/" aria-label="Ryngo home">
             <h1>
-              <svg className="ryngo-wordmark" viewBox="0 0 148 56" role="img" aria-label="Ryngo">
-                <text x="12" y="39" className="ryngo-wordmark-layer">Ryngo</text>
-                <text x="9" y="38" className="ryngo-wordmark-face">Ryngo</text>
+              <svg className="ryngo-wordmark" viewBox="0 0 170 64" role="img" aria-label="Ryngo">
+                <text x="12" y="51" className="ryngo-wordmark-layer">Ryngo</text>
+                <text x="8" y="48" className="ryngo-wordmark-face">Ryngo</text>
               </svg>
               <span className="tag">MVP</span>
             </h1>
