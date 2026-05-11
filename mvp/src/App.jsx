@@ -1936,7 +1936,7 @@ export default function App() {
                 <text x="12" y="51" className="ryngo-wordmark-layer">Ryngo</text>
                 <text x="8" y="48" className="ryngo-wordmark-face">Ryngo</text>
               </svg>
-              <span className="tag">MVP</span>
+              <span className="tag">BETA</span>
             </h1>
           </a>
           <button
