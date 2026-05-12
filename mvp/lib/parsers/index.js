@@ -34,8 +34,10 @@
  */
 import path from "node:path";
 import * as tsParser from "./ts.js";
+import * as tsTreeSitterParser from "./ts-tree-sitter.js";
 import * as pyParser from "./py.js";
 import * as jupyterParser from "./jupyter.js";
+import { isAvailable as treeSitterAvailable } from "./tree-sitter-runtime.js";
 
 const LANG_BY_EXT = {
   // tier-0 first-class
@@ -106,8 +108,39 @@ export function parseFile(filePath, content) {
     };
   }
   try {
+    // Phase 5.1.1 — for TS/JS files, prefer the tree-sitter extractor
+    // when its grammar loaded successfully and the env flag allows
+    // (RYNGO_PARSERS !== "regex"). On any tree-sitter parse failure
+    // we fall back to the regex extractor for that file — the IR
+    // builder shouldn't ever see an empty parse just because the new
+    // backend choked on syntax it doesn't know.
+    if (lang === "ts") {
+      const tsLang = treeSitterLangForPath(filePath);
+      if (tsLang && treeSitterAvailable(tsLang)) {
+        const tsResult = tsTreeSitterParser.parse(content, tsLang);
+        if (tsResult) return tsResult;
+        // null return = tree-sitter unavailable or refused; fall through.
+      }
+    }
     return p.parse(content, { filePath });
   } catch (err) {
+    // If the strong backend threw, try the regex floor once before
+    // we give up. Logs the error so the corpus harness can flag a
+    // backend regression.
+    if (lang === "ts") {
+      try {
+        const out = p.parse(content, { filePath });
+        if (out) {
+          out.diagnostics = [
+            ...(out.diagnostics || []),
+            `tree-sitter-${lang} threw, fell back to regex: ${err.message || err}`,
+          ];
+          return out;
+        }
+      } catch {
+        /* both threw — return error result below */
+      }
+    }
     return {
       lang,
       backend: "error",
@@ -116,6 +149,30 @@ export function parseFile(filePath, content) {
       calls: [],
       diagnostics: [`parser ${lang} threw: ${err.message || err}`],
     };
+  }
+}
+
+/**
+ * Pick the tree-sitter grammar key for a given filepath. We dispatch
+ * by extension so `.tsx` uses the tsx grammar (with JSX), `.jsx` uses
+ * tsx too (closest fit for the JS+JSX combination), `.js`/`.mjs`/.cjs`
+ * use the js grammar, and `.ts` uses the typescript grammar.
+ */
+function treeSitterLangForPath(filePath) {
+  // Both JS and TS files use the tree-sitter-typescript grammar. The
+  // TS grammar is a strict superset of JS syntax, so the same query
+  // patterns work for both — no need to maintain separate
+  // queries/js/*.scm files. Per-extension dispatch picks the right
+  // variant (typescript vs tsx) so JSX files get JSX support.
+  const ext = path.extname(filePath).toLowerCase();
+  switch (ext) {
+    case ".ts":  return "ts";
+    case ".tsx": return "tsx";
+    case ".jsx": return "tsx";
+    case ".js":
+    case ".mjs":
+    case ".cjs": return "ts";
+    default:     return null;
   }
 }
 

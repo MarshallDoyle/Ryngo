@@ -150,7 +150,9 @@ function extractImports(src) {
   return out;
 }
 
-function parseBindings(clause) {
+// Exported so the tree-sitter TS extractor (Phase 5.1.1) can reuse
+// the same parsing logic for parity with the regex extractor.
+export function parseBindings(clause) {
   if (!clause) return {};
   const bindings = {};
   let cleaned = clause.replace(/^\s*type\s+/, "").trim();
@@ -256,7 +258,7 @@ function extractDefs(src) {
   return defs.sort((a, b) => a.line - b.line);
 }
 
-function collectBaseClasses(extendsClause, implementsClause) {
+export function collectBaseClasses(extendsClause, implementsClause) {
   const out = [];
   if (extendsClause) {
     for (const c of extendsClause.split(",")) {
@@ -297,7 +299,7 @@ const METHOD_RE =
 const FIELD_RE =
   /(?:^|\n)[ \t]+(?:public\s+|private\s+|protected\s+|static\s+|readonly\s+)*?(\w+)\s*(\??)\s*:\s*([^=;\n]+?)(?:=\s*([^;\n]+))?\s*[;\n]/g;
 
-function extractClassMembers(body, baseLine = 0) {
+export function extractClassMembers(body, baseLine = 0) {
   const methods = [];
   const fields = [];
   const seenMethods = new Set();
@@ -364,7 +366,7 @@ const RESERVED_FOR_FIELDS = new Set([
  * (), [], {}, <> depth so generics + destructuring don't split mid-token).
  * Each chunk:  [rest?] name [?] [: type] [= default]
  */
-function parseParamList(raw) {
+export function parseParamList(raw) {
   if (!raw || !raw.trim()) return [];
   const params = [];
   for (const chunk of splitTopLevel(raw, ",")) {
@@ -422,7 +424,7 @@ function parseParamList(raw) {
   return params;
 }
 
-function parseReturnType(raw) {
+export function parseReturnType(raw) {
   if (!raw) return null;
   const t = raw.trim();
   if (!t) return null;
@@ -488,7 +490,7 @@ function extractCalls(src) {
   return calls;
 }
 
-const TS_BUILTINS = new Set([
+export const TS_BUILTINS = new Set([
   "if", "else", "while", "for", "switch", "catch", "return", "typeof",
   "instanceof", "void", "delete", "in", "of", "throw", "try", "do",
   "console", "JSON", "Math", "Array", "Object", "String", "Number",

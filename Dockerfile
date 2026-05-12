@@ -9,6 +9,13 @@
 
 FROM node:20-alpine AS build
 WORKDIR /app
+# Build tools for native node modules. The tree-sitter family
+# (tree-sitter + tree-sitter-typescript + tree-sitter-javascript +
+# tree-sitter-python — added in Phase 5.1.0) compiles C++ via
+# node-gyp on `npm ci`. Alpine needs python3 + make + g++ available.
+# Build-stage only; the runtime stage stays slim because we copy
+# the already-compiled node_modules over.
+RUN apk add --no-cache python3 make g++
 COPY mvp/package*.json ./
 RUN npm ci
 COPY mvp/ ./
