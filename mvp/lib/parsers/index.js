@@ -41,6 +41,7 @@ import * as goTreeSitterParser from "./go-tree-sitter.js";
 import * as rustTreeSitterParser from "./rust-tree-sitter.js";
 import * as jupyterParser from "./jupyter.js";
 import { isAvailable as treeSitterAvailable } from "./tree-sitter-runtime.js";
+import { detectAstWarnings } from "../warnings-ast.js";
 
 const LANG_BY_EXT = {
   // tier-0 first-class
@@ -122,27 +123,28 @@ export function parseFile(filePath, content) {
     // we fall back to the regex extractor for that file — the IR
     // builder shouldn't ever see an empty parse just because the new
     // backend choked on syntax it doesn't know.
+    let parsed = null;
     if (lang === "ts") {
       const tsLang = treeSitterLangForPath(filePath);
       if (tsLang && treeSitterAvailable(tsLang)) {
-        const tsResult = tsTreeSitterParser.parse(content, tsLang);
-        if (tsResult) return tsResult;
-        // null return = tree-sitter unavailable or refused; fall through.
+        parsed = tsTreeSitterParser.parse(content, tsLang);
       }
+    } else if (lang === "py" && treeSitterAvailable("py")) {
+      parsed = pyTreeSitterParser.parse(content);
+    } else if (lang === "go" && treeSitterAvailable("go")) {
+      parsed = goTreeSitterParser.parse(content);
+    } else if (lang === "rust" && treeSitterAvailable("rust")) {
+      parsed = rustTreeSitterParser.parse(content);
     }
-    if (lang === "py" && treeSitterAvailable("py")) {
-      const pyResult = pyTreeSitterParser.parse(content);
-      if (pyResult) return pyResult;
-    }
-    if (lang === "go" && treeSitterAvailable("go")) {
-      const goResult = goTreeSitterParser.parse(content);
-      if (goResult) return goResult;
-    }
-    if (lang === "rust" && treeSitterAvailable("rust")) {
-      const rustResult = rustTreeSitterParser.parse(content);
-      if (rustResult) return rustResult;
-    }
-    return p.parse(content, { filePath });
+    // Either no strong backend was tried or it returned null; fall
+    // through to the regex floor.
+    if (!parsed) parsed = p.parse(content, { filePath });
+    // Phase 10.warning-unlock — AST-based warnings layered on top of
+    // the regex-body warnings already attached to defs. This call is
+    // safe to make regardless of which backend produced `parsed`;
+    // it's purely additive and a no-op when no grammar is available.
+    attachAstWarnings(parsed, content, lang, filePath);
+    return parsed;
   } catch (err) {
     // If the strong backend threw, try the regex floor once before
     // we give up. Logs the error so the corpus harness can flag a
@@ -178,6 +180,47 @@ export function parseFile(filePath, content) {
  * tsx too (closest fit for the JS+JSX combination), `.js`/`.mjs`/.cjs`
  * use the js grammar, and `.ts` uses the typescript grammar.
  */
+/**
+ * Layer AST-based warnings (await-in-loop, unreachable-code,
+ * mutation-of-param, switch-without-default, function-defined-in-loop,
+ * unhandled-promise-rejection — see `mvp/lib/warnings-ast.js`) on
+ * top of whatever `parsed.defs` already has. Mutates in place. Pure
+ * no-op when the grammar isn't loadable or there are no defs.
+ */
+function attachAstWarnings(parsed, content, lang, filePath) {
+  if (!parsed?.defs?.length) return;
+  // Only TS and Python have AST warning sets today. Go/Rust will get
+  // their own when the catalog calls for them.
+  if (lang !== "ts" && lang !== "py") return;
+  const grammarLang = lang === "py" ? "py" : treeSitterLangForPath(filePath);
+  if (!grammarLang) return;
+  let astWarnings;
+  try {
+    astWarnings = detectAstWarnings(content, grammarLang, parsed.defs);
+  } catch {
+    // AST warnings are best-effort. A parse failure or query bug
+    // shouldn't break the extractor pipeline.
+    return;
+  }
+  if (!astWarnings?.length) return;
+  // Merge by def name. The regex/tree-sitter extractor already put
+  // its own warnings on the def; we append the AST-discovered ones,
+  // deduping by `kind` so re-runs don't multiply.
+  const byName = new Map();
+  for (const def of parsed.defs) byName.set(def.name, def);
+  for (const w of astWarnings) {
+    const def = byName.get(w.defName);
+    if (!def) continue;
+    if (!def.warnings) def.warnings = [];
+    if (def.warnings.some((x) => x.kind === w.kind)) continue;
+    def.warnings.push({
+      kind: w.kind,
+      severity: w.severity,
+      message: w.message,
+    });
+  }
+}
+
 function treeSitterLangForPath(filePath) {
   // Both JS and TS files use the tree-sitter-typescript grammar. The
   // TS grammar is a strict superset of JS syntax, so the same query

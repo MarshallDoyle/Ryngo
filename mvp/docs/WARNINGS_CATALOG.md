@@ -48,6 +48,22 @@ during analyze.
 | `async-without-await` | low | `async` keyword with no `await` in body |
 | `settimeout-not-cleared` | low | `setTimeout` / `setInterval` return not stored |
 
+**Phase 10.warning-unlock — 6 tree-sitter AST detectors** (in `mvp/lib/warnings-ast.js`, runs on every TS + Python file when the grammar is loadable):
+
+| kind | severity | signal |
+|---|---|---|
+| `await-in-loop` | medium | `await` inside `for`/`while` body — sequential I/O when batching is possible (TS + Py) |
+| `unreachable-code` | medium | statement after return/throw/raise/break/continue in the same block (TS + Py) |
+| `mutation-of-param` | low | parameter reassigned inside the function body (skips the explicit `param \|\| default` / `param ?? default` idiom). TS + Py. |
+| `switch-without-default` | medium | `switch` with no `default:` case (TS only) |
+| `function-defined-in-loop` | medium | function/arrow declared inside a loop body — fresh closure per iteration (TS only) |
+| `unhandled-promise-rejection` | high | `.then(...)` chain with no `.catch` anywhere downstream (TS only) |
+
+Real findings on the corpus:
+- `expressjs/express` — 1 mutation-of-param, 1 function-in-loop
+- `tiangolo/fastapi` — 11 await-in-loop, 3 mutation-of-param
+- `colinhacks/zod` — 6 await-in-loop, 1 switch-without-default, 14 function-in-loop, 7 unhandled-promise-rejection
+
 **Phase 10.next — 2 IR-level passes** (in `mvp/lib/dead-code.js`):
 
 | kind | severity | signal |

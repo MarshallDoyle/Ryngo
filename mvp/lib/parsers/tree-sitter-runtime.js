@@ -204,6 +204,60 @@ export function isAvailable(lang) {
   return Boolean(resolveLanguage(lang));
 }
 
+/**
+ * Lower-level availability check that BYPASSES the per-language flag.
+ * Useful for additive consumers like `mvp/lib/warnings-ast.js` whose
+ * output decorates the IR but doesn't change node ids — those should
+ * fire whenever the grammar can load, regardless of which extractor
+ * is the active source-of-truth for a language.
+ */
+export function isGrammarLoadable(lang) {
+  if (process.env.RYNGO_PARSERS === "regex") return false; // emergency kill switch
+  if (!ParserCtor) return false;
+  if (grammarCache.has(lang)) return Boolean(grammarCache.get(lang));
+  const loader = GRAMMAR_LOADERS[lang];
+  if (!loader) return false;
+  const grammar = loader();
+  grammarCache.set(lang, grammar);
+  return Boolean(grammar);
+}
+
+/**
+ * Parse `source` with the requested grammar regardless of the
+ * per-language flag. Same semantics as `parse()` but for additive
+ * consumers that don't change the structural IR.
+ *
+ * NOTE: tree-sitter native bindings tie the lifetime of nodes to
+ * their parent Tree. If we returned only `rootNode`, the Tree could
+ * be GC'd while a caller is still walking nodes, dangling every
+ * node accessor. Return both so callers can keep a reference to the
+ * Tree alive for the duration of their walk.
+ *
+ * Most call sites just want the root — they can destructure or
+ * read `.rootNode`. The Tree is `result.tree`.
+ */
+export function parseRaw(lang, source) {
+  if (!isGrammarLoadable(lang)) return null;
+  let parser = parserCache.get(lang);
+  if (!parser) {
+    const grammar = grammarCache.get(lang);
+    parser = new ParserCtor();
+    try {
+      parser.setLanguage(grammar);
+    } catch {
+      return null;
+    }
+    parserCache.set(lang, parser);
+  }
+  const tree = parser.parse(source);
+  // Wrap so the returned object is still truthy + .type is the root
+  // node's type (matches the prior single-node return shape). Tree
+  // is reachable via `.tree` so callers can keep it alive.
+  const root = tree.rootNode;
+  root.__tree = tree;
+  return root;
+}
+
 export function status() {
   return {
     flag: process.env.RYNGO_PARSERS || "(default — go/rust on, others off)",
