@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ryngo icon lab</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #fbfaf2;
+        --panel: #f4f1e3;
+        --line: #d8d3b4;
+        --text: #1a1a1a;
+        --muted: #5a5a5a;
+        --blue: #1d4ed8;
+        --green: #5a8a00;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+      }
+      header {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        padding: 18px 28px;
+        background: var(--panel);
+        border-bottom: 1px solid var(--line);
+      }
+      h1 {
+        margin: 0;
+        font-size: 18px;
+      }
+      a {
+        color: var(--blue);
+        text-decoration: none;
+      }
+      nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        font-size: 14px;
+      }
+      main {
+        max-width: 1420px;
+        margin: 0 auto;
+        padding: 32px 24px 56px;
+      }
+      .lede {
+        max-width: 860px;
+        margin: 0 0 24px;
+        color: var(--muted);
+        line-height: 1.55;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 16px;
+      }
+      .card {
+        display: grid;
+        gap: 12px;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 14px;
+      }
+      .preview {
+        display: grid;
+        place-items: center;
+        min-height: 168px;
+        background:
+          linear-gradient(rgba(216, 211, 180, 0.35) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(216, 211, 180, 0.35) 1px, transparent 1px),
+          color-mix(in oklab, var(--bg) 76%, #ffffff 24%);
+        background-size: 18px 18px;
+        border: 1px solid var(--line);
+        border-radius: 7px;
+      }
+      .card h2 {
+        margin: 0;
+        font-size: 14px;
+      }
+      .card p {
+        margin: -6px 0 0;
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.35;
+      }
+      .actions {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        justify-content: space-between;
+      }
+      button {
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        padding: 7px 10px;
+        background: #fffdf4;
+        color: var(--text);
+        font: inherit;
+        font-size: 12px;
+        cursor: pointer;
+      }
+      button:hover {
+        border-color: var(--green);
+      }
+      .number {
+        color: var(--muted);
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      .toast {
+        position: fixed;
+        right: 18px;
+        bottom: 18px;
+        z-index: 4;
+        opacity: 0;
+        transform: translateY(8px);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 10px 12px;
+        background: #fffdf4;
+        color: var(--text);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+        transition: opacity 160ms ease, transform 160ms ease;
+      }
+      .toast.is-visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      @media (max-width: 720px) {
+        header {
+          align-items: flex-start;
+          flex-direction: column;
+          padding: 16px 18px;
+        }
+        main {
+          padding: 24px 16px 44px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Ryngo icon lab</h1>
+      <nav>
+        <a href="index.html">Home</a>
+        <a href="logos.html">Logo lab</a>
+        <a href="/app">Open app</a>
+      </nav>
+    </header>
+
+    <main>
+      <p class="lede">
+        Thirty small SVG directions for the corner tab image placeholder:
+        layered sheets, folded code maps, source anchors, and node topology
+        marks. These are intentionally simple so they can stay readable in a
+        tiny UI corner, tab, favicon, or empty-state badge.
+      </p>
+      <section id="grid" class="grid" aria-label="Ryngo icon candidates"></section>
+    </main>
+
+    <div id="toast" class="toast" role="status" aria-live="polite">Copied SVG</div>
+
+    <script>
+      const palettes = [
+        { ink: "#1a1a1a", soft: "#e9e3c7", accent: "#5a8a00", alt: "#1d4ed8" },
+        { ink: "#172033", soft: "#dce9ff", accent: "#1d4ed8", alt: "#0e7490" },
+        { ink: "#172033", soft: "#e8dcff", accent: "#7e22ce", alt: "#1d4ed8" },
+        { ink: "#172033", soft: "#d7f2ea", accent: "#0e7490", alt: "#5a8a00" },
+        { ink: "#1a1a1a", soft: "#ffe4bd", accent: "#92400e", alt: "#5a8a00" },
+        { ink: "#172033", soft: "#e7ecf4", accent: "#475569", alt: "#0e7490" }
+      ];
+
+      const icons = [
+        ["Corner Stack", "Folded tab plus three visible abstraction layers.", "cornerStack", 0],
+        ["Node Corner", "A small source corner with three connected facts.", "nodeCorner", 1],
+        ["Layer Fan", "Layered sheets spreading from a compact corner.", "layerFan", 2],
+        ["Mini Map", "A tiny graph map held inside a folded document.", "miniMap", 3],
+        ["Source Pin", "Source-backed node marker over a code sheet.", "sourcePin", 4],
+        ["Folded Graph", "Corner fold with a visible call edge bundle.", "foldedGraph", 5],
+        ["Cluster Tabs", "Three grouped layers with one selected tab.", "clusterTabs", 0],
+        ["Code Layers", "Stacked code bands compressed into a map.", "codeLayers", 1],
+        ["Route Node", "Endpoint-like corner node with two route spokes.", "routeNode", 2],
+        ["Data Layer", "Database layer under source and view layers.", "dataLayer", 3],
+        ["Package Stack", "Package boxes compressed into one corner glyph.", "packageStack", 4],
+        ["Inspector Corner", "Selected node inspected from the folded edge.", "inspectorCorner", 5],
+        ["Grid Pin", "Topology grid with one source anchor.", "gridPin", 0],
+        ["Edge Bundle", "Multiple raw edges bundled into one readable arc.", "edgeBundle", 1],
+        ["Layer Plate", "Broad plate layers with a small selected marker.", "layerPlate", 2],
+        ["Topology Fold", "Folded page revealing topology instead of code.", "topologyFold", 3],
+        ["Compass Node", "A centered node with directional context rays.", "compassNode", 4],
+        ["Provenance Stamp", "Source stamp plus confidence layer behind it.", "provenanceStamp", 5],
+        ["Source Anchor", "Exact-line anchor crossing compact layers.", "sourceAnchor", 0],
+        ["Split Pane", "Code pane and graph pane folded into one mark.", "splitPane", 1],
+        ["Map Tile", "A single tile from a larger source graph.", "mapTile", 2],
+        ["Diamond Port", "Port-like node with layered input/output sides.", "diamondPort", 3],
+        ["Layer Ribbon", "Thin abstraction ribbons stacked at the corner.", "layerRibbon", 4],
+        ["Node Sheet", "Sheet icon with one highlighted semantic node.", "nodeSheet", 5],
+        ["Focus Hub", "Focused subgraph around one high-importance node.", "focusHub", 0],
+        ["Stack Badge", "Badge-ready nested layers for dense tabs.", "stackBadge", 1],
+        ["Graph Card", "Rounded card with code-map topology inside.", "graphCard", 2],
+        ["File Corner", "File corner with source lines and a map node.", "fileCorner", 3],
+        ["Minimal Tabs", "Three abstract tabs, no graph clutter.", "minimalTabs", 4],
+        ["Beta Corner", "Beta-style folded corner with compressed layers.", "betaCorner", 5]
+      ];
+
+      const rendered = icons.map((icon, index) => iconSvg(icon, index));
+      const grid = document.getElementById("grid");
+      grid.innerHTML = icons.map((icon, index) => `
+        <article class="card">
+          <div class="preview">${rendered[index]}</div>
+          <div class="actions">
+            <span class="number">${String(index + 1).padStart(2, "0")}</span>
+            <button type="button" data-copy="${index}">Copy SVG</button>
+          </div>
+          <h2>${icon[0]}</h2>
+          <p>${icon[1]}</p>
+        </article>
+      `).join("");
+
+      document.addEventListener("click", async (event) => {
+        const button = event.target.closest("[data-copy]");
+        if (!button) return;
+        const svg = rendered[Number(button.dataset.copy)];
+        await navigator.clipboard.writeText(svg);
+        showToast();
+      });
+
+      function showToast() {
+        const toast = document.getElementById("toast");
+        toast.classList.add("is-visible");
+        window.clearTimeout(showToast.timer);
+        showToast.timer = window.setTimeout(() => toast.classList.remove("is-visible"), 1200);
+      }
+
+      function iconSvg(icon, index) {
+        const name = icon[0];
+        const type = icon[2];
+        const p = palettes[icon[3]];
+        const body = renderBody(type, p, index);
+        return `<svg xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${name}" viewBox="0 0 96 96" width="112" height="112" fill="none">
+  <title>${name}</title>
+  <rect x="10" y="10" width="76" height="76" rx="14" fill="#fffdf4" stroke="${p.ink}" stroke-width="3"/>
+  ${body}
+</svg>`;
+      }
+
+      function renderBody(type, p, index) {
+        const layers = `
+          <rect x="25" y="26" width="44" height="32" rx="6" fill="${p.soft}" stroke="${p.ink}" stroke-width="2"/>
+          <rect x="31" y="32" width="44" height="32" rx="6" fill="#fffdf4" stroke="${p.ink}" stroke-width="2"/>
+          <rect x="37" y="38" width="44" height="32" rx="6" fill="${p.soft}" stroke="${p.ink}" stroke-width="2"/>
+        `;
+        const corner = `<path d="M66 10h20v20L66 10Z" fill="${p.soft}" stroke="${p.ink}" stroke-width="3" stroke-linejoin="round"/>`;
+        const node = (x, y, r = 4, fill = p.accent) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${fill}" stroke="${p.ink}" stroke-width="2"/>`;
+        const edge = (d, color = p.ink, dash = "") => `<path d="${d}" stroke="${color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"${dash ? ` stroke-dasharray="${dash}"` : ""}/>`;
+        const line = (x1, y1, x2, y2, color = p.ink) => `<path d="M${x1} ${y1}L${x2} ${y2}" stroke="${color}" stroke-width="2.5" stroke-linecap="round"/>`;
+        const bands = `
+          <rect x="22" y="27" width="52" height="8" rx="4" fill="${p.soft}" stroke="${p.ink}" stroke-width="2"/>
+          <rect x="22" y="43" width="52" height="8" rx="4" fill="#fffdf4" stroke="${p.ink}" stroke-width="2"/>
+          <rect x="22" y="59" width="52" height="8" rx="4" fill="${p.soft}" stroke="${p.ink}" stroke-width="2"/>
+        `;
+
+        switch (type) {
+          case "cornerStack":
+            return `${corner}${layers}${node(72, 63, 5, p.alt)}`;
+          case "nodeCorner":
+            return `${corner}${edge("M31 65C42 42 58 56 71 31", p.alt)}${node(30, 66)}${node(52, 51, 4, p.alt)}${node(72, 30)}`;
+          case "layerFan":
+            return `${corner}<g transform="rotate(-9 48 50)">${bands}</g><g transform="rotate(7 48 50)">${bands}</g>${node(29, 69, 5, p.alt)}`;
+          case "miniMap":
+            return `${corner}<rect x="24" y="28" width="48" height="40" rx="8" fill="${p.soft}" stroke="${p.ink}" stroke-width="2"/>${edge("M35 56C43 38 54 60 64 39", p.alt)}${node(35, 56)}${node(49, 48, 4, p.alt)}${node(64, 39)}`;
+          case "sourcePin":
+            return `${corner}${bands}${line(30, 31, 63, 31, p.alt)}${node(65, 31, 5, p.accent)}`;
+          case "foldedGraph":
+            return `${corner}${edge("M25 67C37 38 55 73 72 34", p.accent)}${edge("M25 67C43 62 52 46 72 34", p.alt, "4 4")}${node(25, 67)}${node(72, 34, 5, p.alt)}`;
+          case "clusterTabs":
+            return `${corner}<rect x="24" y="26" width="24" height="18" rx="5" fill="${p.soft}" stroke="${p.ink}" stroke-width="2"/><rect x="48" y="36" width="24" height="18" rx="5" fill="#fffdf4" stroke="${p.ink}" stroke-width="2"/><rect x="32" y="54" width="32" height="18" rx="5" fill="${p.soft}" stroke="${p.ink}" stroke-width="2"/>${node(64, 63, 4, p.alt)}`;
+          case "codeLayers":
+            return `${corner}${bands}${line(31, 31, 54, 31, p.accent)}${line(31, 47, 62, 47, p.alt)}${line(31, 63, 48, 63, p.accent)}`;
+          case "routeNode":
+            return `${corner}${edge("M30 64C42 54 54 44 68 30", p.alt)}${edge("M30 64C50 64 59 58 72 52", p.accent)}${node(30, 64)}${node(68, 30, 4, p.alt)}${node(72, 52, 4, p.accent)}`;
+          case "dataLayer":
+            return `${corner}<ellipse cx="49" cy="33" rx="23" ry="8" fill="${p.soft}" stroke="${p.ink}" stroke-width="2"/><path d="M26 33v25c0 5 10 8 23 8s23-3 23-8V33" fill="#fffdf4" stroke="${p.ink}" stroke-width="2"/><path d="M26 47c0 5 10 8 23 8s23-3 23-8" stroke="${p.ink}" stroke-width="2"/>${node(71, 61, 4, p.alt)}`;
+          case "packageStack":
+            return `${corner}<path d="M27 33l20-10 22 10v27L47 72 27 60V33Z" fill="${p.soft}" stroke="${p.ink}" stroke-width="2"/><path d="M27 33l20 12 22-12M47 45v27" stroke="${p.ink}" stroke-width="2"/>${node(69, 33, 4, p.alt)}`;
+          case "inspectorCorner":
+            return `${corner}<rect x="24" y="29" width="32" height="38" rx="7" fill="${p.soft}" stroke="${p.ink}" stroke-width="2"/><rect x="60" y="29" width="12" height="38" rx="6" fill="#fffdf4" stroke="${p.ink}" stroke-width="2"/>${node(40, 47, 5, p.alt)}${line(32, 59, 50, 59, p.accent)}`;
+          case "gridPin":
+            return `${corner}${Array.from({ length: 9 }, (_, i) => node(31 + (i % 3) * 17, 32 + Math.floor(i / 3) * 15, i === 4 ? 5 : 2.8, i === 4 ? p.accent : p.ink)).join("")}${edge("M48 47L65 68", p.alt)}`;
+          case "edgeBundle":
+            return `${corner}${edge("M27 67C43 28 55 30 72 31", p.accent)}${edge("M27 67C43 42 56 45 73 48", p.alt)}${edge("M27 67C45 58 58 63 73 66", p.ink, "4 4")}${node(27, 67)}${node(73, 48, 4, p.alt)}`;
+          case "layerPlate":
+            return `${corner}<rect x="21" y="31" width="54" height="10" rx="5" fill="${p.soft}" stroke="${p.ink}" stroke-width="2"/><rect x="26" y="45" width="54" height="10" rx="5" fill="#fffdf4" stroke="${p.ink}" stroke-width="2"/><rect x="31" y="59" width="42" height="10" rx="5" fill="${p.soft}" stroke="${p.ink}" stroke-width="2"/>${node(74, 50, 4, p.alt)}`;
+          case "topologyFold":
+            return `${corner}<path d="M28 67h33l13-13V29H28v38Z" fill="${p.soft}" stroke="${p.ink}" stroke-width="2"/><path d="M61 67V54h13" stroke="${p.ink}" stroke-width="2"/>${edge("M36 57C44 42 54 59 65 37", p.alt)}${node(36, 57)}${node(65, 37)}`;
+          case "compassNode":
+            return `${corner}${node(48, 49, 7, p.accent)}${line(48, 26, 48, 40, p.alt)}${line(48, 58, 48, 72, p.alt)}${line(25, 49, 39, 49, p.alt)}${line(57, 49, 71, 49, p.alt)}${node(48, 26, 3, p.alt)}${node(71, 49, 3, p.alt)}`;
+          case "provenanceStamp":
+            return `${corner}<rect x="27" y="29" width="42" height="34" rx="8" fill="${p.soft}" stroke="${p.ink}" stroke-width="2"/><path d="M36 43h25M36 52h17" stroke="${p.ink}" stroke-width="2"/><rect x="39" y="60" width="26" height="10" rx="5" fill="${p.accent}" stroke="${p.ink}" stroke-width="2"/>`;
+          case "sourceAnchor":
+            return `${corner}${bands}${line(27, 23, 72, 72, p.accent)}${node(51, 47, 5, p.alt)}`;
+          case "splitPane":
+            return `${corner}<rect x="24" y="29" width="48" height="40" rx="8" fill="#fffdf4" stroke="${p.ink}" stroke-width="2"/><path d="M48 29v40" stroke="${p.ink}" stroke-width="2"/><path d="M31 41h12M31 51h10M55 55c7-17 12-4 12-16" stroke="${p.alt}" stroke-width="2" stroke-linecap="round"/>${node(67, 39, 3, p.accent)}`;
+          case "mapTile":
+            return `${corner}<rect x="27" y="27" width="42" height="42" rx="9" fill="${p.soft}" stroke="${p.ink}" stroke-width="2"/><path d="M39 36v24M55 36v24M36 45h24M36 57h24" stroke="${p.ink}" stroke-width="1.8" opacity="0.55"/>${node(55, 45, 5, p.alt)}`;
+          case "diamondPort":
+            return `${corner}<path d="M48 24l26 25-26 25-26-25 26-25Z" fill="${p.soft}" stroke="${p.ink}" stroke-width="2"/><path d="M31 49h34M48 32v34" stroke="${p.ink}" stroke-width="2" opacity="0.55"/>${node(31, 49, 4, p.accent)}${node(65, 49, 4, p.alt)}`;
+          case "layerRibbon":
+            return `${corner}<path d="M24 34h49l-8 10H24V34Z" fill="${p.soft}" stroke="${p.ink}" stroke-width="2"/><path d="M24 47h49l-8 10H24V47Z" fill="#fffdf4" stroke="${p.ink}" stroke-width="2"/><path d="M24 60h49l-8 10H24V60Z" fill="${p.soft}" stroke="${p.ink}" stroke-width="2"/>`;
+          case "nodeSheet":
+            return `${corner}<rect x="26" y="26" width="45" height="46" rx="8" fill="${p.soft}" stroke="${p.ink}" stroke-width="2"/><path d="M35 38h25M35 49h18M35 60h24" stroke="${p.ink}" stroke-width="2" stroke-linecap="round"/>${node(64, 60, 5, p.alt)}`;
+          case "focusHub":
+            return `${corner}${node(48, 49, 8, p.accent)}${edge("M48 49C37 37 32 34 25 30", p.alt)}${edge("M48 49C63 37 67 34 75 31", p.alt)}${edge("M48 49C36 61 32 66 26 72", p.alt)}${node(25, 30, 3, p.alt)}${node(75, 31, 3, p.alt)}${node(26, 72, 3, p.alt)}`;
+          case "stackBadge":
+            return `${corner}<rect x="28" y="25" width="36" height="36" rx="10" fill="${p.soft}" stroke="${p.ink}" stroke-width="2"/><rect x="34" y="31" width="36" height="36" rx="10" fill="#fffdf4" stroke="${p.ink}" stroke-width="2"/><rect x="40" y="37" width="28" height="28" rx="9" fill="${p.soft}" stroke="${p.ink}" stroke-width="2"/>`;
+          case "graphCard":
+            return `${corner}<rect x="23" y="28" width="51" height="40" rx="8" fill="${p.soft}" stroke="${p.ink}" stroke-width="2"/><path d="M34 57C42 41 53 58 64 39" stroke="${p.alt}" stroke-width="2.5" stroke-linecap="round"/><circle cx="34" cy="57" r="4" fill="${p.accent}"/><circle cx="49" cy="49" r="4" fill="#fffdf4" stroke="${p.ink}" stroke-width="2"/><circle cx="64" cy="39" r="4" fill="${p.alt}"/>`;
+          case "fileCorner":
+            return `${corner}<path d="M28 70V26h30l14 14v30H28Z" fill="#fffdf4" stroke="${p.ink}" stroke-width="2"/><path d="M58 26v14h14" stroke="${p.ink}" stroke-width="2"/><path d="M36 45h24M36 55h18" stroke="${p.ink}" stroke-width="2" stroke-linecap="round"/>${node(62, 61, 4, p.accent)}`;
+          case "minimalTabs":
+            return `${corner}<rect x="24" y="32" width="48" height="10" rx="5" fill="${p.soft}" stroke="${p.ink}" stroke-width="2"/><rect x="30" y="47" width="42" height="10" rx="5" fill="#fffdf4" stroke="${p.ink}" stroke-width="2"/><rect x="36" y="62" width="36" height="10" rx="5" fill="${p.soft}" stroke="${p.ink}" stroke-width="2"/>`;
+          case "betaCorner":
+            return `${corner}<rect x="24" y="31" width="48" height="34" rx="9" fill="${p.soft}" stroke="${p.ink}" stroke-width="2"/><path d="M35 44h26M35 54h17" stroke="${p.ink}" stroke-width="2" stroke-linecap="round"/><rect x="49" y="54" width="16" height="8" rx="4" fill="${p.accent}"/>`;
+          default:
+            return `${corner}${layers}`;
+        }
+      }
+    </script>
+  </body>
+</html>
