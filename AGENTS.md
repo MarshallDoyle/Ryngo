@@ -91,8 +91,9 @@ plan first.
 | Phase 5.1.2 — Python tree-sitter extractor | claude | shipped, dormant | `mvp/lib/parsers/queries/py/*.scm` (4 files) + `mvp/lib/parsers/py-tree-sitter.js` + dispatch in `parsers/index.js`. Smoke: fastapi +1020 edges same nodes. Flag-off default. |
 | Phase 5.1.3 — Worker-pool perf for tree-sitter | unclaimed | after 5.1.2 | `mvp/lib/parsers/worker-pool.js` — needed if TS-flag-on corpus runs exceed budget. |
 | Phase 5.1 flip — make tree-sitter the default | unclaimed | after parser-parity property test lands | Flag default + remove regex fallback once corpus is a strict superset of regex output. |
-| Phase 5.4 — Go support | unclaimed | designed, ready to ship | hybrid tree-sitter + `go list -deps -json`; new `mvp/lib/parsers/go-{list,tree-sitter}.js`, queries, WASM grammar. |
-| Phase 5.5 — Rust support | unclaimed | designed, ready to ship | hybrid tree-sitter + `cargo metadata`; new `mvp/lib/parsers/rust-{cargo,tree-sitter}.js`, trait edges via `impl` blocks. |
+| Phase 5.4 — Go support | claude | shipped, active by default | `mvp/lib/parsers/go-tree-sitter.js` + queries. Methods qualified `Receiver.MethodName`. golang/example 0→133 defs. |
+| Phase 5.5 — Rust support | claude | shipped, active by default | `mvp/lib/parsers/rust-tree-sitter.js` + queries. Impl methods qualified `Type.method`. tokio-rs/mio 0→906 defs. |
+| Phase 5.4 + 5.5 follow-up — `go list` / `cargo metadata` for cross-module edges | unclaimed | not started | Optional upgrade — tree-sitter covers in-file extraction; cross-package edges still need subprocess calls. Wait for user demand. |
 
 To **claim** a workstream: edit this table, change `unclaimed` to your
 agent name, commit. Use `claude/<workstream-slug>` or `codex/<slug>` as

@@ -37,6 +37,8 @@ import * as tsParser from "./ts.js";
 import * as tsTreeSitterParser from "./ts-tree-sitter.js";
 import * as pyParser from "./py.js";
 import * as pyTreeSitterParser from "./py-tree-sitter.js";
+import * as goTreeSitterParser from "./go-tree-sitter.js";
+import * as rustTreeSitterParser from "./rust-tree-sitter.js";
 import * as jupyterParser from "./jupyter.js";
 import { isAvailable as treeSitterAvailable } from "./tree-sitter-runtime.js";
 
@@ -69,9 +71,14 @@ const PARSERS = {
   ts: tsParser,
   py: pyParser,
   jupyter: jupyterParser,
+  // tree-sitter backed (Phase 5.4 / 5.5). The dispatcher in
+  // parseFile routes Go and Rust files to the tree-sitter extractors
+  // directly when the grammar is available, so these stub entries
+  // act as the regex floor + ultimate fallback when the grammar
+  // failed to load.
+  go: stubBackend("go", "tree-sitter-go"),
+  rust: stubBackend("rust", "tree-sitter-rust"),
   // stubbed languages — return BackendUnavailable
-  go: stubBackend("go", "go list"),
-  rust: stubBackend("rust", "rust-analyzer scip"),
   java: stubBackend("java", "scip-java"),
   ruby: stubBackend("ruby", "tree-sitter-ruby (not bundled)"),
   csharp: stubBackend("csharp", "scip-csharp"),
@@ -127,12 +134,20 @@ export function parseFile(filePath, content) {
       const pyResult = pyTreeSitterParser.parse(content);
       if (pyResult) return pyResult;
     }
+    if (lang === "go" && treeSitterAvailable("go")) {
+      const goResult = goTreeSitterParser.parse(content);
+      if (goResult) return goResult;
+    }
+    if (lang === "rust" && treeSitterAvailable("rust")) {
+      const rustResult = rustTreeSitterParser.parse(content);
+      if (rustResult) return rustResult;
+    }
     return p.parse(content, { filePath });
   } catch (err) {
     // If the strong backend threw, try the regex floor once before
     // we give up. Logs the error so the corpus harness can flag a
     // backend regression.
-    if (lang === "ts" || lang === "py") {
+    if (lang === "ts" || lang === "py" || lang === "go" || lang === "rust") {
       try {
         const out = p.parse(content, { filePath });
         if (out) {

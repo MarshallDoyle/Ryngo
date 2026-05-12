@@ -54,6 +54,8 @@ const GRAMMAR_LOADERS = {
   tsx: () => safeRequire("tree-sitter-typescript")?.tsx ?? null,
   js: () => safeRequire("tree-sitter-javascript") ?? null,
   py: () => safeRequire("tree-sitter-python") ?? null,
+  go: () => safeRequire("tree-sitter-go") ?? null,
+  rust: () => safeRequire("tree-sitter-rust") ?? null,
 };
 
 function safeRequire(name) {
@@ -71,18 +73,28 @@ function safeRequire(name) {
 const ParserCtor = safeRequire("tree-sitter");
 const grammarCache = new Map();
 
-function isFlagEnabled() {
-  // Default: tree-sitter OFF. The Phase 5.1.1 rollout ships the
-  // tree-sitter backend dormant; opt in by setting
-  // RYNGO_PARSERS=tree-sitter. Once the corpus shows the tree-sitter
-  // backend produces a strict superset of the regex output on every
-  // tracked classification, we'll flip the default and remove the
-  // regex extractors in a subsequent PR.
-  return process.env.RYNGO_PARSERS === "tree-sitter";
+/**
+ * Per-language flag semantics:
+ *   - ts / tsx / js / py: the regex extractor already works. Treat the
+ *     tree-sitter backend as opt-in (RYNGO_PARSERS=tree-sitter) until
+ *     parser-parity is gated on the corpus.
+ *   - go / rust: the previous floor was a stub (file nodes only).
+ *     Tree-sitter is a strict upgrade with zero regression risk — use
+ *     it whenever the grammar is installed, regardless of the flag.
+ *     RYNGO_PARSERS=regex forces stubs back on (for emergency rollback
+ *     only).
+ */
+function isLanguageEnabled(lang) {
+  const flag = process.env.RYNGO_PARSERS;
+  if (flag === "regex") return false; // emergency rollback for every lang
+  if (flag === "tree-sitter") return true; // explicit opt-in everywhere
+  // default: upgrade-only languages get tree-sitter; existing-regex
+  // languages stay on regex until we flip the master switch.
+  return lang === "go" || lang === "rust";
 }
 
 function resolveLanguage(lang) {
-  if (!isFlagEnabled()) return null;
+  if (!isLanguageEnabled(lang)) return null;
   if (!ParserCtor) return null;
   if (grammarCache.has(lang)) return grammarCache.get(lang);
   const loader = GRAMMAR_LOADERS[lang];
@@ -194,7 +206,7 @@ export function isAvailable(lang) {
 
 export function status() {
   return {
-    flagEnabled: isFlagEnabled(),
+    flag: process.env.RYNGO_PARSERS || "(default — go/rust on, others off)",
     nativeBindingLoaded: Boolean(ParserCtor),
     parsersInitialized: Array.from(parserCache.keys()),
     queriesCompiled: Array.from(queryCache.keys()).filter(
@@ -205,6 +217,8 @@ export function status() {
       tsx: isAvailable("tsx"),
       js: isAvailable("js"),
       py: isAvailable("py"),
+      go: isAvailable("go"),
+      rust: isAvailable("rust"),
     },
   };
 }

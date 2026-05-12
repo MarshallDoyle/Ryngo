@@ -30,7 +30,14 @@ const RESULTS_DIR = path.join(__dirname, "..", "test", "results");
 const HISTORY_PATH = path.join(RESULTS_DIR, "history.json");
 const LATEST_PATH = path.join(RESULTS_DIR, "latest.md");
 
-const CORPUS_TIMEOUT_MS = Number(process.env.CORPUS_TIMEOUT_MS) || 90_000;
+// 180 s default — large repos in the corpus (microsoft/TypeScript at
+// ~30M raw tokens, AspNetCore.Docs, pytudes, prisma/prisma-examples)
+// blow a 90 s budget once tree-sitter is active for Go + Rust (the
+// extra parse overhead is ~5-15 % per Go/Rust file vs the previous
+// stub). The clone timeout in analyze.js is also 180 s; matching them
+// here makes the corpus failure mode "clone too slow" rather than
+// "harness too impatient."
+const CORPUS_TIMEOUT_MS = Number(process.env.CORPUS_TIMEOUT_MS) || 180_000;
 const CORPUS_CONCURRENCY = Number(process.env.CORPUS_CONCURRENCY) || 3;
 
 const argv = process.argv.slice(2);
