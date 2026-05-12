@@ -17,7 +17,11 @@ WORKDIR /app
 # the already-compiled node_modules over.
 RUN apk add --no-cache python3 make g++
 COPY mvp/package*.json ./
-RUN npm ci
+# --legacy-peer-deps: the tree-sitter-python package declares
+# `tree-sitter@^0.22.1` as a peer while tree-sitter-javascript pins
+# `tree-sitter@^0.21.1`. Both work fine against our pinned 0.22.4; npm
+# refuses to install without the flag.
+RUN npm ci --legacy-peer-deps
 COPY mvp/ ./
 RUN npm run build
 

@@ -36,6 +36,7 @@ import path from "node:path";
 import * as tsParser from "./ts.js";
 import * as tsTreeSitterParser from "./ts-tree-sitter.js";
 import * as pyParser from "./py.js";
+import * as pyTreeSitterParser from "./py-tree-sitter.js";
 import * as jupyterParser from "./jupyter.js";
 import { isAvailable as treeSitterAvailable } from "./tree-sitter-runtime.js";
 
@@ -122,12 +123,16 @@ export function parseFile(filePath, content) {
         // null return = tree-sitter unavailable or refused; fall through.
       }
     }
+    if (lang === "py" && treeSitterAvailable("py")) {
+      const pyResult = pyTreeSitterParser.parse(content);
+      if (pyResult) return pyResult;
+    }
     return p.parse(content, { filePath });
   } catch (err) {
     // If the strong backend threw, try the regex floor once before
     // we give up. Logs the error so the corpus harness can flag a
     // backend regression.
-    if (lang === "ts") {
+    if (lang === "ts" || lang === "py") {
       try {
         const out = p.parse(content, { filePath });
         if (out) {

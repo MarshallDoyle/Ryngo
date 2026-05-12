@@ -197,7 +197,9 @@ function readSignatureBlock(lines, startIdx, kind) {
   return { header, endLine: lines.length - 1 };
 }
 
-function parseBaseClasses(s) {
+// Exported so the tree-sitter Python extractor (Phase 5.1.2) can
+// reuse the same parsing logic for parity with the regex extractor.
+export function parseBaseClasses(s) {
   if (!s.trim()) return [];
   return splitTopLevel(s, ",")
     .map((p) => p.trim())
@@ -230,7 +232,7 @@ function readClassBody(lines, startIdx) {
   return bodyLines.join("\n");
 }
 
-function extractClassMembers(body, firstLine = 1) {
+export function extractClassMembers(body, firstLine = 1) {
   const methods = [];
   const fields = [];
   const seenMethods = new Set();
@@ -284,7 +286,7 @@ function extractClassMembers(body, firstLine = 1) {
 // param parsing — Python flavor
 // ---------------------------------------------------------------------------
 
-function parseParamList(raw) {
+export function parseParamList(raw) {
   if (!raw || !raw.trim()) return [];
   const params = [];
   for (const chunk of splitTopLevel(raw, ",")) {
@@ -370,7 +372,7 @@ function extractCalls(src) {
   return calls;
 }
 
-const PY_BUILTINS = new Set([
+export const PY_BUILTINS = new Set([
   "print", "len", "range", "enumerate", "zip", "map", "filter", "sum", "min",
   "max", "abs", "round", "sorted", "reversed",
   "list", "dict", "set", "tuple", "str", "int", "float", "bool", "bytes",
